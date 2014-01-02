@@ -43,8 +43,8 @@
 #include "console/simBase.h"
 #endif
 
-#ifndef _HASHTABLE_H
-#include "collection/hashTable.h"
+#ifndef _TAML_HASHMAP_H_
+#include "tamlHashMap.h"
 #endif
 
 #ifndef _FILESTREAM_H_
@@ -89,7 +89,7 @@ public:
 private:
     typedef SimObject Parent;
     typedef Vector<TamlWriteNode*>                  typeNodeVector;
-    typedef HashMap<SimObjectId, TamlWriteNode*>    typeCompiledHash;
+    typedef HashMap<SimObjectId, TamlWriteNode*>  typeCompiledHash;
 
     typeNodeVector      mCompiledNodes;
     typeCompiledHash    mCompiledObjects;
@@ -191,9 +191,6 @@ public:
         return NULL;
     }
     SimObject* read( const char* pFilename );
-
-    static TamlFormatMode getFormatModeEnum( const char* label );
-    static const char* getFormatModeDescription( const TamlFormatMode formatMode );
 
     /// Schema generation.
     static bool generateTamlSchema();

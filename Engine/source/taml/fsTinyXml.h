@@ -20,53 +20,36 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _TAML_XMLREADER_H_
-#define _TAML_XMLREADER_H_
+#ifndef _FSTINYXML_H_
+#define _FSTINYXML_H_
 
-#ifndef _TAML_HASHMAP_H_
-#include "tamlHashMap.h"
-#endif
-
-#ifndef _TAML_H_
-#include "taml/taml.h"
-#endif
 
 #ifndef TINYXML_INCLUDED
 #include "tinyXML/tinyxml.h"
 #endif
 
-//-----------------------------------------------------------------------------
+#ifndef _FILESTREAM_H_
+#include "core/stream/fileStream.h"
+#endif
 
-class TamlXmlReader
+class fsTiXmlDocument : public TiXmlDocument
 {
 public:
-    TamlXmlReader( Taml* pTaml ) :
-        mpTaml( pTaml )
-    {}
-
-    virtual ~TamlXmlReader() {}
-
-    /// Read.
-    SimObject* read( FileStream& stream );
-
-private:
-    Taml*               mpTaml;
-
-    typedef HashMap<SimObjectId, SimObject*> typeObjectReferenceHash;
-
-    typeObjectReferenceHash mObjectReferenceMap;
-
-private:
-    void resetParse( void );
-
-    SimObject* parseElement( TiXmlElement* pXmlElement );
-    void parseAttributes( TiXmlElement* pXmlElement, SimObject* pSimObject );
-    void parseCustomElement( TiXmlElement* pXmlElement, TamlCustomNodes& pCustomNode );
-    void parseCustomNode( TiXmlElement* pXmlElement, TamlCustomNode* pCustomNode );
-
-    U32 getTamlRefId( TiXmlElement* pXmlElement );
-    U32 getTamlRefToId( TiXmlElement* pXmlElement );
-    const char* getTamlObjectName( TiXmlElement* pXmlElement );   
+   bool LoadFile( FileStream &stream, TiXmlEncoding encoding = TIXML_DEFAULT_ENCODING );
+   bool SaveFile( FileStream &stream );
+   void Print( FileStream& stream, int depth );
 };
 
-#endif // _TAML_XMLREADER_H_
+class fsTiXmlAttribute : public TiXmlAttribute
+{
+public:
+   void Print( FileStream& stream, int depth, TIXML_STRING* str = 0 );
+};
+
+class fsTiXmlDeclaration : public TiXmlDeclaration
+{
+public:
+   void Print( FileStream& stream, int depth, TIXML_STRING* str = 0 );
+};
+
+#endif //_FSTINYXML_H_

@@ -36,12 +36,14 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
     AssertFatal( pFilename != NULL, "Cannot parse a NULL filename." );
 
     char filenameBuffer[1024];
-    Con::expandPath( filenameBuffer, sizeof(filenameBuffer), pFilename );
+    // TODO: Make sure this is a proper substitute for
+    // Con::expandPath (T2D)
+    Con::expandToolScriptFilename( filenameBuffer, sizeof(filenameBuffer), pFilename );
 
     FileStream stream;
 
     // File open for read?
-    if ( !stream.open( filenameBuffer, FileStream::Read ) )
+    if ( !stream.open( filenameBuffer, Torque::FS::File::AccessMode::Read ) )
     {
         // No, so warn.
         Con::warnf("TamlXmlParser::parse() - Could not open filename '%s' for parse.", filenameBuffer );
@@ -49,6 +51,8 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
     }
 
     TiXmlDocument xmlDocument;
+    FILE* file = new FILE();
+    file->
 
     // Load document from stream.
     if ( !xmlDocument.LoadFile( stream ) )
@@ -74,7 +78,7 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
     if ( writeDocument )
     {
         // Yes, so open for write?
-        if ( !stream.open( filenameBuffer, FileStream::Write ) )
+       if ( !stream.open( filenameBuffer, Torque::FS::File::Write ) )
         {
             // No, so warn.
             Con::warnf("TamlXmlParser::parse() - Could not open filename '%s' for write.", filenameBuffer );
@@ -82,7 +86,7 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
         }
 
         // Yes, so save the document.
-        if ( !xmlDocument.SaveFile( stream ) )
+        if ( !SaveFile( stream ) )
         {
             // Warn!
             Con::warnf("TamlXmlParser: Could not save Taml XML document.");

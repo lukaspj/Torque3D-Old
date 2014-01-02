@@ -87,7 +87,7 @@ void TamlBinaryWriter::writeElement( Stream& stream, const TamlWriteNode* pTamlW
     const char* pObjectName = pTamlWriteNode->mpObjectName;
 
     // Write object name.
-    stream.writeString( pObjectName != NULL ? pObjectName : StringTable->EmptyString );
+    stream.writeString( pObjectName != NULL ? pObjectName : StringTable->EmptyString() );
 
     // Fetch reference Id.
     const U32 tamlRefId = pTamlWriteNode->mRefId;

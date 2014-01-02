@@ -76,47 +76,12 @@ StringTableEntry tamlNamedObjectName    = StringTable->insert( "Name" );
 
 //-----------------------------------------------------------------------------
 
-static EnumTable::Enums tamlFormatModeLookup[] =
-                {
-                { Taml::XmlFormat, "xml" },
-                { Taml::BinaryFormat, "binary" },
-                };
-
-EnumTable tamlFormatModeTable(sizeof(tamlFormatModeLookup) / sizeof(EnumTable::Enums), &tamlFormatModeLookup[0]);
-
-//-----------------------------------------------------------------------------
-
-Taml::TamlFormatMode Taml::getFormatModeEnum(const char* label)
-{
-    // Search for Mnemonic.
-    for (U32 i = 0; i < (sizeof(tamlFormatModeLookup) / sizeof(EnumTable::Enums)); i++)
-    {
-        if( dStricmp(tamlFormatModeLookup[i].label, label) == 0)
-            return (TamlFormatMode)tamlFormatModeLookup[i].index;
-    }
-
-    // Warn.
-    Con::warnf( "Taml::getFormatModeEnum() - Invalid format of '%s'.", label );
-
-    return Taml::InvalidFormat;
-}
-
-//-----------------------------------------------------------------------------
-
-const char* Taml::getFormatModeDescription(const Taml::TamlFormatMode formatMode)
-{
-    // Search for Mnemonic.
-    for (U32 i = 0; i < (sizeof(tamlFormatModeLookup) / sizeof(EnumTable::Enums)); i++)
-    {
-        if( tamlFormatModeLookup[i].index == (S32)formatMode )
-            return tamlFormatModeLookup[i].label;
-    }
-
-    // Warn.
-    Con::warnf( "Taml::getFormatModeDescription() - Invalid format mode." );
-
-    return StringTable->EmptyString;
-}
+typedef Taml::TamlFormatMode _TamlFormatMode;
+ImplementEnumType( _TamlFormatMode,
+   "")
+   { Taml::XmlFormat, "xml" },
+   { Taml::BinaryFormat, "binary" }
+EndImplementEnumType;
 
 //-----------------------------------------------------------------------------
 
@@ -141,7 +106,7 @@ void Taml::initPersistFields()
     // Call parent.
     Parent::initPersistFields();
 
-    addField("Format", TypeEnum, Offset(mFormatMode, Taml), 1, &tamlFormatModeTable, "The read/write format that should be used.");
+    addField("Format", TYPEID<_TamlFormatMode>(), Offset(mFormatMode, Taml), "The read/write format that should be used.");
     addField("BinaryCompression", TypeBool, Offset(mBinaryCompression, Taml), "Whether ZIP compression is used on binary formatting or not.\n");
     addField("WriteDefaults", TypeBool, Offset(mWriteDefaults, Taml), "Whether to write static fields that are at their default or not.\n");
     addField("ProgenitorUpdate", TypeBool, Offset(mProgenitorUpdate, Taml), "Whether to update each type instances file-progenitor or not.\n");

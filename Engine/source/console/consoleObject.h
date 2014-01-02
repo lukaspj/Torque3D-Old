@@ -47,6 +47,9 @@
 #ifndef _SIMOBJECTREF_H_
    #include "console/simObjectRef.h"
 #endif
+#ifndef TINYXML_INCLUDED
+   #include "tinyXML/tinyxml.h"
+#endif
 
 
 /// @file
@@ -199,6 +202,10 @@ class AbstractClassRep : public ConsoleBaseType
 
 public:
 
+   /// Allows the writing of a custom TAML schema.
+    typedef void (*WriteCustomTamlSchema)( const AbstractClassRep* pClassRep, TiXmlElement* pParentElement );
+
+
    typedef ConsoleBaseType Parent;
 
    /// @name 'Tructors
@@ -321,6 +328,9 @@ public:
    
    /// Return the AbstractClassRep of the class that this class is derived from.
    AbstractClassRep* getParentClass() const { return parentClass; }
+
+   virtual AbstractClassRep*    getContainerChildClass( const bool recurse ) = 0;
+   virtual WriteCustomTamlSchema getCustomTamlSchema( void ) = 0;
    
    /// Return the size of instances of this class in bytes.
    S32 getSizeof() const { return mClassSizeof; }
@@ -594,6 +604,27 @@ class ConcreteClassRep : public AbstractClassRep
          // Finally, register ourselves.
          registerClassRep(this);
       };
+
+      virtual AbstractClassRep* getContainerChildClass( const bool recurse )
+      {
+         // Fetch container children type.
+         AbstractClassRep* pChildren = T::getContainerChildStaticClassRep();
+         if ( !recurse || pChildren != NULL )
+            return pChildren;
+
+         // Fetch parent type.
+         AbstractClassRep* pParent = T::getParentStaticClassRep();
+         if ( pParent == NULL )
+            return NULL;
+
+         // Get parent container children.
+         return pParent->getContainerChildClass( recurse );
+      }
+
+      virtual WriteCustomTamlSchema getCustomTamlSchema( void )
+      {
+         return T::getStaticWriteCustomTamlSchema();
+      }
 
       /// Perform class specific initialization tasks.
       ///

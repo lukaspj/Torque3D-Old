@@ -161,7 +161,7 @@ SimObject* TamlBinaryReader::parseElement( Stream& stream, const U32 versionId )
     parseAttributes( stream, pSimObject, versionId );
 
     // Does the object require a name?
-    if ( objectName == StringTable->EmptyString )
+    if ( objectName == StringTable->EmptyString() )
     {
         // No, so just register anonymously.
         pSimObject->registerObject();
@@ -238,7 +238,7 @@ void TamlBinaryReader::parseAttributes( Stream& stream, SimObject* pSimObject, c
         stream.readLongString( 4096, valueBuffer );
 
         // We can assume this is a field for now.
-        pSimObject->setPrefixedDataField( attributeName, NULL, valueBuffer );
+        pSimObject->setDataField( attributeName, NULL, valueBuffer );
     }
 }
 

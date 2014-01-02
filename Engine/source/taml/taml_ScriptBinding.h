@@ -20,32 +20,31 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, setFormat, void, 3, 3,  "(format) - Sets the format that Taml should use to read/write.\n"
+#include "console/engineAPI.h"
+
+DefineEngineMethod(Taml, setFormat, void, (Taml::TamlFormatMode formatMode), ,  "(format) - Sets the format that Taml should use to read/write.\n"
                                             "@param format The format to use: 'xml' or 'binary'.\n"
                                             "@return No return value.")
 {
-    // Fetch format mode.
-    const Taml::TamlFormatMode formatMode = Taml::getFormatModeEnum(argv[2]);
+      // Was the format valid?
+      if ( formatMode == Taml::InvalidFormat )
+      {
+         // No, so warn.
+         Con::warnf( "Taml::setFormat() - Invalid format mode used: '%s'.", formatMode );
+         return;
+      }
 
-    // Was the format valid?
-    if ( formatMode == Taml::InvalidFormat )
-    {
-        // No, so warn.
-        Con::warnf( "Taml::setFormat() - Invalid format mode used: '%s'.", argv[2] );
-        return;
-    }
-
-    // Set format mode.
-    object->setFormatMode( formatMode );
+      // Set format mode.
+      object->setFormatMode( formatMode );
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, getFormat, const char*, 2, 2,   "() - Gets the format that Taml should use to read/write.\n"
+DefineEngineMethod(Taml, getFormat, _TamlFormatMode, (), ,   "() - Gets the format that Taml should use to read/write.\n"
                                                     "@return The format that Taml should use to read/write.")
 {
     // Fetch format mode.
-    return Taml::getFormatModeDescription( object->getFormatMode() );
+    return object->getFormatMode();
 }
 
 //-----------------------------------------------------------------------------

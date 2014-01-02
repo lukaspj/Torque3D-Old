@@ -23,8 +23,8 @@
 #ifndef _TAML_BINARYREADER_H_
 #define _TAML_BINARYREADER_H_
 
-#ifndef _HASHTABLE_H
-#include "collection/hashTable.h"
+#ifndef _TDICTIONARY_H_
+#include "core/util/tDictionary.h"
 #endif
 
 #ifndef _TAML_H_
