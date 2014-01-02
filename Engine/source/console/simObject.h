@@ -33,6 +33,10 @@
    #include "core/bitSet.h"
 #endif
 
+#ifndef _TAML_CALLBACKS_H_
+#include "taml/tamlCallbacks.h"
+#endif
+
 
 class Stream;
 class LightManager;
@@ -226,7 +230,7 @@ class SimPersistID;
 /// set automatically by the console constructor code.
 ///
 /// @nosubgrouping
-class SimObject: public ConsoleObject
+class SimObject: public ConsoleObject, public TamlCallbacks
 {
    public:
    
@@ -353,6 +357,16 @@ class SimObject: public ConsoleObject
 
       // Object name protected set method
       static bool setProtectedName(void *object, const char *index, const char *data);
+
+   protected:
+      /// Taml callbacks.
+      virtual void onTamlPreWrite( void ) {}
+      virtual void onTamlPostWrite( void ) {}
+      virtual void onTamlPreRead( void ) {}
+      virtual void onTamlPostRead( const TamlCustomNodes& customNodes ) {}
+      virtual void onTamlAddParent( SimObject* pParentObject ) {}
+      virtual void onTamlCustomWrite( TamlCustomNodes& customNodes ) {}
+      virtual void onTamlCustomRead( const TamlCustomNodes& customNodes ) {}
 
    protected:
    
