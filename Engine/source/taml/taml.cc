@@ -483,7 +483,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
         // For now, we only deal with non-array fields.
         if ( elementCount == 1 &&
            pField->setDataFn != NULL &&
-            ( !getWriteDefaults() && pField->setDataFn( pSimObject, fieldName ) == false) )
+            ( !getWriteDefaults() && pField->setDataFn( pSimObject, NULL, fieldName ) == false) )
             continue;
 
         // Iterate elements.
@@ -826,12 +826,12 @@ bool Taml::generateTamlSchema()
 
     // Expand the file-name into the file-path buffer.
     char filePathBuffer[1024];
-    Con::expandPath( filePathBuffer, sizeof(filePathBuffer), pTamlSchemaFile );
+    Con::expandToolScriptFilename( filePathBuffer, sizeof(filePathBuffer), pTamlSchemaFile );
 
     FileStream stream;
 
     // File opened?
-    if ( !stream.open( filePathBuffer, FileStream::Write ) )
+    if ( !stream.open( filePathBuffer, Torque::FS::File::Write ) )
     {
         // No, so warn.
         Con::warnf("Taml::GenerateTamlSchema() - Could not open filename '%s' for write.", filePathBuffer );
@@ -943,20 +943,6 @@ bool Taml::generateTamlSchema()
     TiXmlElement* pRectFElementB = new TiXmlElement( "xs:pattern" );
     pRectFElementB->SetAttribute( "value", "(\\b[-]?(b[0-9]+)?\\.)?[0-9]+\\b" );   
     pRectFElementA->LinkEndChild( pRectFElementB );
-
-    // AssetId.
-    TiXmlComment* pAssetIdComment = new TiXmlComment( "AssetId Console Type" );
-    pSchemaElement->LinkEndChild( pAssetIdComment );
-    TiXmlElement* pAssetIdTypeElement = new TiXmlElement( "xs:simpleType" );
-    pAssetIdTypeElement->SetAttribute( "name", "AssetId_ConsoleType" );
-    pSchemaElement->LinkEndChild( pAssetIdTypeElement );
-    TiXmlElement* pAssetIdElementA = new TiXmlElement( "xs:restriction" );
-    pAssetIdElementA->SetAttribute( "base", "xs:string" );
-    pAssetIdTypeElement->LinkEndChild( pAssetIdElementA );
-    TiXmlElement* pAssetIdElementB = new TiXmlElement( "xs:pattern" );
-    dSprintf( buffer, sizeof(buffer), "(%s)?\\b[a-zA-Z0-9]+\\b%s\\b[a-zA-Z0-9]+\\b", ASSET_ID_FIELD_PREFIX, ASSET_SCOPE_TOKEN );
-    pAssetIdElementB->SetAttribute( "value", buffer );
-    pAssetIdElementA->LinkEndChild( pAssetIdElementB );
 
     // Color Enums.
     TiXmlComment* pColorEnumsComment = new TiXmlComment( "Color Enums" );
