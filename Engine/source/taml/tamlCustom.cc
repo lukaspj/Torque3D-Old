@@ -61,7 +61,7 @@ void TamlCustomField::set( const char* pFieldName, const char* pFieldValue )
 void TamlCustomNode::setWriteNode( TamlWriteNode* pWriteNode )
 {
     // Sanity!
-    AssertFatal( mNodeName != StringTable->EmptyString, "Cannot set write node with an empty node name." );
+    AssertFatal( mNodeName != StringTable->EmptyString(), "Cannot set write node with an empty node name." );
     AssertFatal( pWriteNode != NULL, "Write node cannot be NULL." );
     AssertFatal( pWriteNode->mpSimObject == mpProxyObject, "Write node does not match existing proxy object." );
     AssertFatal( mpProxyWriteNode == NULL, "Field write node must be NULL." );

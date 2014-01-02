@@ -25,6 +25,7 @@
 
 #include "core/util/tVector.h"
 #include "platform/platform.h"
+#include "core/strings/stringFunctions.h"
 #include "core/stringTable.h"
 
 namespace Hash

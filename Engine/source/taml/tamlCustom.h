@@ -35,6 +35,10 @@
 #include "console/console.h"
 #endif
 
+#ifndef _CONSOLETYPES_H_
+#include "console/consoleTypes.h"
+#endif
+
 #ifndef B2_MATH_H
 //TODO: Look at this
 //#include "box2d/Common/b2Math.h"
@@ -84,7 +88,7 @@ public:
 
     virtual void resetState( void )
     {
-        mFieldName = StringTable->EmptyString;
+        mFieldName = StringTable->EmptyString();
         *mFieldValue = 0;
     }
 
@@ -100,7 +104,7 @@ public:
         {
             // No, so warn.
             Con::warnf( "Taml: Failed to add node field name '%s' with ColorI value.", pFieldName );
-            pFieldValue = StringTable->EmptyString;
+            pFieldValue = StringTable->EmptyString();
         }
 
         set( pFieldName, pFieldValue );
@@ -116,7 +120,7 @@ public:
         {
             // No, so warn.
             Con::warnf( "Taml: Failed to add node field name '%s' with ColorF value.", pFieldName );
-            pFieldValue = StringTable->EmptyString;
+            pFieldValue = StringTable->EmptyString();
         }
 
         set( pFieldName, pFieldValue );
@@ -133,13 +137,6 @@ public:
     {
         char fieldValueBuffer[32];
         dSprintf( fieldValueBuffer, sizeof(fieldValueBuffer), "%.5g %0.5g", fieldValue.x, fieldValue.y );
-        set( pFieldName, fieldValueBuffer );
-    }
-
-    inline void setFieldValue( const char* pFieldName, const b2Vec2& fieldValue )
-    {
-        char fieldValueBuffer[32];
-        dSprintf( fieldValueBuffer, sizeof(fieldValueBuffer), "%.5g %.5g", fieldValue.x, fieldValue.y );
         set( pFieldName, fieldValueBuffer );
     }
 
@@ -209,15 +206,6 @@ public:
         {
             // Warn.
             Con::warnf( "TamlCustomField - Reading point2F but it has an incorrect format: '%s'.", mFieldValue );
-        }
-    }
-
-    inline void getFieldValue( b2Vec2& fieldValue ) const
-    {
-        if ( dSscanf( mFieldValue, "%g %g", &fieldValue.x, &fieldValue.y ) != 2 )
-        {
-            // Warn.
-            Con::warnf( "TamlCustomField - Reading vector but it has an incorrect format: '%s'.", mFieldValue );
         }
     }
 
@@ -321,7 +309,7 @@ public:
         }
 
         // Reset the node name.
-        mNodeName = StringTable->EmptyString;
+        mNodeName = StringTable->EmptyString();
 
         // Reset node text.
         mNodeText.resetState();
@@ -427,13 +415,6 @@ public:
         return registerField( pNodeField );
     }
 
-    inline TamlCustomField* addField( const char* pFieldName, const b2Vec2& fieldValue )
-    {
-        TamlCustomField* pNodeField = TamlCustomFieldFactory.createObject();
-        pNodeField->setFieldValue( pFieldName, fieldValue );
-        return registerField( pNodeField );
-    }
-
     inline TamlCustomField* addField( const char* pFieldName, const U32 fieldValue )
     {
         TamlCustomField* pNodeField = TamlCustomFieldFactory.createObject();
@@ -503,7 +484,7 @@ public:
     {
         AssertFatal( dStrlen( pNodeText ) < MAX_TAML_NODE_FIELDVALUE_LENGTH, "Custom node text is too long." );
 
-        mNodeText.set( StringTable->EmptyString, pNodeText );
+        mNodeText.set( StringTable->EmptyString(), pNodeText );
     }
     inline const TamlCustomField& getNodeTextField( void ) const { return mNodeText; }
     inline TamlCustomField& getNodeTextField( void ) { return mNodeText; }

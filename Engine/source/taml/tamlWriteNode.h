@@ -91,7 +91,7 @@ public:
 
         // Assign name usage.
         if ( pObjectName != NULL &&
-            pObjectName != StringTable->EmptyString &&
+            pObjectName != StringTable->EmptyString() &&
             dStrlen( pObjectName ) > 0 )
         {
             mpObjectName = pObjectName;
