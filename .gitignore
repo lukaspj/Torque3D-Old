@@ -173,3 +173,11 @@ My Projects/
 Project Manager.exe
 projects.xml
 Qt*.dll
+
+#############
+## Project files
+#############
+*.vcproj
+*.vcxproj
+*.filters
+*.sln
