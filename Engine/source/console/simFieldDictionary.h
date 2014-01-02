@@ -53,8 +53,8 @@ public:
    {
       HashTableSize = 19
    };
-private:
    Entry *mHashTable[HashTableSize];
+private:
 
    static Entry   *smFreeList;
 
