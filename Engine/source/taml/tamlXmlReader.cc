@@ -27,7 +27,7 @@
 
 //-----------------------------------------------------------------------------
 
-SimObject* TamlXmlReader::read( FileStream& stream )
+SimObject* TamlXmlReader::read( const char* path )
 {
     // Debug Profiling.
     PROFILE_SCOPE(TamlXmlReader_Read);
@@ -36,7 +36,7 @@ SimObject* TamlXmlReader::read( FileStream& stream )
     TiXmlDocument xmlDocument;
 
     // Load document from stream.
-    if ( !xmlDocument.LoadFile( stream ) )
+    if ( !xmlDocument.LoadFile( path ) )
     {
         // Warn!
         Con::warnf("Taml: Could not load Taml XML file from stream.");
@@ -133,7 +133,7 @@ SimObject* TamlXmlReader::parseElement( TiXmlElement* pXmlElement )
     StringTableEntry objectName = StringTable->insert( getTamlObjectName( pXmlElement ) );
 
     // Does the object require a name?
-    if ( objectName == StringTable->EmptyString )
+    if ( objectName == StringTable->EmptyString() )
     {
         // No, so just register anonymously.
         pSimObject->registerObject();
@@ -291,7 +291,7 @@ void TamlXmlReader::parseAttributes( TiXmlElement* pXmlElement, SimObject* pSimO
             continue;
 
         // We can assume this is a field for now.
-        pSimObject->setPrefixedDataField( attributeName, NULL, pAttribute->Value() );
+        pSimObject->setDataField( attributeName, NULL, pAttribute->Value() );
     }
 }
 

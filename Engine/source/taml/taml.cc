@@ -127,17 +127,17 @@ bool Taml::write( SimObject* pSimObject, const char* pFilename )
     AssertFatal( pFilename != NULL, "Cannot write to a NULL filename." );
 
     // Expand the file-name into the file-path buffer.
-    Con::expandPath( mFilePathBuffer, sizeof(mFilePathBuffer), pFilename );
+    Con::expandToolScriptFilename( mFilePathBuffer, sizeof(mFilePathBuffer), pFilename );
 
-    FileStream stream;
+    /*FileStream stream;
 
     // File opened?
-    if ( !stream.open( mFilePathBuffer, FileStream::Write ) )
+    if ( !stream.open( mFilePathBuffer, Torque::FS::File::Write ) )
     {
         // No, so warn.
         Con::warnf("Taml::writeFile() - Could not open filename '%s' for write.", mFilePathBuffer );
         return false;
-    }
+    }*/
 
     // Get the file auto-format mode.
     const TamlFormatMode formatMode = getFileAutoFormatMode( mFilePathBuffer );
@@ -146,10 +146,10 @@ bool Taml::write( SimObject* pSimObject, const char* pFilename )
     resetCompilation();
 
     // Write object.
-    const bool status = write( stream, pSimObject, formatMode );
+    const bool status = write( mFilePathBuffer, pSimObject, formatMode );
 
     // Close file.
-    stream.close();
+    // stream.close();
 
     // Reset the compilation.
     resetCompilation();
@@ -168,17 +168,17 @@ SimObject* Taml::read( const char* pFilename )
     AssertFatal( pFilename != NULL, "Cannot read from a NULL filename." );
 
     // Expand the file-name into the file-path buffer.
-    Con::expandPath( mFilePathBuffer, sizeof(mFilePathBuffer), pFilename );
+    Con::expandToolScriptFilename( mFilePathBuffer, sizeof(mFilePathBuffer), pFilename );
 
-    FileStream stream;
+    /*FileStream stream;
 
     // File opened?
-    if ( !stream.open( mFilePathBuffer, FileStream::Read ) )
+    if ( !stream.open( mFilePathBuffer, Torque::FS::File::Read ) )
     {
         // No, so warn.
         Con::warnf("Taml::read() - Could not open filename '%s' for read.", mFilePathBuffer );
         return NULL;
-    }
+    }*/
 
     // Get the file auto-format mode.
     const TamlFormatMode formatMode = getFileAutoFormatMode( mFilePathBuffer );
@@ -187,10 +187,10 @@ SimObject* Taml::read( const char* pFilename )
     resetCompilation();
 
     // Write object.
-    SimObject* pSimObject = read( stream, formatMode );
+    SimObject* pSimObject = read( mFilePathBuffer, formatMode );
 
     // Close file.
-    stream.close();
+    // stream.close();
 
     // Reset the compilation.
     resetCompilation();
@@ -207,7 +207,7 @@ SimObject* Taml::read( const char* pFilename )
 
 //-----------------------------------------------------------------------------
 
-bool Taml::write( FileStream& stream, SimObject* pSimObject, const TamlFormatMode formatMode )
+bool Taml::write( const char* path, SimObject* pSimObject, const TamlFormatMode formatMode )
 {
     // Sanity!
     AssertFatal( pSimObject != NULL, "Cannot write a NULL object." );
@@ -224,7 +224,7 @@ bool Taml::write( FileStream& stream, SimObject* pSimObject, const TamlFormatMod
             // Create writer.
             TamlXmlWriter writer( this );
             // Write.
-            return writer.write( stream, pRootNode );
+            return writer.write( path, pRootNode );
         }
 
         /// Binary.
@@ -233,7 +233,7 @@ bool Taml::write( FileStream& stream, SimObject* pSimObject, const TamlFormatMod
             // Create writer.
             TamlBinaryWriter writer( this );
             // Write.
-            return writer.write( stream, pRootNode, mBinaryCompression );
+            return writer.write( path, pRootNode, mBinaryCompression );
         }
         
         /// Invalid.
@@ -252,7 +252,7 @@ bool Taml::write( FileStream& stream, SimObject* pSimObject, const TamlFormatMod
 
 //-----------------------------------------------------------------------------
 
-SimObject* Taml::read( FileStream& stream, const TamlFormatMode formatMode )
+SimObject* Taml::read( const char* path, const TamlFormatMode formatMode )
 {
     // Format appropriately.
     switch( formatMode )
@@ -264,7 +264,7 @@ SimObject* Taml::read( FileStream& stream, const TamlFormatMode formatMode )
             TamlXmlReader reader( this );
 
             // Read.
-            return reader.read( stream );
+            return reader.read( path );
         }
 
         /// Binary.
@@ -274,7 +274,7 @@ SimObject* Taml::read( FileStream& stream, const TamlFormatMode formatMode )
             TamlBinaryReader reader( this );
 
             // Read.
-            return reader.read( stream );
+            return reader.read( path );
         }
         
         /// Invalid.
@@ -468,7 +468,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
         const AbstractClassRep::Field* pField = &fieldList[index];
 
         // Ignore if field not appropriate.
-        if( pField->type == AbstractClassRep::DepricatedFieldType ||
+        if( pField->type == AbstractClassRep::DeprecatedFieldType ||
             pField->type == AbstractClassRep::StartGroupFieldType ||
             pField->type == AbstractClassRep::EndGroupFieldType)
             continue;
@@ -482,8 +482,8 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
         // Skip if the field should not be written.
         // For now, we only deal with non-array fields.
         if ( elementCount == 1 &&
-            pField->writeDataFn != NULL &&
-            ( !getWriteDefaults() && pField->writeDataFn( pSimObject, fieldName ) == false) )
+           pField->setDataFn != NULL &&
+            ( !getWriteDefaults() && pField->setDataFn( pSimObject, fieldName ) == false) )
             continue;
 
         // Iterate elements.
@@ -493,7 +493,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
             dSprintf( indexBuffer, 8, "%d", elementIndex );
 
             // Fetch object field value.
-            const char* pFieldValue = pSimObject->getPrefixedDataField( fieldName, indexBuffer );
+            const char* pFieldValue = pSimObject->getDataField( fieldName, indexBuffer );
 
             U32 nBufferSize = dStrlen( pFieldValue ) + 1;
             FrameTemp<char> valueCopy( nBufferSize );
@@ -510,7 +510,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
             char fnBuf[1024];
             if ((S32)pField->type == TypeFilename)
             {
-                Con::collapsePath( fnBuf, 1024, pFieldValue );
+               Con::collapseScriptFilename( fnBuf, 1024, pFieldValue );
                 pFieldValue = fnBuf;
             }
 

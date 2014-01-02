@@ -113,8 +113,8 @@ private:
     void compileCustomState( TamlWriteNode* pTamlWriteNode );
     void compileCustomNodeState( TamlCustomNode* pCustomNode );
 
-    bool write( FileStream& stream, SimObject* pSimObject, const TamlFormatMode formatMode );
-    SimObject* read( FileStream& stream, const TamlFormatMode formatMode );
+    bool write( const char* path, SimObject* pSimObject, const TamlFormatMode formatMode );
+    SimObject* read( const char* path, const TamlFormatMode formatMode );
     template<typename T> inline T* read( FileStream& stream, const TamlFormatMode formatMode )
     {
         SimObject* pSimObject = read( stream, formatMode );

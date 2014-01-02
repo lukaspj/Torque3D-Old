@@ -27,7 +27,7 @@
 
 //-----------------------------------------------------------------------------
 
-bool TamlXmlWriter::write( FileStream& stream, const TamlWriteNode* pTamlWriteNode )
+bool TamlXmlWriter::write( const char* path, const TamlWriteNode* pTamlWriteNode )
 {
     // Debug Profiling.
     PROFILE_SCOPE(TamlXmlWriter_Write);
@@ -49,7 +49,7 @@ bool TamlXmlWriter::write( FileStream& stream, const TamlWriteNode* pTamlWriteNo
 
         // Expand the file-path reference.
         char schemaFilePathBuffer[1024];
-        Con::expandPath( schemaFilePathBuffer, sizeof(schemaFilePathBuffer), pTamlSchemaFile );
+        Con::expandToolScriptFilename( schemaFilePathBuffer, sizeof(schemaFilePathBuffer), pTamlSchemaFile );
 
         // Fetch the output path for the Taml file.
         char outputFileBuffer[1024];
@@ -71,7 +71,7 @@ bool TamlXmlWriter::write( FileStream& stream, const TamlWriteNode* pTamlWriteNo
     xmlDocument.LinkEndChild( pRootElement );
 
     // Save document to stream.
-    return xmlDocument.SaveFile( stream );
+    return xmlDocument.SaveFile( path );
 }
 
 //-----------------------------------------------------------------------------

@@ -49,11 +49,11 @@ public:
       Entry *next;
       ConsoleBaseType *type;
    };
-private:
    enum
    {
       HashTableSize = 19
    };
+private:
    Entry *mHashTable[HashTableSize];
 
    static Entry   *smFreeList;

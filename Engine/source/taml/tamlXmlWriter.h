@@ -42,7 +42,7 @@ public:
     virtual ~TamlXmlWriter() {}
 
     /// Write.
-    bool write( FileStream& stream, const TamlWriteNode* pTamlWriteNode );
+    bool write( const char* path, const TamlWriteNode* pTamlWriteNode );
 
 private:
     Taml* mpTaml;

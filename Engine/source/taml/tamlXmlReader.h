@@ -47,7 +47,7 @@ public:
     virtual ~TamlXmlReader() {}
 
     /// Read.
-    SimObject* read( FileStream& stream );
+    SimObject* read( const char* path );
 
 private:
     Taml*               mpTaml;

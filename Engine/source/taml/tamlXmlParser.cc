@@ -39,7 +39,9 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
     // TODO: Make sure this is a proper substitute for
     // Con::expandPath (T2D)
     Con::expandToolScriptFilename( filenameBuffer, sizeof(filenameBuffer), pFilename );
-
+    /** T2D uses a custom version of TinyXML that supports FileStream.
+      * We don't so we can't do this
+      *
     FileStream stream;
 
     // File open for read?
@@ -49,13 +51,13 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
         Con::warnf("TamlXmlParser::parse() - Could not open filename '%s' for parse.", filenameBuffer );
         return false;
     }
+    
+     */
 
     TiXmlDocument xmlDocument;
-    FILE* file = new FILE();
-    file->
 
     // Load document from stream.
-    if ( !xmlDocument.LoadFile( stream ) )
+    if ( !xmlDocument.LoadFile( filenameBuffer ) )
     {
         // Warn!
         Con::warnf("TamlXmlParser: Could not load Taml XML file from stream.");
@@ -63,7 +65,7 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
     }
 
     // Close the stream.
-    stream.close();
+    // stream.close();
 
     // Set parsing filename.
     mpParsingFilename = filenameBuffer;
@@ -77,6 +79,8 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
     // Are we writing the document?
     if ( writeDocument )
     {
+       /**
+         *
         // Yes, so open for write?
        if ( !stream.open( filenameBuffer, Torque::FS::File::Write ) )
         {
@@ -84,9 +88,10 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
             Con::warnf("TamlXmlParser::parse() - Could not open filename '%s' for write.", filenameBuffer );
             return false;
         }
+        */
 
         // Yes, so save the document.
-        if ( !SaveFile( stream ) )
+       if ( !xmlDocument.SaveFile( filenameBuffer ) )
         {
             // Warn!
             Con::warnf("TamlXmlParser: Could not save Taml XML document.");
@@ -94,7 +99,7 @@ bool TamlXmlParser::parse( const char* pFilename, TamlXmlVisitor& visitor, const
         }
 
         // Close the stream.
-        stream.close();
+        // stream.close();
     }
 
     return true;

@@ -40,7 +40,7 @@ DefineEngineMethod(Taml, setFormat, void, (Taml::TamlFormatMode formatMode), ,  
 
 //-----------------------------------------------------------------------------
 
-DefineEngineMethod(Taml, getFormat, _TamlFormatMode, (), ,   "() - Gets the format that Taml should use to read/write.\n"
+DefineEngineMethod(Taml, _getFormat, Taml::TamlFormatMode, (), ,  "() - Gets the format that Taml should use to read/write.\n"
                                                     "@return The format that Taml should use to read/write.")
 {
     // Fetch format mode.
@@ -193,7 +193,7 @@ ConsoleMethod(Taml, read, const char*, 3, 3,    "(filename) - Read an object fro
     {
         // No, so warn.
         Con::warnf( "Taml::read() - Could not read object from file '%s'.", pFilename );
-        return StringTable->EmptyString;
+        return StringTable->EmptyString();
     }
 
     return pSimObject->getIdString();
@@ -201,91 +201,73 @@ ConsoleMethod(Taml, read, const char*, 3, 3,    "(filename) - Read an object fro
 
 //-----------------------------------------------------------------------------
 
-ConsoleFunction(TamlWrite, bool, 3, 5,  "(object, filename, [format], [compressed]) - Writes an object to a file using Taml.\n"
+DefineEngineFunction(TamlWrite, bool, (SimObject* simObject, const char* filename, Taml::TamlFormatMode format, bool compressed), 
+                                       (Taml::TamlFormatMode::XmlFormat, false),  
+                                        "(object, filename, [format], [compressed]) - Writes an object to a file using Taml.\n"
                                         "@param object The object to write.\n"
                                         "@param filename The filename to write to.\n"
                                         "@param format The file format to use.  Optional: Defaults to 'xml'.  Can be set to 'binary'.\n"
                                         "@param compressed Whether ZIP compression is used on binary formatting or not.  Optional: Defaults to 'true'.\n"
                                         "@return Whether the write was successful or not.")
 {
-    // Fetch filename.
-    const char* pFilename = argv[2];
-
-    // Find object.
-    SimObject* pSimObject = Sim::findObject( argv[1] );
 
     // Did we find the object?
-    if ( pSimObject == NULL )
+    if ( simObject == NULL )
     {
         // No, so warn.
-        Con::warnf( "TamlWrite() - Could not find object '%s' to write to file '%s'.", argv[2], pFilename );
+       Con::warnf( "TamlWrite() - Could not find object '%s' to write to file '%s'.", simObject->getIdString(), filename );
         return false;
     }
 
     Taml taml;
 
-    // Was the format mode specified?
-    if ( argc > 3 )
-    {
-        // Yes, so set it.
-        taml.setFormatMode( Taml::getFormatModeEnum( argv[3] ) );  
+   taml.setFormatMode( format );  
 
-        // Was binary compression specified?
-        if ( argc > 4 )
-        {
-            // Yes, so is the format mode binary?
-            if ( taml.getFormatMode() == Taml::BinaryFormat )
-            {
-                // Yes, so set binary compression.
-                taml.setBinaryCompression( dAtob(argv[4]) );
-            }
-            else
-            {
-                // No, so warn.
-                Con::warnf( "TamlWrite() - Setting binary compression is only valid for XML formatting." );
-            }
-        }
+   // Yes, so is the format mode binary?
+   if ( taml.getFormatMode() == Taml::BinaryFormat )
+   {
+         // Yes, so set binary compression.
+      taml.setBinaryCompression( compressed );
+   }
+   else
+   {
+         // No, so warn.
+         Con::warnf( "TamlWrite() - Setting binary compression is only valid for XML formatting." );
+   }
 
-		// Turn-off auto-formatting.
-		taml.setAutoFormat( false );
-    }
+   // Turn-off auto-formatting.
+   taml.setAutoFormat( false );
 
     // Write.
-    return taml.write( pSimObject, pFilename );
+   return taml.write( simObject, filename );
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleFunction(TamlRead, const char*, 2, 4,    "(filename, [format]) - Read an object from a file using Taml.\n"
+DefineEngineFunction(TamlRead, const char*, (const char* filename, Taml::TamlFormatMode format), (Taml::TamlFormatMode::XmlFormat),    "(filename, [format]) - Read an object from a file using Taml.\n"
                                                 "@param filename The filename to read from.\n"
                                                 "@param format The file format to use.  Optional: Defaults to 'xml'.  Can be set to 'binary'.\n"
                                                 "@return (Object) The object read from the file or an empty string if read failed.")
 {
-    // Fetch filename.
-    const char* pFilename = argv[1];
 
     // Set the format mode.
     Taml taml;
 
-	// Was a format mode specified?
-	if ( argc > 2 )
-	{
-		// Yes, so set it.
-		taml.setFormatMode( Taml::getFormatModeEnum( argv[2] ) );  
+	// Yes, so set it.
+	taml.setFormatMode( format );  
 
-		// Turn-off auto-formatting.
-		taml.setAutoFormat( false );
-	}
+	// Turn-off auto-formatting.
+	taml.setAutoFormat( false );
 
     // Read object.
-    SimObject* pSimObject = taml.read( pFilename );
+   SimObject* pSimObject = taml.read( filename );
 
     // Did we find the object?
     if ( pSimObject == NULL )
     {
         // No, so warn.
-        Con::warnf( "TamlRead() - Could not read object from file '%s'.", pFilename );
-        return StringTable->EmptyString;
+        Con::warnf( "TamlRead() - Could not read object from file '%s'.", filename );
+        return StringTable->EmptyString();
     }
 
     return pSimObject->getIdString();
