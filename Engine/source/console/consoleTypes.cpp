@@ -647,7 +647,7 @@ ConsoleGetType( TypeColorI )
     StringTableEntry colorName = StockColor::name( *color );
 
     // Write as color name if was found.
-    if ( colorName != StringTable->EmptyString ) 
+    if ( colorName != StringTable->EmptyString() ) 
         return colorName;
 
     // Format as color components.

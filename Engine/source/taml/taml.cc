@@ -232,8 +232,19 @@ bool Taml::write( const char* path, SimObject* pSimObject, const TamlFormatMode 
         {
             // Create writer.
             TamlBinaryWriter writer( this );
+            FileStream stream;
+
+             // File opened?
+             if ( !stream.open( path, Torque::FS::File::Write ) )
+             {
+                 // No, so warn.
+                 Con::warnf("Taml::writeFile() - Could not open filename '%s' for write.", mFilePathBuffer );
+                 return false;
+             }
             // Write.
-            return writer.write( path, pRootNode, mBinaryCompression );
+            bool res = writer.write( stream, pRootNode, mBinaryCompression );
+            stream.close();
+            return res;
         }
         
         /// Invalid.
@@ -272,9 +283,22 @@ SimObject* Taml::read( const char* path, const TamlFormatMode formatMode )
         {
             // Create reader.
             TamlBinaryReader reader( this );
+            
+            FileStream stream;
+
+             // File opened?
+             if ( !stream.open( path, Torque::FS::File::Read ) )
+             {
+                 // No, so warn.
+                 Con::warnf("Taml::writeFile() - Could not open filename '%s' for write.", mFilePathBuffer );
+                 return false;
+             }
+            // Write.
 
             // Read.
-            return reader.read( path );
+            SimObject* res = reader.read( stream );
+            stream.close();
+            return res;
         }
         
         /// Invalid.
@@ -1133,7 +1157,7 @@ bool Taml::generateTamlSchema()
             const AbstractClassRep::Field& field = fields[index];
 
             // Skip if not a data field.
-            if( field.type == AbstractClassRep::DepricatedFieldType ||
+            if( field.type == AbstractClassRep::DeprecatedFieldType ||
                 field.type == AbstractClassRep::StartGroupFieldType ||
                 field.type == AbstractClassRep::EndGroupFieldType )
             continue;
@@ -1149,6 +1173,7 @@ bool Taml::generateTamlSchema()
             // Handle the console type appropriately.
             const S32 fieldType = (S32)field.type;
 
+            /*
             // Is the field an enumeration?
             if ( fieldType == TypeEnum )
             {
@@ -1174,7 +1199,7 @@ bool Taml::generateTamlSchema()
                 }
             }
             else
-            {
+            {*/
                 // No, so assume it's a string type initially.
                 const char* pFieldTypeDescription = "xs:string";
 
@@ -1191,11 +1216,6 @@ bool Taml::generateTamlSchema()
                 {
                     pFieldTypeDescription = "xs:boolean";
                 }
-                else if( fieldType == TypeVector2 )
-                {
-                    pFieldTypeDescription = "Vector2_ConsoleType";
-                }
-
                 else if( fieldType == TypePoint2F )
                 {
                     pFieldTypeDescription = "Point2F_ConsoleType";
@@ -1203,10 +1223,6 @@ bool Taml::generateTamlSchema()
                 else if( fieldType == TypePoint2I )
                 {
                     pFieldTypeDescription = "Point2I_ConsoleType";
-                }
-                else if( fieldType == Typeb2AABB )
-                {
-                    pFieldTypeDescription = "b2AABB_ConsoleType";
                 }
                 else if( fieldType == TypeRectI )
                 {
@@ -1224,17 +1240,10 @@ bool Taml::generateTamlSchema()
                 {
                     pFieldTypeDescription = "ColorI_ConsoleType";
                 }
-                else if(    fieldType == TypeAssetId ||
-                            fieldType == TypeImageAssetPtr ||
-                            fieldType == TypeAnimationAssetPtr ||
-                            fieldType == TypeAudioAssetPtr )
-                {
-                    pFieldTypeDescription = "AssetId_ConsoleType";
-                }
 
                 // Set attribute type.
                 pAttributeElement->SetAttribute( "type", pFieldTypeDescription );
-            }
+            //}
 
             pAttributeElement->SetAttribute( "use", "optional" );
             pFieldAttributeGroupElement->LinkEndChild( pAttributeElement );

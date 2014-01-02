@@ -386,6 +386,8 @@ public:
 
    virtual ConsoleObject*     create      () const = 0;
 
+   AbstractClassRep* findFieldRoot( StringTableEntry fieldName );
+
 protected:
 
    virtual void init();
