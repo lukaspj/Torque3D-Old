@@ -77,11 +77,11 @@ StringTableEntry tamlNamedObjectName    = StringTable->insert( "Name" );
 //-----------------------------------------------------------------------------
 
 typedef Taml::TamlFormatMode _TamlFormatMode;
-/*ImplementEnumType( _TamlFormatMode,
+ImplementEnumType( _TamlFormatMode,
    "")
    { Taml::XmlFormat, "xml" },
    { Taml::BinaryFormat, "binary" }
-EndImplementEnumType;*/
+EndImplementEnumType;
 
 //-----------------------------------------------------------------------------
 

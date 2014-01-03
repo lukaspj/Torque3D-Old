@@ -21,7 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "console/engineAPI.h"
-
+/*
 DefineEngineMethod(Taml, setFormat, void, (Taml::TamlFormatMode formatMode), ,  "(format) - Sets the format that Taml should use to read/write.\n"
                                             "@param format The format to use: 'xml' or 'binary'.\n"
                                             "@return No return value.")
@@ -45,7 +45,7 @@ DefineEngineMethod(Taml, _getFormat, Taml::TamlFormatMode, (), ,  "() - Gets the
 {
     // Fetch format mode.
     return object->getFormatMode();
-}
+}*/
 
 //-----------------------------------------------------------------------------
 
@@ -200,9 +200,9 @@ ConsoleMethod(Taml, read, const char*, 3, 3,    "(filename) - Read an object fro
 }
 
 //-----------------------------------------------------------------------------
-
+/*
 DefineEngineFunction(TamlWrite, bool, (SimObject* simObject, const char* filename, Taml::TamlFormatMode format, bool compressed), 
-                                       (Taml::TamlFormatMode::XmlFormat, false),  
+                                       (Taml::TamlFormatMode::XmlFormat, true),  
                                         "(object, filename, [format], [compressed]) - Writes an object to a file using Taml.\n"
                                         "@param object The object to write.\n"
                                         "@param filename The filename to write to.\n"
@@ -272,7 +272,7 @@ DefineEngineFunction(TamlRead, const char*, (const char* filename, Taml::TamlFor
 
     return pSimObject->getIdString();
 }
-
+*/
 //-----------------------------------------------------------------------------
 
 ConsoleFunction(GenerateTamlSchema, bool, 1, 1, "() - Generate a TAML schema file of all engine types.\n"
