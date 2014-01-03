@@ -77,11 +77,11 @@ StringTableEntry tamlNamedObjectName    = StringTable->insert( "Name" );
 //-----------------------------------------------------------------------------
 
 typedef Taml::TamlFormatMode _TamlFormatMode;
-ImplementEnumType( _TamlFormatMode,
+/*ImplementEnumType( _TamlFormatMode,
    "")
    { Taml::XmlFormat, "xml" },
    { Taml::BinaryFormat, "binary" }
-EndImplementEnumType;
+EndImplementEnumType;*/
 
 //-----------------------------------------------------------------------------
 
@@ -1287,12 +1287,12 @@ bool Taml::generateTamlSchema()
         pAnyAttributeElement->SetAttribute( "processContents", "skip" );
         pComplexTypeElement->LinkEndChild( pAnyAttributeElement );
     }
-
-    // Write the schema document.
-    schemaDocument.SaveFile( stream );
-
+    
     // Close file.
     stream.close();
+
+    // Write the schema document.
+    schemaDocument.SaveFile( filePathBuffer );
 
     return true;
 }

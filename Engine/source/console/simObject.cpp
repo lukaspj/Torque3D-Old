@@ -88,6 +88,8 @@ SimObject::SimObject()
 
    mCopySource = NULL;
    mPersistentId = NULL;
+   
+   mProgenitorFile      = CodeBlock::getCurrentCodeBlockFullPath();
 }
 
 //-----------------------------------------------------------------------------
@@ -1915,6 +1917,25 @@ DefineConsoleMethod( SimObject, setSuperClassNamespace, void, ( const char* name
    "@param name The name of the 'superClass' namespace for this object." )
 {
    object->setSuperClassNamespace( name );
+}
+
+//-----------------------------------------------------------------------------
+
+DefineConsoleMethod(SimObject, setProgenitorFile, void, (const char* file),, 
+                     "(file) Sets the progenitor file responsible for this instances creation.\n"
+                     "@param file The progenitor file responsible for this instances creation.\n"
+                     "@return No return value." )
+{
+    object->setProgenitorFile( file );
+}
+
+//-----------------------------------------------------------------------------
+
+DefineConsoleMethod(SimObject, getProgenitorFile, const char*, (),,  
+                     "() Gets the progenitor file responsible for this instances creation.\n"
+                     "@return The progenitor file responsible for this instances creation." )
+{
+    return object->getProgenitorFile();
 }
 
 //-----------------------------------------------------------------------------

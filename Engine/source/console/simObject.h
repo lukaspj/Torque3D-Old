@@ -302,6 +302,8 @@ class SimObject: public ConsoleObject, public TamlCallbacks
       /// Flags internal to the object management system.
       BitSet32    mFlags;
 
+      StringTableEntry    mProgenitorFile;
+
       /// Object we are copying fields from.
       SimObject* mCopySource;
 
@@ -357,6 +359,10 @@ class SimObject: public ConsoleObject, public TamlCallbacks
 
       // Object name protected set method
       static bool setProtectedName(void *object, const char *index, const char *data);
+
+   public:
+      inline void setProgenitorFile( const char* pFile ) { mProgenitorFile = StringTable->insert( pFile ); }
+      inline StringTableEntry getProgenitorFile( void ) const { return mProgenitorFile; }
 
    protected:
       /// Taml callbacks.
