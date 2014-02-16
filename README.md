@@ -25,12 +25,12 @@ Running a project
    2. PhysX3CharacterKinematic_x86.dll
    3. PhysX3Common_x86.dll
    4. PhysX3Cooking_x86.dll
-   
+
  - To run a debug project you will need the following from the SDK bin folder:
    1. PhysX3CHECKED_x86.dll
    2. nvToolsExt32_1.dll
    3. PhysX3CookingCHECKED_x86.dll
    4. PhysX3CommonCHECKED_x86.dll
    5. PhysX3CharacterKinematicCHECKED_x86.dll
- 
+
 Place these files along side the exe and this should get you up and running. Check My Projects/testPhysX3 for reference.
