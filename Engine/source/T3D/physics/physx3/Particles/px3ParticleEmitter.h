@@ -42,14 +42,20 @@
 #ifndef _GFXVERTEXBUFFER_H_
 #include "gfx/gfxVertexBuffer.h"
 #endif
+#ifndef _H_PARTICLE_EMITTER
+#include "T3D/fx/ParticleEmitter.h"
+#endif
+#ifndef _TDICTIONARY_H_
+#include "core/util/tDictionary.h"
+#endif
 
 class Material;
 class BaseMatInstance;
 class Px3World;
 
-class Px3ParticleEmitter : public GameBase
+class Px3ParticleEmitter : public ParticleEmitter
 {
-    typedef GameBase Parent;
+   typedef ParticleEmitter Parent;
 
     enum MaskBits 
     {
@@ -65,9 +71,6 @@ public:
     virtual ~Px3ParticleEmitter();
 
     DECLARE_CONOBJECT( Px3ParticleEmitter );      
-
-    static Point3F mWindVelocity;
-    static void setWindVelocity( const Point3F &vel ){ mWindVelocity = vel; }
 
     // SimObject
     virtual bool onAdd();
@@ -88,13 +91,20 @@ public:
     // GameBase
     virtual bool onNewDataBlock( GameBaseData *dptr, bool reload );
     virtual void processTick( const Move *move );
-    virtual void interpolateTick( F32 delta );
+    virtual void interpolateTick(F32 delta);
+    virtual void advanceTime(F32 dt);
+    virtual void update(U32 ms);
+
+    // ParticleEmitter
+    virtual void addParticle(const Point3F &pos, const Point3F &axis, const Point3F &vel, const Point3F &axisx);
 
 protected:
 	Px3ParticleSystem* mParticleSystem;
 
 	U32 emitterTick;
 	U32 emitterRemoveTick;
+
+   U32 timeSinceTick;
 
     String mMaterialName;
     SimObjectPtr<Material> mMaterial;
@@ -106,6 +116,8 @@ protected:
     void _updateProperties();
     void _updateStaticSystem();
     void _updateVBIB();
+
+    HashTable<Particle*, int> mParticleIndexTable;
 };
 
 #endif

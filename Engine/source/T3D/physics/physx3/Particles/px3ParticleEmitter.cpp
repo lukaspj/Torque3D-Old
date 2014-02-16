@@ -42,7 +42,7 @@
 #include "materials/baseMatInstance.h"
 #include "T3D/fx/particleEmitter.h"
 
-IMPLEMENT_CO_NETOBJECT_V1( Px3ParticleEmitter );
+IMPLEMENT_CONOBJECT( Px3ParticleEmitter );
 
 ConsoleDocClass( Px3ParticleEmitter,
    
@@ -55,11 +55,12 @@ Px3ParticleEmitter::Px3ParticleEmitter()
 {
     mParticleSystem = NULL;
 
-    mNetFlags.set( Ghostable | ScopeAlways );
-    mTypeMask |= StaticObjectType | StaticShapeObjectType;
+    //mNetFlags.set( Ghostable | ScopeAlways );
+    //mTypeMask |= StaticObjectType | StaticShapeObjectType;
 
 	emitterTick = 0;
 	emitterRemoveTick = 0;
+   timeSinceTick = 0;
 }
 
 Px3ParticleEmitter::~Px3ParticleEmitter()
@@ -68,18 +69,8 @@ Px3ParticleEmitter::~Px3ParticleEmitter()
 
 bool Px3ParticleEmitter::onAdd()
 {
-   if ( !Parent::onAdd() )
+   if ( !GameBase::onAdd() )
       return false;
-
-   // Cloth is only created on the client.
-   if ( isClientObject() )
-   {
-      mResetXfm = getTransform();
-      PhysicsPlugin::getPhysicsResetSignal().notify( this, &Px3ParticleEmitter::onPhysicsReset, 1053.0f );
-
-	  mParticleSystem = new Px3ParticleSystem();
-	  mParticleSystem->create(100);
-   }
 
    // On the server we use the static update
    // to setup the bounds of the cloth.
@@ -227,52 +218,7 @@ void Px3ParticleEmitter::setScale( const VectorF &scale )
 
 void Px3ParticleEmitter::prepRenderImage( SceneRenderState *state )
 {  
-   /*if ( mIsVBDirty )
-      _updateVBIB();
-
-   // Recreate the material if we need to.
-   if ( !mMatInst )
-      _initMaterial();
-
-   // If we don't have a material instance after the override then 
-   // we can skip rendering all together.
-   BaseMatInstance *matInst = state->getOverrideMaterial( mMatInst );
-   if ( !matInst )
-      return;
-
-   MeshRenderInst *ri = state->getRenderPass()->allocInst<MeshRenderInst>();
-
-    // If we need lights then set them up.
-   if ( matInst->isForwardLit() )
-   {
-      LightQuery query;
-      query.init( getWorldSphere() );
-        query.getLights( ri->lights, 8 );
-   }
-
-   ri->projection = state->getRenderPass()->allocSharedXform(RenderPassManager::Projection);
-   ri->objectToWorld = &MatrixF::Identity;
-
-   ri->worldToCamera = state->getRenderPass()->allocSharedXform(RenderPassManager::View);   
-   ri->type = RenderPassManager::RIT_Mesh;
-
-   ri->primBuff = &mPrimBuffer;
-   ri->vertBuff = &mVB;
-
-   ri->matInst = matInst;
-   ri->prim = state->getRenderPass()->allocPrim();
-   ri->prim->type = GFXTriangleList;
-   ri->prim->minIndex = 0;
-   ri->prim->startIndex = 0;
-   ri->prim->numPrimitives = mNumIndices / 3;
-
-   ri->prim->startVertex = 0;
-   ri->prim->numVertices = mNumVertices;
-
-   ri->defaultKey = matInst->getStateHint();
-   ri->defaultKey2 = (U32)ri->vertBuff;
-
-   state->getRenderPass()->addInst( ri );*/
+   Parent::prepRenderImage(state);
 }
 
 void Px3ParticleEmitter::_updateProperties()
@@ -334,6 +280,71 @@ void Px3ParticleEmitter::_updateStaticSystem()
     resetWorldBox();
 }
 
+void Px3ParticleEmitter::addParticle(const Point3F &pos, const Point3F &axis, const Point3F &vel, const Point3F &axisx)
+{
+   Point3F ejectionAxis = axis;
+   F32 theta = (mDataBlock->thetaMax - mDataBlock->thetaMin) * gRandGen.randF() +
+      mDataBlock->thetaMin;
+
+   F32 ref = (F32(mInternalClock) / 1000.0) * mDataBlock->phiReferenceVel;
+   F32 phi = ref + gRandGen.randF() * mDataBlock->phiVariance;
+
+   // Both phi and theta are in degs.  Create axis angles out of them, and create the
+   //  appropriate rotation matrix...
+   AngAxisF thetaRot(axisx, theta * (M_PI / 180.0));
+   AngAxisF phiRot(axis, phi   * (M_PI / 180.0));
+
+   MatrixF temp(true);
+   thetaRot.setMatrix(&temp);
+   temp.mulP(ejectionAxis);
+   phiRot.setMatrix(&temp);
+   temp.mulP(ejectionAxis);
+
+   F32 initialVel = mDataBlock->ejectionVelocity;
+   initialVel += (mDataBlock->velocityVariance * 2.0f * gRandGen.randF()) - mDataBlock->velocityVariance;
+
+   Point3F newPos = pos + (ejectionAxis * (mDataBlock->ejectionOffset + mDataBlock->ejectionOffsetVariance* gRandGen.randF()));
+   Point3F newVel = ejectionAxis * initialVel;
+   U32 index;
+   bool particleWereAdded = mParticleSystem->addParticle(newPos, newVel, index);
+   if (!particleWereAdded)
+      return;
+
+   n_parts++;
+   if (n_parts > n_part_capacity || n_parts > mDataBlock->partListInitSize)
+   {
+      // In an emergency we allocate additional particles in blocks of 16.
+      // This should happen rarely.
+      Particle* store_block = new Particle[16];
+      part_store.push_back(store_block);
+      n_part_capacity += 16;
+      for (S32 i = 0; i < 16; i++)
+      {
+         store_block[i].next = part_freelist;
+         part_freelist = &store_block[i];
+      }
+      mDataBlock->allocPrimBuffer(n_part_capacity); // allocate larger primitive buffer or will crash 
+   }
+   Particle* pNew = part_freelist;
+   part_freelist = pNew->next;
+   pNew->next = part_list_head.next;
+   part_list_head.next = pNew;
+
+   pNew->pos = newPos;
+   pNew->vel = newVel;
+   pNew->orientDir = ejectionAxis;
+   pNew->acc.set(0, 0, 0);
+   pNew->currentAge = 0;
+
+   // Choose a new particle datablack randomly from the list
+   U32 dBlockIndex = gRandGen.randI() % mDataBlock->particleDataBlocks.size();
+   mDataBlock->particleDataBlocks[dBlockIndex]->initializeParticle(pNew, vel);
+   updateKeyData(pNew);
+   if (index <= 0)
+      return;
+   mParticleIndexTable.insertUnique(pNew, index);
+}
+
 void Px3ParticleEmitter::processTick( const Move *move )
 {
     // Make sure particle system exists
@@ -342,8 +353,60 @@ void Px3ParticleEmitter::processTick( const Move *move )
 
 	// These are temp arbitrary values.
 	mObjBox.set( 0, 5, 0, 5, 5, 5 );
-    resetWorldBox();
+   resetWorldBox();
+   // Read back the data from the particles.
+   if (mParticleSystem->lock())
+   {
+      Vector<Point3F> positions = mParticleSystem->readParticles();
+      if (positions.size() > 0)
+      {
+         for (Particle* pp = part_list_head.next; pp != NULL; pp = pp->next)
+         {
+            int index;
+            if (mParticleIndexTable.find(pp, index))
+            {
+				   U32 systemIndex = mParticleSystem->getIndexFromUniqueIndex(index);
+				   if (systemIndex < positions.size())
+					   pp->pos = positions[systemIndex];
+            }
+         }
+      }
+      mParticleSystem->unlock();
+   }
 
+   // remove dead particles
+   Particle* last_part = &part_list_head;
+   for (Particle* part = part_list_head.next; part != NULL; part = part->next)
+   {
+      if (mParticleSystem->getParticleCount() <= 0)
+         break;
+      part->currentAge += timeSinceTick;
+      if (part->currentAge > part->totalLifetime)
+      {
+         int index;
+         mParticleIndexTable.find(part, index);
+		   U32 systemIndex = mParticleSystem->getIndexFromUniqueIndex(index);
+		   mParticleSystem->removeParticle(systemIndex);
+         mParticleIndexTable.erase(part);
+         n_parts--;
+         last_part->next = part->next;
+         part->next = part_freelist;
+         part_freelist = part;
+         part = last_part;
+      }
+      else
+      {
+         last_part = part;
+      }
+   }
+
+   if (timeSinceTick != 0 && n_parts > 0)
+   {
+      update(timeSinceTick);
+   }
+   timeSinceTick = 0;
+   //addParticle(Point3F(0), Point3F(0, 0, 1), Point3F(1, 1, 1), Point3F(1, 0, 0));
+    /*
 	emitterTick++;
 	emitterRemoveTick++;
 	if ( emitterTick > 32 )
@@ -381,7 +444,7 @@ void Px3ParticleEmitter::processTick( const Move *move )
 		// Apply a force to the particle system.
 		mParticleSystem->applyForce(ParticleEmitter::mWindVelocity);
 		emitterTick = 0;
-	}
+	}*/
 }
 
 void Px3ParticleEmitter::interpolateTick( F32 delta )
@@ -391,5 +454,85 @@ void Px3ParticleEmitter::interpolateTick( F32 delta )
 
 bool Px3ParticleEmitter::onNewDataBlock( GameBaseData *dptr, bool reload )
 {
-   return false;
+	if(!Parent::onNewDataBlock(dptr, reload))
+		return false;
+	
+   // ParticleSystem is only created on the client.
+   if ( isClientObject() )
+   {
+      mResetXfm = getTransform();
+      PhysicsPlugin::getPhysicsResetSignal().notify( this, &Px3ParticleEmitter::onPhysicsReset, 1053.0f );
+
+	  mParticleSystem = new Px3ParticleSystem();
+     U32 ParticlesPerSecond = 1000 / (mDataBlock->ejectionPeriodMS - mDataBlock->periodVarianceMS);
+     F32 MaxParticleLifetimeInSeconds = (mDataBlock->particleDataBlocks[0]->lifetimeMS + mDataBlock->particleDataBlocks[0]->lifetimeVarianceMS) / 1000;
+     mParticleSystem->create(100);
+   }
+   return true;
+}
+
+//-----------------------------------------------------------------------------
+// advanceTime
+//-----------------------------------------------------------------------------
+void Px3ParticleEmitter::advanceTime(F32 dt)
+{
+   if (dt < 0.00001) return;
+
+   GameBase::advanceTime(dt);
+
+   // Make sure particle system exists
+   if (!mParticleSystem)
+   {
+      if (mDeleteWhenEmpty)
+         mDeleteOnTick = true;
+      return;
+   }
+
+   if (dt > 0.5) dt = 0.5;
+
+   if (mDead) return;
+
+   mElapsedTimeMS += (S32)(dt * 1000.0f);
+
+   U32 numMSToUpdate = (U32)(dt * 1000.0f);
+   if (numMSToUpdate == 0) return;
+
+   timeSinceTick += numMSToUpdate;
+
+   // TODO: Prefetch
+
+
+   AssertFatal(n_parts >= 0, "ParticleEmitter: negative part count!");
+
+   if (n_parts < 1 && mDeleteWhenEmpty)
+   {
+      mDeleteOnTick = true;
+      return;
+   }
+}
+
+//-----------------------------------------------------------------------------
+// Update particles
+//-----------------------------------------------------------------------------
+void Px3ParticleEmitter::update(U32 ms)
+{
+   // TODO: Prefetch
+   Point3F averageForce = Point3F(0);
+   for (Particle* part = part_list_head.next; part != NULL; part = part->next)
+   {
+      F32 t = F32(ms) / 1000.0;
+
+      Point3F a = part->acc;
+      a -= part->vel        * part->dataBlock->dragCoefficient;
+      a -= mWindVelocity * part->dataBlock->windCoefficient;
+      a += Point3F(0.0f, 0.0f, -9.81f) * part->dataBlock->gravityCoefficient;
+
+      part->vel += a * t;
+
+      averageForce += part->vel;
+
+      updateKeyData(part);
+   }
+   averageForce /= n_parts;
+   mParticleSystem->applyForce(averageForce);
 }

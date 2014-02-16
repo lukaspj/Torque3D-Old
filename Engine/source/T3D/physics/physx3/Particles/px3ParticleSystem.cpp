@@ -50,6 +50,7 @@ Px3ParticleSystem::Px3ParticleSystem()
 	mNumParticles = 0;
 	mMaxParticles = 0;
 	mIndexPool = NULL;
+	mCurrentIndex = 0;
 }
 
 Px3ParticleSystem::~Px3ParticleSystem()
@@ -88,6 +89,7 @@ void Px3ParticleSystem::_releaseSystem()
 	mPosition.clear();
 	mVelocity.clear();
 	mIndex.clear();
+	mUniqueIndex.clear();
 	mNumParticles = 0;
 
 	// Clear Index Pool
@@ -144,14 +146,27 @@ void Px3ParticleSystem::release()
 
 bool Px3ParticleSystem::addParticle(Point3F position, Point3F velocity)
 {
-	Vector<Point3F> vel;
-	vel.push_back(velocity);
-	Vector<Point3F> pos;
-	pos.push_back(position);
-	return (addParticles(pos, vel) > 0);
+   U32 dummy;
+   return addParticle(position, velocity, dummy);
 }
 
-U32 Px3ParticleSystem::addParticles(Vector<Point3F> position, Vector<Point3F> velocity)
+bool Px3ParticleSystem::addParticle(Point3F position, Point3F velocity, U32& uniqueIndex)
+{
+   Vector<Point3F> vel;
+   vel.push_back(velocity);
+   Vector<Point3F> pos;
+   pos.push_back(position);
+   Vector<U32> uniqueIndices = addParticles(pos, vel);
+   if (uniqueIndices.size() > 0)
+   {
+      uniqueIndex = uniqueIndices[0];
+      return true;
+   }
+   return false;
+}
+
+
+Vector<U32> Px3ParticleSystem::addParticles(Vector<Point3F> position, Vector<Point3F> velocity)
 {
 	if ( mNumParticles == mMaxParticles )
 	{
@@ -160,6 +175,7 @@ U32 Px3ParticleSystem::addParticles(Vector<Point3F> position, Vector<Point3F> ve
 	}
 
 	Vector<PxU32> indexList;
+	Vector<U32> uniqueIndexList;
 	Vector<PxVec3> posList;
 	Vector<PxVec3> velList;
 
@@ -168,12 +184,14 @@ U32 Px3ParticleSystem::addParticles(Vector<Point3F> position, Vector<Point3F> ve
 	indexList.setSize(count);
 	count = mIndexPool->allocateIndices(count, PxStrideIterator<PxU32>(&indexList[0]));
 	indexList.setSize(count);
-
+   if (count < 1)
+      return 0;
 	// Add as many as we can to the list. Hopefully all of them.
 	for(int a = 0; a < count; a++)
 	{
 		posList.push_back(PxVec3(position[a].x, position[a].y, position[a].z));
 		velList.push_back(PxVec3(velocity[a].x, velocity[a].y, velocity[a].z));
+		uniqueIndexList.push_back(mCurrentIndex++);
 	}
 
 	// Setup creation data.
@@ -190,16 +208,30 @@ U32 Px3ParticleSystem::addParticles(Vector<Point3F> position, Vector<Point3F> ve
 		mIndex.merge(indexList);
 		mPosition.merge(posList);
 		mVelocity.merge(velList);
+		mUniqueIndex.merge(uniqueIndexList);
 		mNumParticles += count;
-		return count;
 	}
 
-	return 0;
+	return uniqueIndexList;
 }
 
 U32 Px3ParticleSystem::getParticleCount()
 {
 	return mNumParticles;
+}
+
+U32 Px3ParticleSystem::getUniqueParticleIndex(U32 index)
+{
+	return mUniqueIndex[index];
+}
+
+U32 Px3ParticleSystem::getIndexFromUniqueIndex(U32 index)
+{
+	for (int i = 0; i < mUniqueIndex.size(); i++)
+	   if (mUniqueIndex[i] == index)
+		   return i;
+	AssertWarn(false, "The requested index does not exist.");
+	return 0;
 }
 
 bool Px3ParticleSystem::removeParticle(U32 index)
@@ -225,6 +257,7 @@ U32 Px3ParticleSystem::removeParticles(U32 index, U32 count)
 		mPosition.erase(mPosition.begin() + index);
 		mVelocity.erase(mVelocity.begin() + index);
 		mIndex.erase(mIndex.begin() + index);
+      mUniqueIndex.erase(mUniqueIndex.begin() + index);
 	}
 	mNumParticles -= count;
 	return count;

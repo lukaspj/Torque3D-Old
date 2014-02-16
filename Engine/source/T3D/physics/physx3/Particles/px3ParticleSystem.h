@@ -56,10 +56,11 @@ public:
 	bool create(U32 maxParticles);
 	void release();
 
-	bool addParticle(Point3F position, Point3F velocity);
-	U32 addParticles(Vector<Point3F> position, Vector<Point3F> velocity);
-	bool removeParticle(U32 index);
-	U32 removeParticles(U32 index, U32 count);
+   bool addParticle(Point3F position, Point3F velocity);
+   bool addParticle(Point3F position, Point3F velocity, U32& uniqueIndex);
+   Vector<U32> addParticles(Vector<Point3F> position, Vector<Point3F> velocity);
+   bool removeParticle(U32 index);
+   U32 removeParticles(U32 index, U32 count);
 
 	bool lock();
 	void unlock();
@@ -67,6 +68,8 @@ public:
 
 	void applyForce(Point3F force);
 	U32 getParticleCount();
+	U32 getUniqueParticleIndex(U32 index);
+	U32 getIndexFromUniqueIndex(U32 index);
 
 protected:
     Px3World *mWorld;
@@ -78,15 +81,19 @@ protected:
 
 	U32 mNumParticles;
 	U32 mMaxParticles;
+
 	Vector<PxVec3> mPosition;
 	Vector<PxVec3> mVelocity;
 	Vector<PxU32> mIndex;
+	Vector<U32> mUniqueIndex;
 
     MatrixF mResetXfm;
     void _releaseSystem();
 	bool _createSystem();
 	bool _createParticles();
 	void _updateProperties();
+
+	U32 mCurrentIndex;
 };
 
 #endif
