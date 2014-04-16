@@ -20,14 +20,14 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "taml/tamlXmlWriter.h"
+#include "persistence/taml/xml/tamlXmlWriter.h"
 
 // Debug Profiling.
-#include "platform/profiler.h"
+#include "debug/profiler.h"
 
 //-----------------------------------------------------------------------------
 
-bool TamlXmlWriter::write( const char* path, const TamlWriteNode* pTamlWriteNode )
+bool TamlXmlWriter::write( FileStream& stream, const TamlWriteNode* pTamlWriteNode )
 {
     // Debug Profiling.
     PROFILE_SCOPE(TamlXmlWriter_Write);
@@ -49,7 +49,7 @@ bool TamlXmlWriter::write( const char* path, const TamlWriteNode* pTamlWriteNode
 
         // Expand the file-path reference.
         char schemaFilePathBuffer[1024];
-        Con::expandToolScriptFilename( schemaFilePathBuffer, sizeof(schemaFilePathBuffer), pTamlSchemaFile );
+        Con::expandPath( schemaFilePathBuffer, sizeof(schemaFilePathBuffer), pTamlSchemaFile );
 
         // Fetch the output path for the Taml file.
         char outputFileBuffer[1024];
@@ -71,7 +71,7 @@ bool TamlXmlWriter::write( const char* path, const TamlWriteNode* pTamlWriteNode
     xmlDocument.LinkEndChild( pRootElement );
 
     // Save document to stream.
-    return xmlDocument.SaveFile( path );
+    return xmlDocument.SaveFile( stream );
 }
 
 //-----------------------------------------------------------------------------

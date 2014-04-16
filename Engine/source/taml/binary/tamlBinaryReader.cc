@@ -20,7 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "taml/tamlBinaryReader.h"
+#include "taml/binary/tamlBinaryReader.h"
 
 #ifndef _ZIPSUBSTREAM_H_
 #include "core/util/zip/zipSubStream.h"
@@ -121,7 +121,7 @@ SimObject* TamlBinaryReader::parseElement( Stream& stream, const U32 versionId )
     if ( tamlRefToId != 0 )
     {
         // Yes, so fetch reference.
-        typeObjectReferenceHash::iterator referenceItr = mObjectReferenceMap.find( tamlRefToId );
+        typeObjectReferenceHash::Iterator referenceItr = mObjectReferenceMap.find( tamlRefToId );
 
         // Did we find the reference?
         if ( referenceItr == mObjectReferenceMap.end() )
@@ -187,7 +187,7 @@ SimObject* TamlBinaryReader::parseElement( Stream& stream, const U32 versionId )
     if ( tamlRefId != 0 )
     {
         // Yes, so insert reference.
-        mObjectReferenceMap.insert( tamlRefId, pSimObject );
+        mObjectReferenceMap.insertUnique( tamlRefId, pSimObject );
     }
 
     // Parse custom elements.

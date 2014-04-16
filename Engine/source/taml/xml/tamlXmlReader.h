@@ -23,20 +23,22 @@
 #ifndef _TAML_XMLREADER_H_
 #define _TAML_XMLREADER_H_
 
-#ifndef _TAML_HASHMAP_H_
-#include "tamlHashMap.h"
+#ifndef _TDICTIONARY_H_
+#include "core/util/tDictionary.h"
 #endif
 
 #ifndef _TAML_H_
-#include "taml/taml.h"
+#include "persistence/taml/taml.h"
 #endif
 
 #ifndef TINYXML_INCLUDED
-#include "tinyXML/tinyxml.h"
+#include "persistence/tinyXML/tinyxml.h"
 #endif
 
 //-----------------------------------------------------------------------------
 
+/// @ingroup tamlGroup
+/// @see tamlGroup
 class TamlXmlReader
 {
 public:
@@ -47,13 +49,12 @@ public:
     virtual ~TamlXmlReader() {}
 
     /// Read.
-    SimObject* read( const char* path );
+    SimObject* read( FileStream& stream );
 
 private:
-    Taml*               mpTaml;
+    Taml* mpTaml;
 
-    typedef HashMap<SimObjectId, SimObject*> typeObjectReferenceHash;
-
+    typedef HashTable<SimObjectId, SimObject*> typeObjectReferenceHash;
     typeObjectReferenceHash mObjectReferenceMap;
 
 private:

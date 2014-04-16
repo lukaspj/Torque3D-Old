@@ -35,6 +35,14 @@ addEngineSrcDir('shaderGen');
 addEngineSrcDir('terrain');
 addEngineSrcDir('environment');
 
+// TAML
+addEngineSrcDir('taml');
+addEngineSrcDir('taml/binary');
+addEngineSrcDir('taml/xml');
+addEngineSrcDir('taml/json');
+addEngineSrcDir('taml/rapidjson');
+addEngineSrcDir('taml/memory');
+
 addEngineSrcDir('forest');
 addEngineSrcDir('forest/ts');
 if(getToolBuild())

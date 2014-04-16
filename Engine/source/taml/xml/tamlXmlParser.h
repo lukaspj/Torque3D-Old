@@ -20,11 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _TAML_XMLWRITER_H_
-#define _TAML_XMLWRITER_H_
+#ifndef _TAML_XMLPARSER_H_
+#define _TAML_XMLPARSER_H_
 
-#ifndef _TAML_H_
-#include "taml/taml.h"
+#ifndef _TAML_PARSER_H_
+#include "taml/tamlParser.h"
 #endif
 
 #ifndef TINYXML_INCLUDED
@@ -33,25 +33,25 @@
 
 //-----------------------------------------------------------------------------
 
-class TamlXmlWriter
+/// @ingroup tamlGroup
+/// @see tamlGroup
+class TamlXmlParser : public TamlParser
 {
 public:
-    TamlXmlWriter( Taml* pTaml ) :
-        mpTaml( pTaml )
-    {}
-    virtual ~TamlXmlWriter() {}
+    TamlXmlParser() {}
+    virtual ~TamlXmlParser() {}
 
-    /// Write.
-    bool write( const char* path, const TamlWriteNode* pTamlWriteNode );
+    /// Whether the parser can change a property or not.
+    virtual bool canChangeProperty( void ) { return true; }
 
-private:
-    Taml* mpTaml;
+    /// Accept visitor.
+    virtual bool accept( const char* pFilename, TamlVisitor& visitor );
 
 private:
-    TiXmlElement* compileElement( const TamlWriteNode* pTamlWriteNode );
-    void compileAttributes( TiXmlElement* pXmlElement, const TamlWriteNode* pTamlWriteNode );
-    void compileCustomElements( TiXmlElement* pXmlElement, const TamlWriteNode* pTamlWriteNode );
-    void compileCustomNode( TiXmlElement* pXmlElement, const TamlCustomNode* pCustomNode );
+    inline bool parseElement( TiXmlElement* pXmlElement, TamlVisitor& visitor );
+    inline bool parseAttributes( TiXmlElement* pXmlElement, TamlVisitor& visitor );
+
+    bool mDocumentDirty;
 };
 
-#endif // _TAML_XMLWRITER_H_
+#endif // _TAML_XMLPARSER_H_

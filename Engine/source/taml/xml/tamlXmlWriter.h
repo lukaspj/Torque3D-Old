@@ -20,38 +20,40 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _TAML_BINARYWRITER_H_
-#define _TAML_BINARYWRITER_H_
+#ifndef _TAML_XMLWRITER_H_
+#define _TAML_XMLWRITER_H_
 
 #ifndef _TAML_H_
-#include "taml/taml.h"
+#include "persistence/taml/taml.h"
+#endif
+
+#ifndef TINYXML_INCLUDED
+#include "persistence/tinyXML/tinyxml.h"
 #endif
 
 //-----------------------------------------------------------------------------
 
-class TamlBinaryWriter
+/// @ingroup tamlGroup
+/// @see tamlGroup
+class TamlXmlWriter
 {
 public:
-    TamlBinaryWriter( Taml* pTaml ) :
-        mpTaml( pTaml ),
-        mVersionId(2)
-    {
-    }
-    virtual ~TamlBinaryWriter() {}
+    TamlXmlWriter( Taml* pTaml ) :
+        mpTaml( pTaml )
+    {}
+    virtual ~TamlXmlWriter() {}
 
     /// Write.
-    bool write( FileStream& stream, const TamlWriteNode* pTamlWriteNode, const bool compressed );
+    bool write( FileStream& stream, const TamlWriteNode* pTamlWriteNode );
 
 private:
     Taml* mpTaml;
-    const U32 mVersionId;
 
 private:
-    void writeElement( Stream& stream, const TamlWriteNode* pTamlWriteNode );
-    void writeAttributes( Stream& stream, const TamlWriteNode* pTamlWriteNode );
-    void writeChildren( Stream& stream, const TamlWriteNode* pTamlWriteNode );
-    void writeCustomElements( Stream& stream, const TamlWriteNode* pTamlWriteNode );
-    void writeCustomNode( Stream& stream, const TamlCustomNode* pCustomNode );
+    TiXmlElement* compileElement( const TamlWriteNode* pTamlWriteNode );
+    void compileAttributes( TiXmlElement* pXmlElement, const TamlWriteNode* pTamlWriteNode );
+    void compileCustomElements( TiXmlElement* pXmlElement, const TamlWriteNode* pTamlWriteNode );
+    void compileCustomNode( TiXmlElement* pXmlElement, const TamlCustomNode* pCustomNode );
 };
 
-#endif // _TAML_BINARYWRITER_H_
+#endif // _TAML_XMLWRITER_H_

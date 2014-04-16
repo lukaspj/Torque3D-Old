@@ -20,34 +20,49 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _TAML_XML_VISITOR_H_
-#define _TAML_XML_VISITOR_H_
+#ifndef _TAML_BINARYREADER_H_
+#define _TAML_BINARYREADER_H_
 
-#ifndef TINYXML_INCLUDED
-#include "tinyXML/tinyxml.h"
+#ifndef _TDICTIONARY_H_
+#include "core/util/tDictionary.h"
+#endif
+
+#ifndef _TAML_H_
+#include "taml/taml.h"
 #endif
 
 //-----------------------------------------------------------------------------
 
-class TamlXmlParser;
-
-//-----------------------------------------------------------------------------
-
-class TamlXmlVisitor
+/// @ingroup tamlGroup
+/// @see tamlGroup
+class TamlBinaryReader
 {
-private:
-    friend class TamlXmlParser;
-
 public:
-    TamlXmlVisitor() {}
-    virtual ~TamlXmlVisitor() {}
+    TamlBinaryReader( Taml* pTaml ) :
+        mpTaml( pTaml )
+    {
+    }
 
-    /// Parsing.
-    virtual bool parse( const char* pFilename ) = 0;
+    virtual ~TamlBinaryReader() {}
 
-protected:
-    virtual bool visit( TiXmlElement* pXmlElement, TamlXmlParser& xmlParser ) = 0;
-    virtual bool visit( TiXmlAttribute* pAttribute, TamlXmlParser& xmlParser ) = 0;
+    /// Read.
+    SimObject* read( FileStream& stream );
+
+private:
+    Taml* mpTaml;
+
+    typedef HashTable<SimObjectId, SimObject*> typeObjectReferenceHash;
+
+    typeObjectReferenceHash mObjectReferenceMap;
+
+private:
+    void resetParse( void );
+
+    SimObject* parseElement( Stream& stream, const U32 versionId );
+    void parseAttributes( Stream& stream, SimObject* pSimObject, const U32 versionId );
+    void parseChildren( Stream& stream, TamlCallbacks* pCallbacks, SimObject* pSimObject, const U32 versionId );
+    void parseCustomElements( Stream& stream, TamlCallbacks* pCallbacks, TamlCustomNodes& customNodes, const U32 versionId );
+    void parseCustomNode( Stream& stream, TamlCustomNode* pCustomNode, const U32 versionId );
 };
 
-#endif // _TAML_XML_VISITOR_H_
+#endif // _TAML_BINARYREADER_H_

@@ -20,14 +20,14 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "taml/tamlXmlReader.h"
+#include "persistence/taml/xml/tamlXmlReader.h"
 
 // Debug Profiling.
-#include "platform/profiler.h"
+#include "debug/profiler.h"
 
 //-----------------------------------------------------------------------------
 
-SimObject* TamlXmlReader::read( const char* path )
+SimObject* TamlXmlReader::read( FileStream& stream )
 {
     // Debug Profiling.
     PROFILE_SCOPE(TamlXmlReader_Read);
@@ -36,7 +36,7 @@ SimObject* TamlXmlReader::read( const char* path )
     TiXmlDocument xmlDocument;
 
     // Load document from stream.
-    if ( !xmlDocument.LoadFile( path ) )
+    if ( !xmlDocument.LoadFile( stream ) )
     {
         // Warn!
         Con::warnf("Taml: Could not load Taml XML file from stream.");
@@ -133,7 +133,7 @@ SimObject* TamlXmlReader::parseElement( TiXmlElement* pXmlElement )
     StringTableEntry objectName = StringTable->insert( getTamlObjectName( pXmlElement ) );
 
     // Does the object require a name?
-    if ( objectName == StringTable->EmptyString() )
+    if ( objectName == StringTable->EmptyString )
     {
         // No, so just register anonymously.
         pSimObject->registerObject();
@@ -290,8 +290,8 @@ void TamlXmlReader::parseAttributes( TiXmlElement* pXmlElement, SimObject* pSimO
                 attributeName == tamlNamedObjectName )
             continue;
 
-        // We can assume this is a field for now.
-        pSimObject->setDataField( attributeName, NULL, pAttribute->Value() );
+        // Set the field.
+        pSimObject->setPrefixedDataField( attributeName, NULL, pAttribute->Value() );
     }
 }
 

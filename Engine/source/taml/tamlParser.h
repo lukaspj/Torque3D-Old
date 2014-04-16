@@ -20,38 +20,39 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _TAML_XMLPARSER_H_
-#define _TAML_XMLPARSER_H_
+#ifndef _TAML_PARSER_H_
+#define _TAML_PARSER_H_
 
-#ifndef _TAML_XML_VISITOR_H_
-#include "taml/tamlXmlVisitor.h"
-#endif
-
-#ifndef _TAML_H_
-#include "taml/taml.h"
-#endif
+#include "core/stringTable.h"
 
 //-----------------------------------------------------------------------------
 
-class TamlXmlParser
+class TamlVisitor;
+
+//-----------------------------------------------------------------------------
+
+/// @ingroup tamlGroup
+/// @see tamlGroup
+class TamlParser
 {
 public:
-    TamlXmlParser() :
-        mpParsingFilename( NULL ) {}
-    virtual ~TamlXmlParser() {}
+    TamlParser() :
+        mParsingFilename(StringTable->EmptyString())
+    {}
+    virtual ~TamlParser() {}
 
-    /// Parse.
-    bool parse( const char* pFilename, TamlXmlVisitor& visitor, const bool writeDocument );
+    /// Whether the parser can change a property or not.
+    virtual bool canChangeProperty( void ) = 0;
+
+    /// Accept visitor.
+    virtual bool accept( const char* pFilename, TamlVisitor& visitor ) = 0;
 
     /// Filename.
-    inline const char* getParsingFilename( void ) const { return mpParsingFilename; }
+    inline void setParsingFilename( const char* pFilename ) { mParsingFilename = StringTable->insert(pFilename); }
+    inline StringTableEntry getParsingFilename( void ) const { return mParsingFilename; }
 
 private:
-    const char* mpParsingFilename;
-
-private:
-    bool parseElement( TiXmlElement* pXmlElement, TamlXmlVisitor& visitor );
-    bool parseAttributes( TiXmlElement* pXmlElement, TamlXmlVisitor& visitor );
+    StringTableEntry mParsingFilename;
 };
 
-#endif // _TAML_XMLPARSER_H_
+#endif // _TAML_PARSER_H_

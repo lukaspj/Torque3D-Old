@@ -20,8 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _TAML_BINARYREADER_H_
-#define _TAML_BINARYREADER_H_
+#ifndef _TAML_JSONREADER_H_
+#define _TAML_JSONREADER_H_
 
 #ifndef _TDICTIONARY_H_
 #include "core/util/tDictionary.h"
@@ -31,36 +31,46 @@
 #include "taml/taml.h"
 #endif
 
+/// RapidJson.
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h"
+
 //-----------------------------------------------------------------------------
 
-class TamlBinaryReader
+/// @ingroup tamlGroup
+/// @see tamlGroup
+class TamlJSONReader
 {
 public:
-    TamlBinaryReader( Taml* pTaml ) :
+    TamlJSONReader( Taml* pTaml ) :
         mpTaml( pTaml )
-    {
-    }
+    {}
 
-    virtual ~TamlBinaryReader() {}
+    virtual ~TamlJSONReader() {}
 
     /// Read.
     SimObject* read( FileStream& stream );
 
 private:
-    Taml*               mpTaml;
+    Taml* mpTaml;
 
     typedef HashMap<SimObjectId, SimObject*> typeObjectReferenceHash;
-
     typeObjectReferenceHash mObjectReferenceMap;
 
 private:
     void resetParse( void );
 
-    SimObject* parseElement( Stream& stream, const U32 versionId );
-    void parseAttributes( Stream& stream, SimObject* pSimObject, const U32 versionId );
-    void parseChildren( Stream& stream, TamlCallbacks* pCallbacks, SimObject* pSimObject, const U32 versionId );
-    void parseCustomElements( Stream& stream, TamlCallbacks* pCallbacks, TamlCustomNodes& customNodes, const U32 versionId );
-    void parseCustomNode( Stream& stream, TamlCustomNode* pCustomNode, const U32 versionId );
+    SimObject* parseType( const rapidjson::Value::ConstMemberIterator& memberItr );
+    inline void parseField( rapidjson::Value::ConstMemberIterator& memberItr, SimObject* pSimObject );
+    inline void parseChild( rapidjson::Value::ConstMemberIterator& memberItr, SimObject* pSimObject );
+    inline void parseCustom( rapidjson::Value::ConstMemberIterator& memberItr, SimObject* pSimObject, const char* pCustomNodeName, TamlCustomNodes& customNodes );
+    inline void parseCustomNode( rapidjson::Value::ConstMemberIterator& memberItr, TamlCustomNode* pCustomNode );
+
+    inline StringTableEntry getDemangledName( const char* pMangledName );
+    inline bool parseStringValue( char* pBuffer, const S32 bufferSize, const rapidjson::Value& value, const char* pName );
+    inline U32 getTamlRefId( const rapidjson::Value& value );
+    inline U32 getTamlRefToId( const rapidjson::Value& value );
+    inline const char* getTamlObjectName( const rapidjson::Value& value );   
 };
 
-#endif // _TAML_BINARYREADER_H_
+#endif // _TAML_JSONREADER_H_
