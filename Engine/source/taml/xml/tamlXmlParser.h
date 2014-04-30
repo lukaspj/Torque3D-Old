@@ -28,7 +28,7 @@
 #endif
 
 #ifndef TINYXML_INCLUDED
-#include "tinyXML/tinyxml.h"
+#include "taml/tinyXML/tinyxml.h"
 #endif
 
 //-----------------------------------------------------------------------------

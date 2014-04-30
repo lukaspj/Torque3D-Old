@@ -20,10 +20,10 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "persistence/taml/xml/tamlXmlWriter.h"
+#include "taml/xml/tamlXmlWriter.h"
 
 // Debug Profiling.
-#include "debug/profiler.h"
+#include "platform/profiler.h"
 
 //-----------------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ bool TamlXmlWriter::write( FileStream& stream, const TamlWriteNode* pTamlWriteNo
 
         // Expand the file-path reference.
         char schemaFilePathBuffer[1024];
-        Con::expandPath( schemaFilePathBuffer, sizeof(schemaFilePathBuffer), pTamlSchemaFile );
+        Con::expandToolScriptFilename( schemaFilePathBuffer, sizeof(schemaFilePathBuffer), pTamlSchemaFile );
 
         // Fetch the output path for the Taml file.
         char outputFileBuffer[1024];

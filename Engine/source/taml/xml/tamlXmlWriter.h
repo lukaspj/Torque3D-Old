@@ -24,11 +24,11 @@
 #define _TAML_XMLWRITER_H_
 
 #ifndef _TAML_H_
-#include "persistence/taml/taml.h"
+#include "taml/taml.h"
 #endif
 
 #ifndef TINYXML_INCLUDED
-#include "persistence/tinyXML/tinyxml.h"
+#include "taml/tinyXML/tinyxml.h"
 #endif
 
 //-----------------------------------------------------------------------------

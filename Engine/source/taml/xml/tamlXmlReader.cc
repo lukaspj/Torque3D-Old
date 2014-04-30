@@ -20,10 +20,10 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "persistence/taml/xml/tamlXmlReader.h"
+#include "taml/xml/tamlXmlReader.h"
 
 // Debug Profiling.
-#include "debug/profiler.h"
+#include "platform/profiler.h"
 
 //-----------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ SimObject* TamlXmlReader::parseElement( TiXmlElement* pXmlElement )
     if ( tamlRefToId != 0 )
     {
         // Yes, so fetch reference.
-        typeObjectReferenceHash::iterator referenceItr = mObjectReferenceMap.find( tamlRefToId );
+        typeObjectReferenceHash::Iterator referenceItr = mObjectReferenceMap.find( tamlRefToId );
 
         // Did we find the reference?
         if ( referenceItr == mObjectReferenceMap.end() )
@@ -133,7 +133,7 @@ SimObject* TamlXmlReader::parseElement( TiXmlElement* pXmlElement )
     StringTableEntry objectName = StringTable->insert( getTamlObjectName( pXmlElement ) );
 
     // Does the object require a name?
-    if ( objectName == StringTable->EmptyString )
+    if ( objectName == StringTable->EmptyString() )
     {
         // No, so just register anonymously.
         pSimObject->registerObject();
@@ -160,7 +160,7 @@ SimObject* TamlXmlReader::parseElement( TiXmlElement* pXmlElement )
     if ( tamlRefId != 0 )
     {
         // Yes, so insert reference.
-        mObjectReferenceMap.insert( tamlRefId, pSimObject );
+        mObjectReferenceMap.insertUnique( tamlRefId, pSimObject );
     }
 
     // Fetch any children.
@@ -291,7 +291,7 @@ void TamlXmlReader::parseAttributes( TiXmlElement* pXmlElement, SimObject* pSimO
             continue;
 
         // Set the field.
-        pSimObject->setPrefixedDataField( attributeName, NULL, pAttribute->Value() );
+        pSimObject->setDataField( attributeName, NULL, pAttribute->Value() );
     }
 }
 

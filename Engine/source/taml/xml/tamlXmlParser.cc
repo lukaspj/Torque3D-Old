@@ -27,6 +27,10 @@
 // Debug Profiling.
 #include "platform/profiler.h"
 
+#ifndef _FILESTREAM_H_
+#include "core/stream/fileStream.h"
+#endif
+
 //-----------------------------------------------------------------------------
 
 bool TamlXmlParser::accept( const char* pFilename, TamlVisitor& visitor )
@@ -93,15 +97,15 @@ bool TamlXmlParser::accept( const char* pFilename, TamlVisitor& visitor )
         return true;
 
     // Open for write?
-    if ( !stream.open( filenameBuffer, FileStream::Write ) )
+    /*if ( !stream.open( filenameBuffer, FileStream::StreamWrite ) )
     {
         // No, so warn.
         Con::warnf("TamlXmlParser::parse() - Could not open filename '%s' for write.", filenameBuffer );
         return false;
-    }
+    }*/
 
     // Yes, so save the document.
-    if ( !xmlDocument.SaveFile( stream ) )
+    if ( !xmlDocument.SaveFile( filenameBuffer ) )
     {
         // Warn!
         Con::warnf("TamlXmlParser: Could not save Taml XML document.");
@@ -109,7 +113,7 @@ bool TamlXmlParser::accept( const char* pFilename, TamlVisitor& visitor )
     }
 
     // Close the stream.
-    stream.close();
+    //stream.close();
 
     return true;
 }
