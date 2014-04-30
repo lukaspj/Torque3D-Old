@@ -41,12 +41,12 @@ bool TamlJSONParser::accept( const char* pFilename, TamlVisitor& visitor )
 
     // Expand the file-path.
     char filenameBuffer[1024];
-    Con::expandPath( filenameBuffer, sizeof(filenameBuffer), pFilename );
+    Con::expandToolScriptFilename( filenameBuffer, sizeof(filenameBuffer), pFilename );
 
     FileStream stream;
 
     // File open for read?
-    if ( !stream.open( filenameBuffer, FileStream::Read ) )
+    if ( !stream.open( filenameBuffer, Torque::FS::File::Write ) )
     {
         // No, so warn.
         Con::warnf("TamlJSONParser::parse() - Could not open filename '%s' for parse.", filenameBuffer );
@@ -91,14 +91,15 @@ bool TamlJSONParser::accept( const char* pFilename, TamlVisitor& visitor )
     parseType( rootItr, visitor, true );
 
     // Reset parsing filename.
-    setParsingFilename( StringTable->EmptyString );
+    setParsingFilename( StringTable->EmptyString() );
 
     // Finish if the document is not dirty.
     if ( !mDocumentDirty )
         return true;
 
     // Open for write?
-    if ( !stream.open( filenameBuffer, FileStream::Write ) )
+
+    if ( !stream.open( filenameBuffer, Torque::FS::File::Write ) )
     {
         // No, so warn.
         Con::warnf("TamlJSONParser::parse() - Could not open filename '%s' for write.", filenameBuffer );

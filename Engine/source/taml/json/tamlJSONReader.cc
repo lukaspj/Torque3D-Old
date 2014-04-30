@@ -107,7 +107,7 @@ SimObject* TamlJSONReader::parseType( const rapidjson::Value::ConstMemberIterato
     if ( tamlRefToId != 0 )
     {
         // Yes, so fetch reference.
-        typeObjectReferenceHash::iterator referenceItr = mObjectReferenceMap.find( tamlRefToId );
+        typeObjectReferenceHash::Iterator referenceItr = mObjectReferenceMap.find( tamlRefToId );
 
         // Did we find the reference?
         if ( referenceItr == mObjectReferenceMap.end() )
@@ -161,7 +161,7 @@ SimObject* TamlJSONReader::parseType( const rapidjson::Value::ConstMemberIterato
     StringTableEntry objectName = StringTable->insert( getTamlObjectName( typeValue ) );
 
     // Does the object require a name?
-    if ( objectName == StringTable->EmptyString )
+    if ( objectName == StringTable->EmptyString() )
     {
         // No, so just register anonymously.
         pSimObject->registerObject();
@@ -184,7 +184,7 @@ SimObject* TamlJSONReader::parseType( const rapidjson::Value::ConstMemberIterato
     if ( tamlRefId != 0 )
     {
         // Yes, so insert reference.
-        mObjectReferenceMap.insert( tamlRefId, pSimObject );
+        mObjectReferenceMap.insertUnique( tamlRefId, pSimObject );
     }
 
     // Parse children and custom node members.
@@ -254,7 +254,7 @@ inline void TamlJSONReader::parseField( rapidjson::Value::ConstMemberIterator& m
     }
 
     // Set field.
-    pSimObject->setPrefixedDataField( fieldName, NULL, valueBuffer );
+    pSimObject->setDataField( fieldName, NULL, valueBuffer );
 }
 
 //-----------------------------------------------------------------------------

@@ -28,8 +28,8 @@
 #endif
 
 /// RapidJson.
-#include "rapidjson/document.h"
-#include "rapidjson/prettywriter.h"
+#include "taml/rapidjson/document.h"
+#include "taml/rapidjson/prettywriter.h"
 
 //-----------------------------------------------------------------------------
 
