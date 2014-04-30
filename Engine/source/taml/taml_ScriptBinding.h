@@ -19,46 +19,51 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
+#ifndef _TAML_SCRIPTBINDING_H
+#define _TAML_SCRIPTBINDING_H
 
 #include "console/engineAPI.h"
-/*
-DefineEngineMethod(Taml, setFormat, void, (Taml::TamlFormatMode formatMode), ,  "(format) - Sets the format that Taml should use to read/write.\n"
+
+DefineEngineMethod(Taml, setFormat, void, (const char* formatName), ,  "(format) - Sets the format that Taml should use to read/write.\n"
                                             "@param format The format to use: 'xml' or 'binary'.\n"
                                             "@return No return value.")
 {
-      // Was the format valid?
-      if ( formatMode == Taml::InvalidFormat )
-      {
-         // No, so warn.
-         Con::warnf( "Taml::setFormat() - Invalid format mode used: '%s'.", formatMode );
-         return;
-      }
+   // Fetch format mode.
+   const Taml::TamlFormatMode formatMode = Taml::getFormatModeEnum(formatName);
+   
+   // Was the format valid?
+   if ( formatMode == Taml::InvalidFormat )
+   {
+      // No, so warn.
+      Con::warnf( "Taml::setFormat() - Invalid format mode used: '%s'.", formatName );
+      return;
+   }
 
-      // Set format mode.
-      object->setFormatMode( formatMode );
+   // Set format mode.
+   object->setFormatMode( formatMode );
 }
 
 //-----------------------------------------------------------------------------
 
-DefineEngineMethod(Taml, _getFormat, Taml::TamlFormatMode, (), ,  "() - Gets the format that Taml should use to read/write.\n"
+DefineEngineMethod(Taml, getFormat, const char*, (), ,  "() - Gets the format that Taml should use to read/write.\n"
                                                     "@return The format that Taml should use to read/write.")
 {
     // Fetch format mode.
-    return object->getFormatMode();
-}*/
-
-//-----------------------------------------------------------------------------
-
-ConsoleMethod(Taml, setAutoFormat, void, 3, 3,  "(autoFormat) Sets whether the format type is automatically determined by the filename extension or not.\n"
-                                                "@param autoFormat Whether the format type is automatically determined by the filename extension or not.\n"
-                                                "@return No return value." )
-{
-    object->setAutoFormat( dAtob(argv[2]) );
+   return Taml::getFormatModeDescription(object->getFormatMode());
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, getAutoFormat, bool, 2, 2,  "() Gets whether the format type is automatically determined by the filename extension or not.\n"
+DefineEngineMethod(Taml, setAutoFormat, void, (bool autoFormat), ,  "(autoFormat) Sets whether the format type is automatically determined by the filename extension or not.\n"
+                                                "@param autoFormat Whether the format type is automatically determined by the filename extension or not.\n"
+                                                "@return No return value." )
+{
+    object->setAutoFormat( autoFormat );
+}
+
+//-----------------------------------------------------------------------------
+
+DefineEngineMethod(Taml, getAutoFormat, bool, (), ,  "() Gets whether the format type is automatically determined by the filename extension or not.\n"
                                                 "@return Whether the format type is automatically determined by the filename extension or not." )
 {
     return object->getAutoFormat();
@@ -66,16 +71,16 @@ ConsoleMethod(Taml, getAutoFormat, bool, 2, 2,  "() Gets whether the format type
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, setWriteDefaults, void, 3, 3,   "(writeDefaults) Sets whether to write static fields that are at their default or not.\n"
+DefineEngineMethod(Taml, setWriteDefaults, void, (bool writeDefaults), ,   "(writeDefaults) Sets whether to write static fields that are at their default or not.\n"
                                                     "@param writeDefaults Whether to write static fields that are at their default or not.\n"
                                                     "@return No return value." )
 {
-    object->setWriteDefaults( dAtob(argv[2]) );
+    object->setWriteDefaults( writeDefaults );
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, getWriteDefaults, bool, 2, 2,   "() Gets whether to write static fields that are at their default or not.\n"
+DefineEngineMethod(Taml, getWriteDefaults, bool, (), ,   "() Gets whether to write static fields that are at their default or not.\n"
                                                     "@return Whether to write static fields that are at their default or not." )
 {
     return object->getWriteDefaults();
@@ -83,17 +88,17 @@ ConsoleMethod(Taml, getWriteDefaults, bool, 2, 2,   "() Gets whether to write st
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, setProgenitorUpdate, void, 3, 3,    "(progenitorUpdate) Sets whether to update each type instances file-progenitor or not.\n"
+DefineEngineMethod(Taml, setProgenitorUpdate, void, (bool progenitorUpdate), ,    "(progenitorUpdate) Sets whether to update each type instances file-progenitor or not.\n"
                                                         "If not updating then the progenitor stay as the script that executed the call to Taml.\n"
                                                         "@param progenitorUpdate Whether to update each type instances file-progenitor or not.\n"
                                                         "@return No return value." )
 {
-    object->setProgenitorUpdate( dAtob(argv[2]) );
+    object->setProgenitorUpdate( progenitorUpdate );
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, getProgenitorUpdate, bool, 2, 2,    "() Gets whether to update each type instances file-progenitor or not.\n"
+DefineEngineMethod(Taml, getProgenitorUpdate, bool, (), ,    "() Gets whether to update each type instances file-progenitor or not.\n"
                                                         "@return Whether to update each type instances file-progenitor or not." )
 {
     return object->getProgenitorUpdate();
@@ -101,16 +106,16 @@ ConsoleMethod(Taml, getProgenitorUpdate, bool, 2, 2,    "() Gets whether to upda
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, setAutoFormatXmlExtension, void, 3, 3,  "(extension) Sets the extension (end of filename) used to detect the XML format.\n"
+DefineEngineMethod(Taml, setAutoFormatXmlExtension, void, (const char* extension), ,  "(extension) Sets the extension (end of filename) used to detect the XML format.\n"
                                                             "@param extension The extension (end of filename) used to detect the XML format.\n"
                                                             "@return No return value." )
 {
-    object->setAutoFormatXmlExtension( argv[2] );
+    object->setAutoFormatXmlExtension( extension );
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, getAutoFormatXmlExtension, const char*, 3, 3,   "() Gets the extension (end of filename) used to detect the XML format.\n"
+DefineEngineMethod(Taml, getAutoFormatXmlExtension, const char*, (), ,   "() Gets the extension (end of filename) used to detect the XML format.\n"
                                                                     "@return The extension (end of filename) used to detect the XML format." )
 {
     return object->getAutoFormatXmlExtension();
@@ -118,16 +123,16 @@ ConsoleMethod(Taml, getAutoFormatXmlExtension, const char*, 3, 3,   "() Gets the
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, setAutoFormatBinaryExtension, void, 3, 3,   "(extension) Sets the extension (end of filename) used to detect the Binary format.\n"
+DefineEngineMethod(Taml, setAutoFormatBinaryExtension, void, (const char* extension), ,   "(extension) Sets the extension (end of filename) used to detect the Binary format.\n"
                                                                 "@param extension The extension (end of filename) used to detect the Binary format.\n"
                                                                 "@return No return value." )
 {
-    object->setAutoFormatBinaryExtension( argv[2] );
+    object->setAutoFormatBinaryExtension( extension );
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, getAutoFormatBinaryExtension, const char*, 3, 3,    "() Gets the extension (end of filename) used to detect the Binary format.\n"
+DefineEngineMethod(Taml, getAutoFormatBinaryExtension, const char*, (), ,    "() Gets the extension (end of filename) used to detect the Binary format.\n"
                                                                         "@return The extension (end of filename) used to detect the Binary format." )
 {
     return object->getAutoFormatBinaryExtension();
@@ -135,17 +140,17 @@ ConsoleMethod(Taml, getAutoFormatBinaryExtension, const char*, 3, 3,    "() Gets
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, setBinaryCompression, void, 3, 3,   "(compressed) - Sets whether ZIP compression is used on binary formatting or not.\n"
+DefineEngineMethod(Taml, setBinaryCompression, void, (bool compressed), ,   "(compressed) - Sets whether ZIP compression is used on binary formatting or not.\n"
                                                         "@param compressed Whether compression is on or off.\n"
                                                         "@return No return value.")
 {
     // Set compression.
-    object->setBinaryCompression( dAtob(argv[2]) );
+    object->setBinaryCompression( compressed );
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, getBinaryCompression, bool, 2, 2,  "() - Gets whether ZIP compression is used on binary formatting or not.\n"
+DefineEngineMethod(Taml, getBinaryCompression, bool, (), ,  "() - Gets whether ZIP compression is used on binary formatting or not.\n"
                                                         "@return Whether ZIP compression is used on binary formatting or not.")
 {
     // Fetch compression.
@@ -154,55 +159,72 @@ ConsoleMethod(Taml, getBinaryCompression, bool, 2, 2,  "() - Gets whether ZIP co
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, write, bool, 4, 4,  "(object, filename) - Writes an object to a file using Taml.\n"
+/*! Sets whether to write JSON that is strictly compatible with RFC4627 or not.
+    @param jsonStrict Whether to write JSON that is strictly compatible with RFC4627 or not.
+    @return No return value.
+*/
+DefineEngineMethod(Taml, setJSONStrict, void, (bool strict), , "(jsonStrict) - Sets whether to write JSON that is strictly compatible with RFC4627 or not."
+    "@param jsonStrict Whether to write JSON that is strictly compatible with RFC4627 or not."
+    "@return No return value.")
+{
+    // Set JSON Strict.
+    object->setJSONStrict( strict );
+}
+
+//-----------------------------------------------------------------------------
+
+/*! Gets whether to write JSON that is strictly compatible with RFC4627 or not.
+    @return whether to write JSON that is strictly compatible with RFC4627 or not.
+*/
+DefineEngineMethod(Taml, getJSONStrict, bool, (), , "() - Gets whether to write JSON that is strictly compatible with RFC4627 or not."
+    "@return whether to write JSON that is strictly compatible with RFC4627 or not.")
+{
+    // Get RFC strict.
+    return object->getJSONStrict();
+}
+
+//-----------------------------------------------------------------------------
+
+DefineEngineMethod(Taml, write, bool, (SimObject* obj, const char* filename), ,  "(object, filename) - Writes an object to a file using Taml.\n"
                                         "@param object The object to write.\n"
                                         "@param filename The filename to write to.\n"
                                         "@return Whether the write was successful or not.")
 {
-    // Fetch filename.
-    const char* pFilename = argv[3];
-
-    // Find object.
-    SimObject* pSimObject = Sim::findObject( argv[2] );
-
-    // Did we find the object?
-    if ( pSimObject == NULL )
+   // Did we find the object?
+    if ( obj == NULL )
     {
         // No, so warn.
-        Con::warnf( "Taml::write() - Could not find object '%s' to write to file '%s'.", argv[2], pFilename );
+        Con::warnf( "Taml::write() - Tried to write a NULL object to file '%s'.", filename );
         return false;
     }
 
-    return object->write( pSimObject, pFilename );
+    return object->write( obj, filename );
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleMethod(Taml, read, const char*, 3, 3,    "(filename) - Read an object from a file using Taml.\n"
+DefineEngineMethod(Taml, read, SimObject*, (const char* filename), ,    "(filename) - Read an object from a file using Taml.\n"
                                                 "@param filename The filename to read from.\n"
                                                 "@return (Object) The object read from the file or an empty string if read failed.")
 {
-    // Fetch filename.
-    const char* pFilename = argv[2];
-
     // Read object.
-    SimObject* pSimObject = object->read( pFilename );
+    SimObject* pSimObject = object->read( filename );
 
     // Did we find the object?
     if ( pSimObject == NULL )
     {
         // No, so warn.
-        Con::warnf( "Taml::read() - Could not read object from file '%s'.", pFilename );
-        return StringTable->EmptyString();
+        Con::warnf( "Taml::read() - Could not read object from file '%s'.", filename );
+        return NULL;
     }
 
-    return pSimObject->getIdString();
+    return pSimObject;
 }
 
 //-----------------------------------------------------------------------------
-/*
-DefineEngineFunction(TamlWrite, bool, (SimObject* simObject, const char* filename, Taml::TamlFormatMode format, bool compressed), 
-                                       (Taml::TamlFormatMode::XmlFormat, true),  
+
+DefineEngineFunction(TamlWrite, bool, (SimObject* simObject, const char* filename, const char* format, bool compressed), 
+                                       ("xml", true),  
                                         "(object, filename, [format], [compressed]) - Writes an object to a file using Taml.\n"
                                         "@param object The object to write.\n"
                                         "@param filename The filename to write to.\n"
@@ -221,7 +243,7 @@ DefineEngineFunction(TamlWrite, bool, (SimObject* simObject, const char* filenam
 
     Taml taml;
 
-   taml.setFormatMode( format );  
+    taml.setFormatMode( Taml::getFormatModeEnum(format) );  
 
    // Yes, so is the format mode binary?
    if ( taml.getFormatMode() == Taml::BinaryFormat )
@@ -244,7 +266,7 @@ DefineEngineFunction(TamlWrite, bool, (SimObject* simObject, const char* filenam
 
 //-----------------------------------------------------------------------------
 
-DefineEngineFunction(TamlRead, const char*, (const char* filename, Taml::TamlFormatMode format), (Taml::TamlFormatMode::XmlFormat),    "(filename, [format]) - Read an object from a file using Taml.\n"
+DefineEngineFunction(TamlRead, const char*, (const char* filename, const char* format), ("xml"),    "(filename, [format]) - Read an object from a file using Taml.\n"
                                                 "@param filename The filename to read from.\n"
                                                 "@param format The file format to use.  Optional: Defaults to 'xml'.  Can be set to 'binary'.\n"
                                                 "@return (Object) The object read from the file or an empty string if read failed.")
@@ -254,7 +276,7 @@ DefineEngineFunction(TamlRead, const char*, (const char* filename, Taml::TamlFor
     Taml taml;
 
 	// Yes, so set it.
-	taml.setFormatMode( format );  
+    taml.setFormatMode( Taml::getFormatModeEnum(format) );  
 
 	// Turn-off auto-formatting.
 	taml.setAutoFormat( false );
@@ -272,13 +294,15 @@ DefineEngineFunction(TamlRead, const char*, (const char* filename, Taml::TamlFor
 
     return pSimObject->getIdString();
 }
-*/
+
 //-----------------------------------------------------------------------------
 
-ConsoleFunction(GenerateTamlSchema, bool, 1, 1, "() - Generate a TAML schema file of all engine types.\n"
+DefineEngineFunction(GenerateTamlSchema, bool, (), , "() - Generate a TAML schema file of all engine types.\n"
                                                 "The schema file is specified using the console variable '" TAML_SCHEMA_VARIABLE "'.\n"
                                                 "@return Whether the schema file was writtent or not." )
 {
     // Generate the schema.
     return Taml::generateTamlSchema();
 }
+
+#endif _TAML_SCRIPTBINDING_H

@@ -46,16 +46,18 @@ const ColorI ColorI::BLUE( 0, 0, 255 );
 #include "core/strings/stringUnit.h"
 #endif
 
-#ifndef _HASHTABLE_H
-#include "taml/tamlHashMap.h"
+#ifndef _TDICTIONARY_H_
+#include "core/util/tDictionary.h"
 #endif
+
+#include "console/consoleInternal.h"
 
 //-----------------------------------------------------------------------------
 
-typedef HashMap<StringTableEntry, ColorF> typeNameToColorFHash;
-typedef HashMap<StringTableEntry, ColorI> typeNameToColorIHash;
-typedef HashMap<ColorF, StringTableEntry> typeColorFToNameHash;
-typedef HashMap<ColorI, StringTableEntry> typeColorIToNameHash;
+typedef HashTable<StringTableEntry, ColorF> typeNameToColorFHash;
+typedef HashTable<StringTableEntry, ColorI> typeNameToColorIHash;
+typedef HashTable<ColorF, StringTableEntry> typeColorFToNameHash;
+typedef HashTable<ColorI, StringTableEntry> typeColorIToNameHash;
 
 static typeNameToColorFHash    mNameToColorF;
 static typeNameToColorIHash    mNameToColorI;
@@ -235,10 +237,10 @@ void StockColor::create( void )
         StringTableEntry colorName = StringTable->insert( stockColor.mColorName );
 
         // Insert stock color mappings.
-        mNameToColorF.insert( colorName, stockColor.mColorF );
-        mNameToColorI.insert( colorName, stockColor.mColorI );
-        mColorFToName.insert( stockColor.mColorF, colorName );
-        mColorIToName.insert( stockColor.mColorI, colorName );
+        mNameToColorF.insertUnique( colorName, stockColor.mColorF );
+        mNameToColorI.insertUnique( colorName, stockColor.mColorI );
+        mColorFToName.insertUnique( stockColor.mColorF, colorName );
+        mColorIToName.insertUnique( stockColor.mColorI, colorName );
     }
 
     // Flag as created.
@@ -288,7 +290,7 @@ const ColorF& StockColor::colorF( const char* pStockColorName )
     StringTableEntry colorName = StringTable->insert( pStockColorName );
 
     // Find stock color.
-    typeNameToColorFHash::iterator colorItr = mNameToColorF.find( colorName );
+    typeNameToColorFHash::Iterator colorItr = mNameToColorF.find( colorName );
 
     // Return color if found.
     if ( colorItr != mNameToColorF.end() )
@@ -312,7 +314,7 @@ const ColorI& StockColor::colorI( const char* pStockColorName )
     StringTableEntry colorName = StringTable->insert( pStockColorName );
 
     // Find stock color.
-    typeNameToColorIHash::iterator colorItr = mNameToColorI.find( colorName );
+    typeNameToColorIHash::Iterator colorItr = mNameToColorI.find( colorName );
 
     // Return color if found.
     if ( colorItr != mNameToColorI.end() )
@@ -330,7 +332,7 @@ const ColorI& StockColor::colorI( const char* pStockColorName )
 StringTableEntry StockColor::name( const ColorF& color )
 {
     // Find stock color name.
-    typeColorFToNameHash::iterator colorNameItr = mColorFToName.find( color );
+    typeColorFToNameHash::Iterator colorNameItr = mColorFToName.find( color );
 
     // Return name if found.
     if ( colorNameItr != mColorFToName.end() )
@@ -345,7 +347,7 @@ StringTableEntry StockColor::name( const ColorF& color )
 StringTableEntry StockColor::name( const ColorI& color )
 {
     // Find stock color name.
-    typeColorIToNameHash::iterator colorNameItr = mColorIToName.find( color );
+    typeColorIToNameHash::Iterator colorNameItr = mColorIToName.find( color );
 
     // Return name if found.
     if ( colorNameItr != mColorIToName.end() )

@@ -24,6 +24,7 @@
 #define _TAML_VISITOR_H_
 
 #include "core/stringTable.h"
+#include "core/strings/stringFunctions.h"
 
 //-----------------------------------------------------------------------------
 

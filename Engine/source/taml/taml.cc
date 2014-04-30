@@ -23,19 +23,35 @@
 #include "taml.h"
 
 #ifndef _TAML_XMLWRITER_H_
-#include "taml/tamlXmlWriter.h"
+#include "taml/xml/tamlXmlWriter.h"
 #endif
 
 #ifndef _TAML_XMLREADER_H_
-#include "taml/tamlXmlReader.h"
+#include "taml/xml/tamlXmlReader.h"
+#endif
+
+#ifndef _TAML_XMLPARSER_H_
+#include "taml/xml/tamlXmlParser.h"
 #endif
 
 #ifndef _TAML_BINARYWRITER_H_
-#include "taml/tamlBinaryWriter.h"
+#include "taml/binary/tamlBinaryWriter.h"
 #endif
 
 #ifndef _TAML_BINARYREADER_H_
-#include "taml/tamlBinaryReader.h"
+#include "taml/binary/tamlBinaryReader.h"
+#endif
+
+#ifndef _TAML_JSONWRITER_H_
+#include "taml/json/tamlJSONWriter.h"
+#endif
+
+#ifndef _TAML_JSONREADER_H_
+#include "taml/json/tamlJSONReader.h"
+#endif
+
+#ifndef _TAML_JSONPARSER_H_
+#include "taml/json/tamlJSONParser.h"
 #endif
 
 #ifndef _FRAMEALLOCATOR_H_
@@ -80,20 +96,57 @@ typedef Taml::TamlFormatMode _TamlFormatMode;
 ImplementEnumType( _TamlFormatMode,
    "")
    { Taml::XmlFormat, "xml" },
-   { Taml::BinaryFormat, "binary" }
+   { Taml::BinaryFormat, "binary" },
+   { Taml::JSONFormat, "json" }
 EndImplementEnumType;
+
+//-----------------------------------------------------------------------------
+
+Taml::TamlFormatMode Taml::getFormatModeEnum(const char* label)
+{
+    // Search for Mnemonic.
+   for (U32 i = 0; i < (sizeof(__TamlFormatMode::_sEnums) / sizeof(EnumTable::Value)); i++)
+    {
+       if( dStricmp(__TamlFormatMode::_sEnumTable[i].getName(), label) == 0)
+          return (TamlFormatMode)__TamlFormatMode::_sEnumTable[i].getInt();
+    }
+
+    // Warn.
+    Con::warnf( "Taml::getFormatModeEnum() - Invalid format of '%s'.", label );
+
+    return Taml::InvalidFormat;
+}
+
+//-----------------------------------------------------------------------------
+
+const char* Taml::getFormatModeDescription(const Taml::TamlFormatMode formatMode)
+{
+    // Search for Mnemonic.
+    for (U32 i = 0; i < (sizeof(__TamlFormatMode::_sEnums) / sizeof(EnumTable::Value)); i++)
+    {
+       if( __TamlFormatMode::_sEnumTable[i].getInt() == (S32)formatMode )
+          return __TamlFormatMode::_sEnumTable[i].getName();
+    }
+
+    // Warn.
+    Con::warnf( "Taml::getFormatModeDescription() - Invalid format mode." );
+
+    return StringTable->EmptyString();
+}
 
 //-----------------------------------------------------------------------------
 
 // The string-table-entries are set to string literals below because Taml is used in a static scope and the string-table cannot currently be used like that.
 Taml::Taml() :
     mFormatMode(XmlFormat),
+    mJSONStrict( true ),
     mBinaryCompression(true),
     mWriteDefaults(false),
     mProgenitorUpdate(true),    
     mAutoFormat(true),
     mAutoFormatXmlExtension("taml"),    
-    mAutoFormatBinaryExtension("baml")
+    mAutoFormatBinaryExtension("baml"),
+    mAutoFormatJSONExtension("json")
 {
     // Reset the file-path buffer.
     mFilePathBuffer[0] = 0;
@@ -107,12 +160,42 @@ void Taml::initPersistFields()
     Parent::initPersistFields();
 
     addField("Format", TYPEID<_TamlFormatMode>(), Offset(mFormatMode, Taml), "The read/write format that should be used.");
+    addField("JSONStrict", TypeBool, Offset(mBinaryCompression, Taml), "Whether to write JSON that is strictly compatible with RFC4627 or not.\n");
     addField("BinaryCompression", TypeBool, Offset(mBinaryCompression, Taml), "Whether ZIP compression is used on binary formatting or not.\n");
     addField("WriteDefaults", TypeBool, Offset(mWriteDefaults, Taml), "Whether to write static fields that are at their default or not.\n");
     addField("ProgenitorUpdate", TypeBool, Offset(mProgenitorUpdate, Taml), "Whether to update each type instances file-progenitor or not.\n");
     addField("AutoFormat", TypeBool, Offset(mAutoFormat, Taml), "Whether the format type is automatically determined by the filename extension or not.\n");
     addField("AutoFormatXmlExtension", TypeString, Offset(mAutoFormatXmlExtension, Taml), "When using auto-format, this is the extension (end of filename) used to detect the XML format.\n");
     addField("AutoFormatBinaryExtension", TypeString, Offset(mAutoFormatBinaryExtension, Taml), "When using auto-format, this is the extension (end of filename) used to detect the BINARY format.\n");
+    addField("AutoFormatJSONExtension", TypeString, Offset(mAutoFormatJSONExtension, Taml), "When using auto-format, this is the extension (end of filename) used to detect the JSON format.\n");
+}
+
+//-----------------------------------------------------------------------------
+
+bool Taml::onAdd()
+{
+    // Call parent.
+    if ( !Parent::onAdd() )
+        return false;
+
+    // Set JSON strict mode.
+    mJSONStrict = Con::getBoolVariable( TAML_JSON_STRICT_VARIBLE, true );
+
+    // Reset the compilation.
+    resetCompilation();
+
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+
+void Taml::onRemove()
+{
+    // Reset the compilation.
+    resetCompilation();
+
+    // Call parent.
+    Parent::onRemove();
 }
 
 //-----------------------------------------------------------------------------
@@ -129,7 +212,7 @@ bool Taml::write( SimObject* pSimObject, const char* pFilename )
     // Expand the file-name into the file-path buffer.
     Con::expandToolScriptFilename( mFilePathBuffer, sizeof(mFilePathBuffer), pFilename );
 
-    /*FileStream stream;
+    FileStream stream;
 
     // File opened?
     if ( !stream.open( mFilePathBuffer, Torque::FS::File::Write ) )
@@ -137,7 +220,7 @@ bool Taml::write( SimObject* pSimObject, const char* pFilename )
         // No, so warn.
         Con::warnf("Taml::writeFile() - Could not open filename '%s' for write.", mFilePathBuffer );
         return false;
-    }*/
+    }
 
     // Get the file auto-format mode.
     const TamlFormatMode formatMode = getFileAutoFormatMode( mFilePathBuffer );
@@ -146,10 +229,10 @@ bool Taml::write( SimObject* pSimObject, const char* pFilename )
     resetCompilation();
 
     // Write object.
-    const bool status = write( mFilePathBuffer, pSimObject, formatMode );
+    const bool status = write( stream, pSimObject, formatMode );
 
     // Close file.
-    // stream.close();
+    stream.close();
 
     // Reset the compilation.
     resetCompilation();
@@ -170,7 +253,7 @@ SimObject* Taml::read( const char* pFilename )
     // Expand the file-name into the file-path buffer.
     Con::expandToolScriptFilename( mFilePathBuffer, sizeof(mFilePathBuffer), pFilename );
 
-    /*FileStream stream;
+    FileStream stream;
 
     // File opened?
     if ( !stream.open( mFilePathBuffer, Torque::FS::File::Read ) )
@@ -178,7 +261,7 @@ SimObject* Taml::read( const char* pFilename )
         // No, so warn.
         Con::warnf("Taml::read() - Could not open filename '%s' for read.", mFilePathBuffer );
         return NULL;
-    }*/
+    }
 
     // Get the file auto-format mode.
     const TamlFormatMode formatMode = getFileAutoFormatMode( mFilePathBuffer );
@@ -187,10 +270,10 @@ SimObject* Taml::read( const char* pFilename )
     resetCompilation();
 
     // Write object.
-    SimObject* pSimObject = read( mFilePathBuffer, formatMode );
+    SimObject* pSimObject = read( stream, formatMode );
 
     // Close file.
-    // stream.close();
+    stream.close();
 
     // Reset the compilation.
     resetCompilation();
@@ -207,7 +290,7 @@ SimObject* Taml::read( const char* pFilename )
 
 //-----------------------------------------------------------------------------
 
-bool Taml::write( const char* path, SimObject* pSimObject, const TamlFormatMode formatMode )
+bool Taml::write( FileStream& stream, SimObject* pSimObject, const TamlFormatMode formatMode )
 {
     // Sanity!
     AssertFatal( pSimObject != NULL, "Cannot write a NULL object." );
@@ -224,7 +307,7 @@ bool Taml::write( const char* path, SimObject* pSimObject, const TamlFormatMode 
             // Create writer.
             TamlXmlWriter writer( this );
             // Write.
-            return writer.write( path, pRootNode );
+            return writer.write( stream, pRootNode );
         }
 
         /// Binary.
@@ -232,21 +315,21 @@ bool Taml::write( const char* path, SimObject* pSimObject, const TamlFormatMode 
         {
             // Create writer.
             TamlBinaryWriter writer( this );
-            FileStream stream;
 
-             // File opened?
-             if ( !stream.open( path, Torque::FS::File::Write ) )
-             {
-                 // No, so warn.
-                 Con::warnf("Taml::writeFile() - Could not open filename '%s' for write.", mFilePathBuffer );
-                 return false;
-             }
             // Write.
-            bool res = writer.write( stream, pRootNode, mBinaryCompression );
-            stream.close();
-            return res;
+            return writer.write( stream, pRootNode, mBinaryCompression );
         }
-        
+
+        /// JSON.
+        case JSONFormat:
+        {
+            // Create writer.
+            TamlJSONWriter writer( this );
+
+            // Write.
+            return writer.write( stream, pRootNode );
+        }
+
         /// Invalid.
         case InvalidFormat:
         {
@@ -263,7 +346,7 @@ bool Taml::write( const char* path, SimObject* pSimObject, const TamlFormatMode 
 
 //-----------------------------------------------------------------------------
 
-SimObject* Taml::read( const char* path, const TamlFormatMode formatMode )
+SimObject* Taml::read( FileStream& stream, const TamlFormatMode formatMode )
 {
     // Format appropriately.
     switch( formatMode )
@@ -275,7 +358,7 @@ SimObject* Taml::read( const char* path, const TamlFormatMode formatMode )
             TamlXmlReader reader( this );
 
             // Read.
-            return reader.read( path );
+            return reader.read( stream );
         }
 
         /// Binary.
@@ -283,22 +366,19 @@ SimObject* Taml::read( const char* path, const TamlFormatMode formatMode )
         {
             // Create reader.
             TamlBinaryReader reader( this );
-            
-            FileStream stream;
-
-             // File opened?
-             if ( !stream.open( path, Torque::FS::File::Read ) )
-             {
-                 // No, so warn.
-                 Con::warnf("Taml::writeFile() - Could not open filename '%s' for write.", mFilePathBuffer );
-                 return false;
-             }
-            // Write.
 
             // Read.
-            SimObject* res = reader.read( stream );
-            stream.close();
-            return res;
+            return reader.read( stream );
+        }
+
+        /// JSON.
+        case JSONFormat:
+        {
+            // Create reader.
+            TamlJSONReader reader( this );
+
+            // Read.
+            return reader.read( stream );
         }
         
         /// Invalid.
@@ -313,6 +393,64 @@ SimObject* Taml::read( const char* path, const TamlFormatMode formatMode )
     // Warn.
     Con::warnf("Taml::read() - Unknown format.");
     return NULL;
+}
+
+//-----------------------------------------------------------------------------
+
+bool Taml::parse( const char* pFilename, TamlVisitor& visitor )
+{
+    // Debug Profiling.
+    PROFILE_SCOPE(Taml_Parse);
+
+    // Sanity!
+    AssertFatal( pFilename != NULL, "Taml::parse() - Cannot parse a NULL filename." );
+
+    // Fetch format mode.
+    const TamlFormatMode formatMode = getFileAutoFormatMode( pFilename );
+
+    // Handle format mode appropriately.
+    switch( formatMode )
+    {
+        case XmlFormat:
+        {
+            // Parse with the visitor.
+            TamlXmlParser parser;
+
+            // Are property changes needed but not supported?
+            if ( visitor.wantsPropertyChanges() && !parser.canChangeProperty() )
+            {
+                // Yes, so warn.
+                Con::warnf( "Taml::parse() - Cannot parse '%s' file-type for filename '%s' as a specified visitor requires property changes which are not supported by the parser.", getFormatModeDescription(formatMode), pFilename );
+                return false;
+            }
+
+            return parser.accept( pFilename, visitor );            
+        }
+
+        case JSONFormat:
+        {
+            // Parse with the visitor.
+            TamlJSONParser parser;
+
+            // Are property changes needed but not supported?
+            if ( visitor.wantsPropertyChanges() && !parser.canChangeProperty() )
+            {
+                // Yes, so warn.
+                Con::warnf( "Taml::parse() - Cannot parse '%s' file-type for filename '%s' as a specified visitor requires property changes which are not supported by the parser.", getFormatModeDescription(formatMode), pFilename );
+                return false;
+            }
+
+            return parser.accept( pFilename, visitor );            
+        }
+
+        case BinaryFormat:
+        default:
+            break;
+    }
+
+    // Warn.
+    Con::warnf( "Taml::parse() - Cannot parse '%s' file-type for filename '%s' as a required parser is not available.", getFormatModeDescription(formatMode), pFilename );
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -348,7 +486,7 @@ void Taml::resetCompilation( void )
 Taml::TamlFormatMode Taml::getFileAutoFormatMode( const char* pFilename )
 {
     // Sanity!
-    AssertFatal( pFilename != NULL, "Cannot auto-format using a NULL filename." );
+    AssertFatal( pFilename != NULL, "Taml::getFileAutoFormatMode() - Cannot auto-format using a NULL filename." );
 
     // Is auto-format active?
     if ( mAutoFormat )
@@ -356,6 +494,7 @@ Taml::TamlFormatMode Taml::getFileAutoFormatMode( const char* pFilename )
         // Yes, so fetch the extension lengths.
         const U32 xmlExtensionLength = dStrlen( mAutoFormatXmlExtension );
         const U32 binaryExtensionLength = dStrlen( mAutoFormatBinaryExtension );
+        const U32 jsonExtensionLength = dStrlen( mAutoFormatJSONExtension );
 
         // Fetch filename length.
         const U32 filenameLength = dStrlen( pFilename );
@@ -370,6 +509,10 @@ Taml::TamlFormatMode Taml::getFileAutoFormatMode( const char* pFilename )
         // Check for the Binary format.
         if ( binaryExtensionLength <= filenameLength && dStricmp( pEndOfFilename - xmlExtensionLength, mAutoFormatBinaryExtension ) == 0 )
             return Taml::BinaryFormat;  
+
+        // Check for the XML format.
+        if ( jsonExtensionLength <= filenameLength && dStricmp( pEndOfFilename - jsonExtensionLength, mAutoFormatJSONExtension ) == 0 )
+            return Taml::JSONFormat;
     }
 
     // Use the explicitly specified format mode.
@@ -384,19 +527,19 @@ TamlWriteNode* Taml::compileObject( SimObject* pSimObject, const bool forceId )
     PROFILE_SCOPE(Taml_CompileObject);
 
     // Sanity!
-    AssertFatal( pSimObject != NULL, "Cannot compile a NULL object." );
+    AssertFatal( pSimObject != NULL, "Taml::compileObject() - Cannot compile a NULL object." );
 
     // Fetch object Id.
     const SimObjectId objectId = pSimObject->getId();
 
     // Find a previously compiled node.
-    typeCompiledHash::iterator compiledItr = mCompiledObjects.find( objectId );
+    typeCompiledHash::Iterator compiledItr = mCompiledObjects.find( objectId );
 
     // Have we already compiled this?
     if ( compiledItr != mCompiledObjects.end() )
     {
         // Yes, so sanity!
-        AssertFatal( mCompiledNodes.size() != 0, "Found a compiled node at the root." );
+        AssertFatal( mCompiledNodes.size() != 0, "Taml::compileObject() - Found a compiled node at the root." );
 
         // Yes, so fetch node.
         TamlWriteNode* compiledNode = compiledItr->value;
@@ -436,7 +579,7 @@ TamlWriteNode* Taml::compileObject( SimObject* pSimObject, const bool forceId )
     mCompiledNodes.push_back( pNewNode );
 
     // Insert compiled object.
-    mCompiledObjects.insert( objectId, pNewNode );
+    mCompiledObjects.insertUnique( objectId, pNewNode );
 
     // Are there any Taml callbacks?
     if ( pNewNode->mpTamlCallbacks != NULL )
@@ -753,14 +896,14 @@ SimObject* Taml::createType( StringTableEntry typeName, const Taml* pTaml, const
     // Debug Profiling.
     PROFILE_SCOPE(Taml_CreateType);
 
-    typedef HashMap<StringTableEntry, AbstractClassRep*> typeClassHash;
+    typedef HashTable<StringTableEntry, AbstractClassRep*> typeClassHash;
     static typeClassHash mClassMap;
 
     // Sanity!
     AssertFatal( typeName != NULL, "Taml: Type cannot be NULL" );
 
     // Find type.
-    typeClassHash::iterator typeItr = mClassMap.find( typeName );
+    typeClassHash::Iterator typeItr = mClassMap.find( typeName );
 
     // Found type?
     if ( typeItr == mClassMap.end() )
@@ -773,7 +916,7 @@ SimObject* Taml::createType( StringTableEntry typeName, const Taml* pTaml, const
             if( dStricmp( pClassRep->getClassName(), typeName ) == 0 )
             {
                 // Yes, so insert it.
-                typeItr = mClassMap.insert( typeName, pClassRep );
+                typeItr = mClassMap.insertUnique( typeName, pClassRep );
                 break;
             }
 
@@ -855,12 +998,12 @@ bool Taml::generateTamlSchema()
     FileStream stream;
 
     // File opened?
-    if ( !stream.open( filePathBuffer, Torque::FS::File::Write ) )
+    /*if ( !stream.open( filePathBuffer, Torque::FS::File::Write ) )
     {
         // No, so warn.
         Con::warnf("Taml::GenerateTamlSchema() - Could not open filename '%s' for write.", filePathBuffer );
         return false;
-    }
+    }*/
 
     // Create document.
     TiXmlDocument schemaDocument;
@@ -884,7 +1027,7 @@ bool Taml::generateTamlSchema()
 
     // Reset scratch state.
     char buffer[1024];
-    HashMap<AbstractClassRep*, StringTableEntry> childGroups;
+    HashTable<AbstractClassRep*, StringTableEntry> childGroups;
 
     // *************************************************************
     // Generate console type elements.
@@ -1080,7 +1223,7 @@ bool Taml::generateTamlSchema()
             pSequenceElement->LinkEndChild( pChoiceElement );
 
             // Find child group.
-            HashMap<AbstractClassRep*, StringTableEntry>::iterator childGroupItr = childGroups.find( pContainerChildClass );
+            HashTable<AbstractClassRep*, StringTableEntry>::Iterator childGroupItr = childGroups.find( pContainerChildClass );
 
             // Does the group exist?
             if ( childGroupItr == childGroups.end() )
@@ -1089,7 +1232,7 @@ bool Taml::generateTamlSchema()
                 dSprintf( buffer, sizeof(buffer), "%s_ChildrenTypes", pContainerChildClass->getClassName() );
 
                 // Insert into child group hash.
-                childGroupItr = childGroups.insert( pContainerChildClass, StringTable->insert( buffer ) );
+                childGroupItr = childGroups.insertUnique( pContainerChildClass, StringTable->insert( buffer ) );
 
                 // Add the group.
                 TiXmlElement* pChildrenGroupElement = new TiXmlElement( "xs:group" );
@@ -1287,12 +1430,12 @@ bool Taml::generateTamlSchema()
         pAnyAttributeElement->SetAttribute( "processContents", "skip" );
         pComplexTypeElement->LinkEndChild( pAnyAttributeElement );
     }
-    
-    // Close file.
-    stream.close();
 
     // Write the schema document.
     schemaDocument.SaveFile( filePathBuffer );
+
+    // Close file.
+    stream.close();
 
     return true;
 }
