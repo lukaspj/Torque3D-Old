@@ -74,7 +74,7 @@ public:
 		}
 		Base::WriteEndObject();
 		if (Base::level_stack_.Empty())	// end of json text
-			Base::os_.Flush();
+			Base::os_.flush();
 		return *this;
 	}
 
@@ -97,7 +97,7 @@ public:
 		}
 		Base::WriteEndArray();
 		if (Base::level_stack_.Empty())	// end of json text
-			Base::os_.Flush();
+			Base::os_.flush();
 		return *this;
 	}
 
