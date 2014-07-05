@@ -670,6 +670,8 @@ public:
 
    virtual Resources getResources( const MaterialFeatureData &fd );
 
+   virtual U32 getOutputTargets( const MaterialFeatureData &fd ) const { return DefaultTarget | RenderTarget1; }
+
    virtual String getName()
    {
       return "OIT";

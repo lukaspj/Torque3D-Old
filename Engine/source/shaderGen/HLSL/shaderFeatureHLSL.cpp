@@ -2330,6 +2330,30 @@ OITFeatureHLSL::OITFeatureHLSL()
 void OITFeatureHLSL::processVert( Vector<ShaderComponent*> &componentList, 
                                       const MaterialFeatureData &fd )
 {
+   MultiLine *meta = new MultiLine;
+   output = meta;
+   
+   // grab output
+   ShaderConnector *connectComp = dynamic_cast<ShaderConnector *>( componentList[C_CONNECTOR] );
+   Var *outWSEyeVec = connectComp->getElement( RT_TEXCOORD );
+   outWSEyeVec->setName( "wsEyeVec" );
+   outWSEyeVec->setStructName( "OUT" );
+
+   // grab incoming vert position   
+   Var *wsPosition = new Var( "depthPos", "float3" );
+   getWsPosition( componentList, fd.features[MFT_UseInstancing], meta, new DecOp( wsPosition ) );
+
+   Var *eyePos = (Var*)LangElement::find( "eyePosWorld" );
+   if( !eyePos )
+   {
+      eyePos = new Var;
+      eyePos->setType("float3");
+      eyePos->setName("eyePosWorld");
+      eyePos->uniform = true;
+      eyePos->constSortPos = cspPass;
+   }
+
+   meta->addStatement( new GenOp( "   @ = float4( @.xyz - @, 1 );\r\n", outWSEyeVec, wsPosition, eyePos ) );
 }
 
 void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList, 
@@ -2341,6 +2365,33 @@ void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList,
    // Translucent objects do a simple alpha fade.
    if ( fd.features[ MFT_IsTranslucent ] )
    {
+      // grab connector position
+      ShaderConnector *connectComp = dynamic_cast<ShaderConnector *>( componentList[C_CONNECTOR] );
+      Var *wsEyeVec = connectComp->getElement( RT_TEXCOORD );
+      wsEyeVec->setName( "wsEyeVec" );
+      wsEyeVec->setStructName( "IN" );
+      wsEyeVec->setType( "float4" );
+      wsEyeVec->mapsToSampler = false;
+      wsEyeVec->uniform = false;
+      
+      // Expose the depth to the depth format feature
+      Var *depthOut = new Var;
+      depthOut->setType("float");
+      depthOut->setName("z");
+
+      LangElement *depthOutDecl = new DecOp( depthOut );
+
+      Var *farDist = (Var*)Var::find( "oneOverFarplane" );
+      if ( !farDist )
+      {
+         farDist = new Var;
+         farDist->setType("float4");
+         farDist->setName("oneOverFarplane");
+         farDist->uniform = true;
+         farDist->constSortPos = cspPass;
+      }
+      meta->addStatement( new GenOp( "   @ = length( @.xyz / @.w ) * @.x;\r\n", depthOutDecl, wsEyeVec, wsEyeVec, farDist ) );
+
       Var *color0 = (Var*)LangElement::find( "col" );      
       // search for color var
       Var *color1 = (Var*) LangElement::find( getOutputTargetVarName(OutputTarget::RenderTarget1) );
@@ -2361,9 +2412,13 @@ void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList,
       // Insert your favorite weighting function here. The color-based factor
       // avoids color pollution from the edges of wispy clouds. The z-based
       // factor gives precedence to nearer surfaces.
-      meta->addStatement( new GenOp( "   @ *= square(min(1.0, max(max(@.r, @.g), max(@.b, @.a)) * 40.0 + 0.01)) *"
-            "clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);\r\n", new DecOp(weight), color0, color0, color0, color0, Z ) );
-      return;
+      meta->addStatement( new GenOp( "   @ = pow(min(1.0, max(max(@.r, @.g), max(@.b, @.a)) * 40.0 + 0.01),2) *"
+            "clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);\r\n", new DecOp(weight), color0, color0, color0, color0, depthOut ) );
+      
+      meta->addStatement(new GenOp("   @ = float4(0,0,0,0);\r\n", color1));
+      meta->addStatement( new GenOp( "   @.r = @.a;\r\n", color1, color0 ) );
+
+      meta->addStatement( new GenOp( "   @ *= @;\r\n", color0, weight ) );
    }
 }
 
