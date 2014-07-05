@@ -29,12 +29,13 @@
 #ifndef _MATTEXTURETARGET_H_
 #include "materials/matTextureTarget.h"
 #endif
+#include <renderInstance/renderTexTargetBinManager.h>
 
 class RenderParticleMgr;
 
-class RenderTranslucentMgr : public RenderBinManager
+class RenderTranslucentMgr : public RenderTexTargetBinManager
 {
-   typedef RenderBinManager Parent;
+   typedef RenderTexTargetBinManager Parent;
 
 public:
 
@@ -46,6 +47,11 @@ public:
    void render(SceneRenderState * state);
    void addElement( RenderInst *inst );
    void setupSGData( MeshRenderInst *ri, SceneData &data );
+   bool _updateTargets();
+   bool setTargetSize(const Point2I &newTargetSize);
+
+   void _initShaders();
+   void clearBuffers();
 
    // ConsoleObject
    DECLARE_CONOBJECT(RenderTranslucentMgr);
@@ -60,7 +66,17 @@ protected:
    GFXStateBlockRef mStateBlocks[MaxBlend];
    
    GFXStateBlockRef _getStateBlock( U8 transFlag );
-   RenderParticleMgr *mParticleRenderMgr;;
+   RenderParticleMgr *mParticleRenderMgr;
+
+   NamedTexTarget mAlphaTarget;
+   GFXTexHandle mAlphaTex;
+
+   GFXStateBlock* mAlphaStateblock;
+   GFXStateBlock* mPremultStateblock;
+
+   GFXStateBlock* mClearStateblock;
+
+   GFXShaderRef mClearShader;
 };
 
 

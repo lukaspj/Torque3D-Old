@@ -2318,6 +2318,68 @@ ShaderFeature::Resources VisibilityFeatHLSL::getResources( const MaterialFeature
 }
 
 //****************************************************************************
+// Visibility
+//****************************************************************************
+
+OITFeatureHLSL::OITFeatureHLSL()
+   : mTorqueDep( "shaders/common/torque.hlsl" )
+{
+   addDependency( &mTorqueDep );
+}
+
+void OITFeatureHLSL::processVert( Vector<ShaderComponent*> &componentList, 
+                                      const MaterialFeatureData &fd )
+{
+}
+
+void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList, 
+                                       const MaterialFeatureData &fd )
+{
+   MultiLine *meta = new MultiLine;
+   output = meta;
+
+   // Translucent objects do a simple alpha fade.
+   if ( fd.features[ MFT_IsTranslucent ] )
+   {
+      Var *color0 = (Var*)LangElement::find( "col" );      
+      // search for color var
+      Var *color1 = (Var*) LangElement::find( getOutputTargetVarName(OutputTarget::RenderTarget1) );
+
+      if ( !color1 )
+      {
+         // create color var
+         color1 = new Var;
+         color1->setType( "fragout" );
+         color1->setName( getOutputTargetVarName(OutputTarget::RenderTarget1) );
+         color1->setStructName( "OUT" );
+      }
+      meta->addStatement( new GenOp( "   @.rgb *= @.a;\r\n", color0, color0 ) );
+      
+      Var *weight = new Var;
+      weight->setType( "float" );
+      weight->setName( "weight" );
+      // Insert your favorite weighting function here. The color-based factor
+      // avoids color pollution from the edges of wispy clouds. The z-based
+      // factor gives precedence to nearer surfaces.
+      meta->addStatement( new GenOp( "   @ *= square(min(1.0, max(max(@.r, @.g), max(@.b, @.a)) * 40.0 + 0.01)) *"
+            "clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);\r\n", new DecOp(weight), color0, color0, color0, color0, Z ) );
+      return;
+   }
+}
+
+ShaderFeature::Resources OITFeatureHLSL::getResources( const MaterialFeatureData &fd )
+{
+   Resources res; 
+
+   // TODO: Fix for instancing.
+   
+   //if ( !fd.features[ MFT_IsTranslucent ] )
+   //   res.numTexReg = 1;
+
+   return res;
+}
+
+//****************************************************************************
 // AlphaTest
 //****************************************************************************
 

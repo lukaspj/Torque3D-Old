@@ -483,6 +483,9 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
                                        &fd );
    }
 
+   if ( mMaterial->isTranslucent() )
+      fd.features.addFeature();
+
    // Now disable any features that were 
    // not part of the input feature handle.
    fd.features.filter( features );

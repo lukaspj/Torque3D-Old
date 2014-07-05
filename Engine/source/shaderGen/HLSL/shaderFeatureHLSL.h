@@ -651,4 +651,30 @@ public:
 };
 
 
+/// OIT
+class OITFeatureHLSL : public ShaderFeatureHLSL
+{
+protected:
+
+   ShaderIncludeDependency mTorqueDep;
+
+public:
+
+   OITFeatureHLSL();
+
+   virtual void processVert( Vector<ShaderComponent*> &componentList,
+                             const MaterialFeatureData &fd );
+
+   virtual void processPix( Vector<ShaderComponent*> &componentList, 
+                            const MaterialFeatureData &fd );
+
+   virtual Resources getResources( const MaterialFeatureData &fd );
+
+   virtual String getName()
+   {
+      return "OIT";
+   }
+};
+
+
 #endif // _SHADERGEN_HLSL_SHADERFEATUREHLSL_H_

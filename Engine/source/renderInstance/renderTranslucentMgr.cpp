@@ -33,6 +33,9 @@
 #include "gfx/gfxDebugEvent.h"
 #include "renderInstance/renderParticleMgr.h"
 #include "math/util/matrixSet.h"
+#include "materials/shaderData.h"
+
+#include "gfx/gfxTextureManager.h"
 
 #define HIGH_NUM ((U32(-1)/2) - 1)
 
@@ -47,14 +50,23 @@ ConsoleDocClass( RenderTranslucentMgr,
 
 
 RenderTranslucentMgr::RenderTranslucentMgr()
-   :  RenderBinManager( RenderPassManager::RIT_Translucent, 1.0f, 1.0f ), mParticleRenderMgr(NULL)
+   :  Parent( RenderPassManager::RIT_Translucent, 1.0f, 1.0f ), mParticleRenderMgr(NULL)
 {
    notifyType( RenderPassManager::RIT_ObjectTranslucent );
    notifyType( RenderPassManager::RIT_Particle );
+   
+   mTargetSizeType = WindowSize;
+
+   mTargetFormat = GFXFormat::GFXFormatR32G32B32A32F;
+   mNamedTarget.registerWithName( "premultbuffer" );
+   mAlphaTarget.registerWithName( "alphabuffer" );
+
+   mClearStateblock = NULL;
 }
 
 RenderTranslucentMgr::~RenderTranslucentMgr()
 {
+   mAlphaTarget.release();
 }
 
 void RenderTranslucentMgr::setupSGData(MeshRenderInst *ri, SceneData &data )
@@ -99,6 +111,95 @@ void RenderTranslucentMgr::addElement( RenderInst *inst )
 
    // Then use the instances primary key as our secondary key
    elem.key2 = inst->defaultKey;
+}
+
+bool RenderTranslucentMgr::_updateTargets()
+{
+   bool ret = Parent::_updateTargets();
+   
+   // Second Render Target
+   mAlphaTarget.release();
+   mAlphaTex.set( mTargetSize.x, mTargetSize.y, GFXFormat::GFXFormatR32F,
+            &GFXDefaultRenderTargetProfile, avar( "%s() - (line %d)", __FUNCTION__, __LINE__ ),
+            1, GFXTextureManager::AA_MATCH_BACKBUFFER );
+   mAlphaTarget.setTexture(mAlphaTex);
+   for ( U32 i = 0; i < mTargetChainLength; i++ )
+      mTargetChain[i]->attachTexture(GFXTextureTarget::Color1, mAlphaTarget.getTexture());
+      
+   _initShaders();
+
+   return ret;
+}
+
+bool RenderTranslucentMgr::setTargetSize(const Point2I &newTargetSize)
+{
+   bool ret = Parent::setTargetSize( newTargetSize );
+   mAlphaTarget.setViewport( GFX->getViewport() );
+   return ret;
+}
+
+void RenderTranslucentMgr::_initShaders()
+{
+   if( mClearShader ) return;
+
+   // Find ShaderData
+   ShaderData *shaderData;
+   mClearShader = Sim::findObject( "ClearBufferShader", shaderData ) ? shaderData->getShader() : NULL;
+   if ( !mClearShader )
+      Con::errorf( "RenderPrePassMgr::_initShaders - could not find ClearBufferShader" );
+
+   // Create StateBlocks
+   GFXStateBlockDesc desc;
+   desc.setCullMode( GFXCullNone );
+   desc.setBlend( false );
+   desc.setZReadWrite( false, false );
+   desc.samplersDefined = true;
+   desc.samplers[0].addressModeU = GFXAddressWrap;
+   desc.samplers[0].addressModeV = GFXAddressWrap;
+   desc.samplers[0].addressModeW = GFXAddressWrap;
+   desc.samplers[0].magFilter = GFXTextureFilterLinear;
+   desc.samplers[0].minFilter = GFXTextureFilterLinear;
+   desc.samplers[0].mipFilter = GFXTextureFilterLinear;
+   desc.samplers[0].textureColorOp = GFXTOPModulate;
+
+   mClearStateblock = GFX->createStateBlock( desc );
+}
+
+void RenderTranslucentMgr::clearBuffers()
+{
+   if(!mClearShader) return;
+   GFXTransformSaver saver;
+
+   // Clear the g-buffer.
+   RectI box(-1, -1, 3, 3);
+   GFX->setWorldMatrix( MatrixF::Identity );
+   GFX->setViewMatrix( MatrixF::Identity );
+   GFX->setProjectionMatrix( MatrixF::Identity );
+
+   GFX->setShader(mClearShader);
+   GFX->setStateBlock(mClearStateblock);
+
+   Point2F nw(-0.5,-0.5);
+   Point2F ne(0.5,-0.5);
+
+   GFXVertexBufferHandle<GFXVertexPC> verts(GFX, 4, GFXBufferTypeVolatile);
+   verts.lock();
+
+   F32 ulOffset = 0.5f - GFX->getFillConventionOffset();
+   
+   Point2F upperLeft(-1.0, -1.0);
+   Point2F lowerRight(1.0, 1.0);
+
+   verts[0].point.set( upperLeft.x+nw.x+ulOffset, upperLeft.y+nw.y+ulOffset, 0.0f );
+   verts[1].point.set( lowerRight.x+ne.x, upperLeft.y+ne.y+ulOffset, 0.0f );
+   verts[2].point.set( upperLeft.x-ne.x+ulOffset, lowerRight.y-ne.y, 0.0f );
+   verts[3].point.set( lowerRight.x-nw.x, lowerRight.y-nw.y, 0.0f );
+
+   verts.unlock();
+
+   GFX->setVertexBuffer( verts );
+   GFX->drawPrimitive( GFXTriangleStrip, 0, 2 );
+   GFX->setShader(NULL);
 }
 
 GFXStateBlockRef RenderTranslucentMgr::_getStateBlock( U8 transFlag )
@@ -158,6 +259,11 @@ void RenderTranslucentMgr::render( SceneRenderState *state )
    }
 
    GFXTransformSaver saver;   
+   
+   // Tell the superclass we're about to render, preserve contents
+   const bool isRenderingToTarget = _onPreRender( state, true );
+
+   clearBuffers();
 
    SceneData sgData;
    sgData.init( state );
@@ -277,4 +383,7 @@ void RenderTranslucentMgr::render( SceneRenderState *state )
          j = ( j == matListEnd ) ? j+1 : matListEnd;
       }
    }
+   // Finish up.
+   if ( isRenderingToTarget )
+      _onPostRender();
 }
