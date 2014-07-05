@@ -669,6 +669,7 @@ public:
                             const MaterialFeatureData &fd );
 
    virtual Resources getResources( const MaterialFeatureData &fd );
+   void setTexData(Material::StageData& stageDat, MaterialFeatureData const& fd, RenderPassData& passData, U32& texIndex);
 
    virtual U32 getOutputTargets( const MaterialFeatureData &fd ) const { return DefaultTarget | RenderTarget1; }
 

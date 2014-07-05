@@ -2391,6 +2391,27 @@ void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList,
          farDist->constSortPos = cspPass;
       }
       meta->addStatement( new GenOp( "   @ = length( @.xyz / @.w ) * @.x;\r\n", depthOutDecl, wsEyeVec, wsEyeVec, farDist ) );
+      
+      // grab connector texcoord register
+      Var *inTex = getInTexCoord( "texCoord", "float2", true, componentList );
+
+      Var *alphaTex = new Var;
+      alphaTex->setType( "sampler2D" );
+      alphaTex->setName( "alphaTex" );
+      alphaTex->uniform = true;
+      alphaTex->sampler = true;
+      alphaTex->constNum = Var::getTexUnitNum();
+
+      // create sample color
+      Var *alphaTexCol = new Var;
+      alphaTexCol->setType( "float4" );
+      alphaTexCol->setName( "alphaTexCol" );
+      LangElement *colorDecl = new DecOp( alphaTexCol );
+   
+      meta->addStatement(  new GenOp( "   @ = tex2D(@, @);\r\n", 
+                           colorDecl, 
+                           alphaTex, 
+                           inTex ) );
 
       Var *color0 = (Var*)LangElement::find( "col" );      
       // search for color var
@@ -2416,7 +2437,7 @@ void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList,
             "clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);\r\n", new DecOp(weight), color0, color0, color0, color0, depthOut ) );
       
       meta->addStatement(new GenOp("   @ = float4(0,0,0,0);\r\n", color1));
-      meta->addStatement( new GenOp( "   @.r = @.a;\r\n", color1, color0 ) );
+      meta->addStatement( new GenOp( "   @.r = @.a - @.a;\r\n", color1, color0, alphaTexCol ) );
 
       meta->addStatement( new GenOp( "   @ *= @;\r\n", color0, weight ) );
    }
@@ -2430,8 +2451,21 @@ ShaderFeature::Resources OITFeatureHLSL::getResources( const MaterialFeatureData
    
    //if ( !fd.features[ MFT_IsTranslucent ] )
    //   res.numTexReg = 1;
+   
+   res.numTex = 1;
+   res.numTexReg = 1;
 
    return res;
+}
+
+void OITFeatureHLSL::setTexData(   Material::StageData &stageDat,
+                                       const MaterialFeatureData &fd,
+                                       RenderPassData &passData,
+                                       U32 &texIndex )
+{
+   GFXTextureObject *tex = stageDat.getTex( MFT_OIT );
+   if ( tex )
+      passData.mTexSlot[ texIndex++ ].texObject = tex;
 }
 
 //****************************************************************************

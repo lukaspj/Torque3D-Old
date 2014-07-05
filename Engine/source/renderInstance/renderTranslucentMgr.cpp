@@ -265,6 +265,8 @@ void RenderTranslucentMgr::render( SceneRenderState *state )
 
    clearBuffers();
 
+   GFX->setTexture(1, mAlphaTex);
+
    SceneData sgData;
    sgData.init( state );
 
