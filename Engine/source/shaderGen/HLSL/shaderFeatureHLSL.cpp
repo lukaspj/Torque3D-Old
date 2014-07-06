@@ -2436,8 +2436,7 @@ void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList,
       meta->addStatement( new GenOp( "   @ = pow(min(1.0, max(max(@.r, @.g), max(@.b, @.a)) * 40.0 + 0.01),2) *"
             "clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);\r\n", new DecOp(weight), color0, color0, color0, color0, depthOut ) );
       
-      meta->addStatement(new GenOp("   @ = float4(0,0,0,0);\r\n", color1));
-      meta->addStatement( new GenOp( "   @.r = @.a - @.a;\r\n", color1, color0, alphaTexCol ) );
+      meta->addStatement( new GenOp( "   @ = @.a - @.a;\r\n", color1, color0, alphaTexCol ) );
 
       meta->addStatement( new GenOp( "   @ *= @;\r\n", color0, weight ) );
    }

@@ -276,6 +276,7 @@ void RenderTranslucentMgr::render( SceneRenderState *state )
    // Restore transforms
    MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
+   GFX->setStateBlock(mClearStateblock);
 
    U32 binSize = mElementList.size();
    for( U32 j=0; j<binSize; )
