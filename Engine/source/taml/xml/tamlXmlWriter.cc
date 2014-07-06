@@ -24,6 +24,7 @@
 
 // Debug Profiling.
 #include "platform/profiler.h"
+#include <taml/fsTinyXml.h>
 
 //-----------------------------------------------------------------------------
 
@@ -33,7 +34,7 @@ bool TamlXmlWriter::write( FileStream& stream, const TamlWriteNode* pTamlWriteNo
     PROFILE_SCOPE(TamlXmlWriter_Write);
 
     // Create document.
-    TiXmlDocument xmlDocument;
+    fsTiXmlDocument xmlDocument;
 
     // Compile the root element.
     TiXmlElement* pRootElement = compileElement( pTamlWriteNode );
@@ -88,7 +89,7 @@ TiXmlElement* TamlXmlWriter::compileElement( const TamlWriteNode* pTamlWriteNode
     const char* pElementName = pSimObject->getClassName();
 
     // Create element.
-    TiXmlElement* pElement = new TiXmlElement( pElementName );
+    TiXmlElement* pElement = new fsTiXmlElement( pElementName );
 
     // Fetch reference Id.
     const U32 referenceId = pTamlWriteNode->mRefId;

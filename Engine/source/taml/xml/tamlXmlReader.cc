@@ -24,6 +24,7 @@
 
 // Debug Profiling.
 #include "platform/profiler.h"
+#include <taml/fsTinyXml.h>
 
 //-----------------------------------------------------------------------------
 
@@ -33,7 +34,7 @@ SimObject* TamlXmlReader::read( FileStream& stream )
     PROFILE_SCOPE(TamlXmlReader_Read);
 
     // Create document.
-    TiXmlDocument xmlDocument;
+    fsTiXmlDocument xmlDocument;
 
     // Load document from stream.
     if ( !xmlDocument.LoadFile( stream ) )

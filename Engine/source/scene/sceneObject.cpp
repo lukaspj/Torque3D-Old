@@ -588,9 +588,12 @@ bool SceneObject::_setFieldPosition( void *object, const char *index, const char
    SceneObject* so = static_cast<SceneObject*>( object );
    if ( so )
    {
+      const char* prevPosition = so->getDataField("position", NULL);
       MatrixF txfm( so->getTransform() );
       Con::setData( TypeMatrixPosition, &txfm, 0, 1, &data );
       so->setTransform( txfm );
+      if(strcmp(prevPosition, data) != 0)
+         return true;
    }
    return false;
 }
@@ -602,9 +605,12 @@ bool SceneObject::_setFieldRotation( void *object, const char *index, const char
    SceneObject* so = static_cast<SceneObject*>( object );
    if ( so )
    {
+      const char* prevRotation = so->getDataField("rotation", NULL);
       MatrixF txfm( so->getTransform() );
       Con::setData( TypeMatrixRotation, &txfm, 0, 1, &data );
       so->setTransform( txfm );
+      if(strcmp(prevRotation, data) != 0)
+         return true;
    }
    return false;
 }
@@ -616,9 +622,12 @@ bool SceneObject::_setFieldScale( void *object, const char *index, const char *d
    SceneObject* so = static_cast<SceneObject*>( object );
    if ( so )
    {
+      const char* prevScale = so->getDataField("scale", NULL);
       Point3F scale;
       Con::setData( TypePoint3F, &scale, 0, 1, &data );
       so->setScale( scale );
+      if(strcmp(prevScale, data) != 0)
+         return true;
    }
    return false;
 }
