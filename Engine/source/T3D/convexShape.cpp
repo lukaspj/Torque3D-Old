@@ -261,7 +261,7 @@ void ConvexShape::initPersistFields()
 
    addGroup( "Internal" );
 
-      addProtectedField( "surface", TypeRealString, NULL, &protectedSetSurface, &defaultProtectedGetFn, 
+      addProtectedField( "surface", TypeRealString, NULL, &protectedSetSurface, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "Do not modify, for internal use.", AbstractClassRep::FIELD_HideInInspectors );
 
    endGroup( "Internal" );

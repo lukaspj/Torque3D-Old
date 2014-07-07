@@ -453,16 +453,16 @@ void GuiControlProfile::initPersistFields()
    addGroup( "Misc" );
 
       addProtectedField( "bitmap", TypeFilename,  Offset(mBitmapName, GuiControlProfile),
-         &GuiControlProfile::protectedSetBitmap, &defaultProtectedGetFn,
+         &GuiControlProfile::protectedSetBitmap, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "Texture to use for rendering control." );
       addField("hasBitmapArray", TypeBool,      Offset(mUseBitmapArray, GuiControlProfile),
          "If true, 'bitmap' is an array of images." );
 
       addProtectedField( "soundButtonDown", TypeSFXTrackName,  Offset(mSoundButtonDown, GuiControlProfile),
-         &GuiControlProfile::protectedSetSoundButtonDown, &GuiControlProfile::protectedGetSoundButtonDown,
+         &GuiControlProfile::protectedSetSoundButtonDown, &GuiControlProfile::protectedGetSoundButtonDown, &defaultProtectedWriteFn,
          "Sound to play when mouse has been pressed on control." );
       addProtectedField( "soundButtonOver", TypeSFXTrackName,  Offset(mSoundButtonOver, GuiControlProfile),
-         &GuiControlProfile::protectedSetSoundButtonOver, &GuiControlProfile::protectedGetSoundButtonOver,
+         &GuiControlProfile::protectedSetSoundButtonOver, &GuiControlProfile::protectedGetSoundButtonOver, &defaultProtectedWriteFn,
          "Sound to play when mouse is hovering over control." );
       addField("profileForChildren", TypeString,      Offset(mChildrenProfileName, GuiControlProfile));
    

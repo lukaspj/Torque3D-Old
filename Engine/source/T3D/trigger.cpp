@@ -360,11 +360,11 @@ void Trigger::initPersistFields()
       "trigger area.  The quadrilateral is defined as a corner point followed by three vectors "
       "representing the edges extending from the corner.\n");
 
-   addProtectedField("enterCommand", TypeCommand, Offset(mEnterCommand, Trigger), &setEnterCmd, &defaultProtectedGetFn,
+   addProtectedField("enterCommand", TypeCommand, Offset(mEnterCommand, Trigger), &setEnterCmd, &defaultProtectedGetFn, &defaultProtectedWriteFn,
       "The command to execute when an object enters this trigger. Object id stored in %%obj. Maximum 1023 characters." );
-   addProtectedField("leaveCommand", TypeCommand, Offset(mLeaveCommand, Trigger), &setLeaveCmd, &defaultProtectedGetFn,
+   addProtectedField("leaveCommand", TypeCommand, Offset(mLeaveCommand, Trigger), &setLeaveCmd, &defaultProtectedGetFn, &defaultProtectedWriteFn,
       "The command to execute when an object leaves this trigger. Object id stored in %%obj. Maximum 1023 characters." );
-   addProtectedField("tickCommand", TypeCommand, Offset(mTickCommand, Trigger), &setTickCmd, &defaultProtectedGetFn,
+   addProtectedField("tickCommand", TypeCommand, Offset(mTickCommand, Trigger), &setTickCmd, &defaultProtectedGetFn, &defaultProtectedWriteFn,
       "The command to execute while an object is inside this trigger. Maximum 1023 characters." );
 
    Parent::initPersistFields();

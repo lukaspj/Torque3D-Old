@@ -257,12 +257,12 @@ void GuiControl::initPersistFields()
 
    addGroup( "Control");
 
-      addProtectedField("profile",  TYPEID< GuiControlProfile >(),   Offset(mProfile, GuiControl), &setProfileProt, &defaultProtectedGetFn,
+      addProtectedField("profile",  TYPEID< GuiControlProfile >(),   Offset(mProfile, GuiControl), &setProfileProt, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "The control profile that determines fill styles, font settings, etc." );
 
-      addProtectedField( "visible", TypeBool,         Offset(mVisible, GuiControl), &_setVisible, &defaultProtectedGetFn,
+      addProtectedField( "visible", TypeBool,         Offset(mVisible, GuiControl), &_setVisible, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "Whether the control is visible or hidden." );
-      addProtectedField( "active",  TypeBool,         Offset( mActive, GuiControl ), &_setActive, &defaultProtectedGetFn,
+      addProtectedField( "active",  TypeBool,         Offset( mActive, GuiControl ), &_setActive, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "Whether the control is enabled for user interaction." );
 
       addDeprecatedField("modal");
@@ -284,7 +284,7 @@ void GuiControl::initPersistFields()
    endGroup( "Control" );	
    
    addGroup( "ToolTip" );
-      addProtectedField("tooltipProfile", TYPEID< GuiControlProfile >(), Offset(mTooltipProfile, GuiControl), &setTooltipProfileProt, &defaultProtectedGetFn,
+      addProtectedField("tooltipProfile", TYPEID< GuiControlProfile >(), Offset(mTooltipProfile, GuiControl), &setTooltipProfileProt, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "Control profile to use when rendering tooltips for this control." );
       addField("tooltip",           TypeRealString,   Offset(mTooltip, GuiControl),
          "String to show in tooltip for this control." );

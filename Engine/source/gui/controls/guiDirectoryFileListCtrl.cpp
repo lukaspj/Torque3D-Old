@@ -52,9 +52,9 @@ GuiDirectoryFileListCtrl::GuiDirectoryFileListCtrl()
 void GuiDirectoryFileListCtrl::initPersistFields()
 {
    addProtectedField( "filePath", TypeString, Offset( mFilePath, GuiDirectoryFileListCtrl ),
-                      &_setFilePath, &defaultProtectedGetFn, "Path in game directory from which to list files." );
+                      &_setFilePath, &defaultProtectedGetFn, &defaultProtectedWriteFn, "Path in game directory from which to list files." );
    addProtectedField( "fileFilter", TypeString, Offset( mFilter, GuiDirectoryFileListCtrl ),
-                      &_setFilter, &defaultProtectedGetFn, "Tab-delimited list of file name patterns. Only matched files will be displayed." );
+                      &_setFilter, &defaultProtectedGetFn, &defaultProtectedWriteFn, "Tab-delimited list of file name patterns. Only matched files will be displayed." );
                       
    Parent::initPersistFields();
 }

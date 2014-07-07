@@ -433,6 +433,9 @@ public:
    typedef bool (*SetDataNotify)( void *obj, const char *array, const char *data );
    typedef const char *(*GetDataNotify)( void *obj, const char *data );
 
+   /// This is a function pointer typedef to support optional writing for fields.
+   typedef bool (*WriteDataNotify)( void* obj, const char* pFieldName );
+
    /// These are special field type values used to mark
    /// groups and arrays in the field list.
    /// @see Field::type
@@ -487,7 +490,8 @@ public:
             table( NULL ),
             validator( NULL ),
             setDataFn( NULL ),
-            getDataFn( NULL )
+            getDataFn( NULL ),
+            writeDataFn( NULL )
       {
       }
 
@@ -506,6 +510,7 @@ public:
       TypeValidator *validator;     ///< Validator, if any.
       SetDataNotify  setDataFn;     ///< Set data notify Fn
       GetDataNotify  getDataFn;     ///< Get data notify Fn
+      WriteDataNotify writeDataFn;  ///< Function to determine whether data should be written or not.
    };
    typedef Vector<Field> FieldList;
 
@@ -685,6 +690,7 @@ template< typename T > EnginePropertyTable& ConcreteClassRep< T >::smPropertyTab
 //------------------------------------------------------------------------------
 // Forward declaration of this function so  it can be used in the class
 const char *defaultProtectedGetFn( void *obj, const char *data );
+bool defaultProtectedWriteFn( void* obj, StringTableEntry pFieldName );
 
 
 //=============================================================================
@@ -855,6 +861,7 @@ public:
       const dsize_t in_fieldOffset,
       AbstractClassRep::SetDataNotify in_setDataFn,
       AbstractClassRep::GetDataNotify in_getDataFn,
+      AbstractClassRep::WriteDataNotify in_writeDataFn,
       const U32     in_elementCount,
       const char*   in_pFieldDocs   = NULL,
       U32 flags = 0 );
@@ -872,6 +879,7 @@ public:
       const dsize_t in_fieldOffset,
       AbstractClassRep::SetDataNotify in_setDataFn,
       AbstractClassRep::GetDataNotify in_getDataFn = &defaultProtectedGetFn,
+      AbstractClassRep::WriteDataNotify in_writeDataFn = &defaultProtectedWriteFn,
       const char*   in_pFieldDocs = NULL,
       U32 flags = 0 );
 
@@ -1208,6 +1216,13 @@ inline const char *defaultProtectedGetFn( void *obj, const char *data )
 inline const char *emptyStringProtectedGetFn( void *obj, const char *data )
 {
    return "";
+}
+
+//-----------------------------------------------------------------------------
+
+inline bool defaultProtectedWriteFn( void* obj, StringTableEntry pFieldName )
+{
+    return true;
 }
 
 /// @}

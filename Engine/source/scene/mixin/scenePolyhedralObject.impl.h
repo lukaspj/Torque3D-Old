@@ -43,15 +43,15 @@ void ScenePolyhedralObject< Base, P >::initPersistFields()
    Parent::addGroup( "Internal" );
 
       Parent::addProtectedField( "plane", TypeRealString, NULL,
-         &_setPlane, &defaultProtectedGetFn,
+         &_setPlane, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "For internal use only.",
          AbstractClassRep::FIELD_HideInInspectors );
       Parent::addProtectedField( "point", TypeRealString, NULL,
-         &_setPoint, &defaultProtectedGetFn,
+         &_setPoint, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "For internal use only.",
          AbstractClassRep::FIELD_HideInInspectors );
       Parent::addProtectedField( "edge", TypeRealString, NULL,
-         &_setEdge, &defaultProtectedGetFn,
+         &_setEdge, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "For internal use only.",
          AbstractClassRep::FIELD_HideInInspectors );
 

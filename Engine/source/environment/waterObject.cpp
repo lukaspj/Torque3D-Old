@@ -267,7 +267,7 @@ void WaterObject::initPersistFields()
 {
    addGroup( "WaterObject" );
 
-      addProtectedField( "density", TypeF32, Offset( mDensity, WaterObject ), &WaterObject::_checkDensity, &defaultProtectedGetFn, "Affects buoyancy of an object, thus affecting the Z velocity of a player (jumping, falling, etc.");
+      addProtectedField( "density", TypeF32, Offset( mDensity, WaterObject ), &WaterObject::_checkDensity, &defaultProtectedGetFn, &defaultProtectedWriteFn, "Affects buoyancy of an object, thus affecting the Z velocity of a player (jumping, falling, etc.");
       addField( "viscosity", TypeF32, Offset( mViscosity, WaterObject ), "Affects drag force applied to an object submerged in this container." );
       addField( "liquidType", TypeRealString, Offset( mLiquidType, WaterObject ), "Liquid type of WaterBlock, such as water, ocean, lava"
 		  " Currently only Water is defined and used.");
@@ -329,6 +329,7 @@ void WaterObject::initPersistFields()
       addProtectedField( "fullReflect", TypeBool, Offset( mFullReflect, WaterObject ), 
          &WaterObject::_setFullReflect, 
          &defaultProtectedGetFn, 
+         &defaultProtectedWriteFn,
          "Enables dynamic reflection rendering." );
 
       addField( "reflectivity", TypeF32, Offset( mReflectivity, WaterObject ), "Overall scalar to the reflectivity of the water surface." );

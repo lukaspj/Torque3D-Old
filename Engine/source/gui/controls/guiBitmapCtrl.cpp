@@ -77,7 +77,7 @@ void GuiBitmapCtrl::initPersistFields()
    addGroup( "Bitmap" );
    
       addProtectedField( "bitmap", TypeImageFilename, Offset( mBitmapName, GuiBitmapCtrl ),
-         &setBitmapName, &defaultProtectedGetFn,
+         &setBitmapName, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "The bitmap file to display in the control." );
       addField( "wrap",   TypeBool,     Offset( mWrap, GuiBitmapCtrl ),
          "If true, the bitmap is tiled inside the control rather than stretched to fit." );

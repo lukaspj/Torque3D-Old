@@ -645,16 +645,12 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
 
         // Fetch element count.
         const U32 elementCount = pField->elementCount;
-        
-         // Fetch object field value.
-         const char* pFieldValue = pSimObject->getDataField( fieldName, NULL );
 
         // Skip if the field should not be written.
         // For now, we only deal with non-array fields.
         if ( elementCount == 1 &&
            pField->setDataFn != NULL &&
-           pFieldValue &&
-            ( !getWriteDefaults() && pField->setDataFn( pSimObject, NULL, pFieldValue ) == false) )
+            ( !getWriteDefaults() && pField->writeDataFn( pSimObject, fieldName ) == false) )
             continue;
 
         // Iterate elements.
@@ -664,7 +660,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
             dSprintf( indexBuffer, 8, "%d", elementIndex );
 
             // Fetch object field value.
-            pFieldValue = pSimObject->getDataField( fieldName, indexBuffer );
+            const char* pFieldValue = pSimObject->getDataField( fieldName, indexBuffer );
 
             if(!pFieldValue) continue;
 

@@ -51,8 +51,8 @@ FieldBrushObject::FieldBrushObject()
 void FieldBrushObject::initPersistFields()
 {
     // Add Fields.
-    addProtectedField("description", TypeCaseString, Offset(mDescription, FieldBrushObject), setDescription, defaultProtectedGetFn, "");
-    addProtectedField("sortName", TypeString, Offset(mSortName, FieldBrushObject), setSortName, defaultProtectedGetFn, "");
+    addProtectedField("description", TypeCaseString, Offset(mDescription, FieldBrushObject), setDescription, defaultProtectedGetFn, &defaultProtectedWriteFn, "");
+    addProtectedField("sortName", TypeString, Offset(mSortName, FieldBrushObject), setSortName, defaultProtectedGetFn, &defaultProtectedWriteFn, "");
 
     // Call Parent.
     Parent::initPersistFields();

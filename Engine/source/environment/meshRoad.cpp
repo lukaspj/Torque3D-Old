@@ -653,7 +653,7 @@ void MeshRoad::initPersistFields()
 
    addGroup( "Internal" );
 
-      addProtectedField( "Node", TypeString, NULL, &addNodeFromField, &emptyStringProtectedGetFn, 
+      addProtectedField( "Node", TypeString, NULL, &addNodeFromField, &emptyStringProtectedGetFn, &defaultProtectedWriteFn,
          "Do not modify, for internal use." );
 
    endGroup( "Internal" );

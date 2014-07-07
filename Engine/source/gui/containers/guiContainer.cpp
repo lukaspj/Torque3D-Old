@@ -84,7 +84,7 @@ void GuiContainer::initPersistFields()
    
    addGroup( "Layout" );
 
-      addProtectedField("docking",  TYPEID< Docking::DockingType >(),   Offset(mSizingOptions.mDocking, GuiContainer), &setDockingField, &defaultProtectedGetFn, "" );
+      addProtectedField("docking",  TYPEID< Docking::DockingType >(),   Offset(mSizingOptions.mDocking, GuiContainer), &setDockingField, &defaultProtectedGetFn, &defaultProtectedWriteFn, "" );
       addField("margin",         TypeRectSpacingI, Offset(mSizingOptions.mPadding, GuiContainer));
       addField("padding",        TypeRectSpacingI, Offset(mSizingOptions.mInternalPadding, GuiContainer));
       addField("anchorTop",      TypeBool,          Offset(mSizingOptions.mAnchorTop, GuiContainer));

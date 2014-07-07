@@ -541,13 +541,13 @@ void SceneObject::initPersistFields()
    addGroup( "Transform" );
 
       addProtectedField( "position", TypeMatrixPosition, Offset( mObjToWorld, SceneObject ),
-         &_setFieldPosition, &defaultProtectedGetFn,
+         &_setFieldPosition, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "Object world position." );
       addProtectedField( "rotation", TypeMatrixRotation, Offset( mObjToWorld, SceneObject ),
-         &_setFieldRotation, &defaultProtectedGetFn,
+         &_setFieldRotation, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "Object world orientation." );
       addProtectedField( "scale", TypePoint3F, Offset( mObjScale, SceneObject ),
-         &_setFieldScale, &defaultProtectedGetFn,
+         &_setFieldScale, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "Object world scale." );
 
    endGroup( "Transform" );
@@ -555,12 +555,12 @@ void SceneObject::initPersistFields()
    addGroup( "Editing" );
 
       addProtectedField( "isRenderEnabled", TypeBool, Offset( mObjectFlags, SceneObject ),
-         &_setRenderEnabled, &_getRenderEnabled,
+         &_setRenderEnabled, &_getRenderEnabled, &defaultProtectedWriteFn,
          "Controls client-side rendering of the object.\n"
          "@see isRenderable()\n" );
 
       addProtectedField( "isSelectionEnabled", TypeBool, Offset( mObjectFlags, SceneObject ),
-         &_setSelectionEnabled, &_getSelectionEnabled,
+         &_setSelectionEnabled, &_getSelectionEnabled, &defaultProtectedWriteFn,
          "Determines if the object may be selected from wihin the Tools.\n"
          "@see isSelectable()\n" );
 
@@ -568,7 +568,7 @@ void SceneObject::initPersistFields()
 
    addGroup( "Mounting" );
 
-      addProtectedField( "mountPID", TypePID, Offset( mMountPID, SceneObject ), &_setMountPID, &defaultProtectedGetFn,
+      addProtectedField( "mountPID", TypePID, Offset( mMountPID, SceneObject ), &_setMountPID, &defaultProtectedGetFn, &defaultProtectedWriteFn,
          "@brief PersistentID of object we are mounted to.\n\n"
          "Unlike the SimObjectID that is determined at run time, the PersistentID of an object is saved with the level/mission and "
          "may be used to form a link between objects." );

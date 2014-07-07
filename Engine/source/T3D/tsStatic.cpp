@@ -140,7 +140,7 @@ void TSStatic::initPersistFields()
       addField("shapeName",   TypeShapeFilename,  Offset( mShapeName, TSStatic ),
          "%Path and filename of the model file (.DTS, .DAE) to use for this TSStatic." );
 
-      addProtectedField( "skin", TypeRealString, Offset( mAppliedSkinName, TSStatic ), &_setFieldSkin, &_getFieldSkin,
+      addProtectedField( "skin", TypeRealString, Offset( mAppliedSkinName, TSStatic ), &_setFieldSkin, &_getFieldSkin, &defaultProtectedWriteFn,
       "@brief The skin applied to the shape.\n\n"
 
       "'Skinning' the shape effectively renames the material targets, allowing "
