@@ -132,15 +132,23 @@ ImplementEnumType( TSMeshType,
    { TSStatic::VisibleMesh,   "Visible Mesh",   "Rendered mesh polygons." },
 EndImplementEnumType;
 
+defineValueProtectedWriteFn( "1", playAmbient );
+defineValueProtectedWriteFn( "0", meshCulling );
+defineValueProtectedWriteFn( "0", originSort );
+defineValueProtectedWriteFn( "1", allowPlayerStep );
+defineValueProtectedWriteFn( "0", renderNormals );
+defineValueProtectedWriteFn( "-1", forceDetail );
+defineValueProtectedWriteFn( "Collision Mesh", collisionType );
+defineValueProtectedWriteFn( "Collision Mesh", decalType );
 
 void TSStatic::initPersistFields()
 {
    addGroup("Media");
 
-      addField("shapeName",   TypeShapeFilename,  Offset( mShapeName, TSStatic ),
+      addField("shapeName",   TypeShapeFilename,  Offset( mShapeName, TSStatic ), &writeShapeName,
          "%Path and filename of the model file (.DTS, .DAE) to use for this TSStatic." );
 
-      addProtectedField( "skin", TypeRealString, Offset( mAppliedSkinName, TSStatic ), &_setFieldSkin, &_getFieldSkin, &defaultProtectedWriteFn,
+      addProtectedField( "skin", TypeRealString, Offset( mAppliedSkinName, TSStatic ), &_setFieldSkin, &_getFieldSkin, &writeSkinName,
       "@brief The skin applied to the shape.\n\n"
 
       "'Skinning' the shape effectively renames the material targets, allowing "
@@ -170,23 +178,23 @@ void TSStatic::initPersistFields()
 
    addGroup("Rendering");
 
-      addField( "playAmbient",   TypeBool,   Offset( mPlayAmbient, TSStatic ),
+      addField( "playAmbient",   TypeBool,   Offset( mPlayAmbient, TSStatic ), &getValueProtectedWriteFn(playAmbient),
          "Enables automatic playing of the animation sequence named \"ambient\" (if it exists) when the TSStatic is loaded.");
-      addField( "meshCulling",   TypeBool,   Offset( mMeshCulling, TSStatic ), 
+      addField( "meshCulling",   TypeBool,   Offset( mMeshCulling, TSStatic ), &getValueProtectedWriteFn(meshCulling),
          "Enables detailed culling of meshes within the TSStatic. Should only be used "
          "with large complex shapes like buildings which contain many submeshes." );
-      addField( "originSort",    TypeBool,   Offset( mUseOriginSort, TSStatic ), 
+      addField( "originSort",    TypeBool,   Offset( mUseOriginSort, TSStatic ), &getValueProtectedWriteFn(originSort),
          "Enables translucent sorting of the TSStatic by its origin instead of the bounds." );
 
    endGroup("Rendering");
 
    addGroup("Collision");
 
-      addField( "collisionType",    TypeTSMeshType,   Offset( mCollisionType,   TSStatic ),
+      addField( "collisionType",    TypeTSMeshType,   Offset( mCollisionType,   TSStatic ), &getValueProtectedWriteFn(collisionType),
          "The type of mesh data to use for collision queries." );
-      addField( "decalType",        TypeTSMeshType,   Offset( mDecalType,   TSStatic ),
+      addField( "decalType",        TypeTSMeshType,   Offset( mDecalType,   TSStatic ), &getValueProtectedWriteFn(decalType),
          "The type of mesh data used to clip decal polygons against." );
-      addField( "allowPlayerStep",  TypeBool,         Offset( mAllowPlayerStep, TSStatic ), 
+      addField( "allowPlayerStep",  TypeBool,         Offset( mAllowPlayerStep, TSStatic ), &getValueProtectedWriteFn(allowPlayerStep),
          "@brief Allow a Player to walk up sloping polygons in the TSStatic (based on the collisionType).\n\n"
          "When set to false, the slightest bump will stop the player from walking on top of the object.\n");
    
@@ -194,9 +202,9 @@ void TSStatic::initPersistFields()
 
    addGroup("Debug");
 
-      addField( "renderNormals", TypeF32, Offset( mRenderNormalScalar, TSStatic ),
+      addField( "renderNormals", TypeF32, Offset( mRenderNormalScalar, TSStatic ), &getValueProtectedWriteFn(renderNormals),
          "Debug rendering mode shows the normals for each point in the TSStatic's mesh." );
-      addField( "forceDetail",   TypeS32, Offset( mForceDetail, TSStatic ),
+      addField( "forceDetail",   TypeS32, Offset( mForceDetail, TSStatic ), &getValueProtectedWriteFn(forceDetail),
          "Forces rendering to a particular detail level." );
 
    endGroup("Debug");

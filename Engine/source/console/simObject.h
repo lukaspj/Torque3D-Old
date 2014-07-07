@@ -37,7 +37,6 @@
 #include "taml/tamlCallbacks.h"
 #endif
 
-
 class Stream;
 class LightManager;
 class SimFieldDictionary;
