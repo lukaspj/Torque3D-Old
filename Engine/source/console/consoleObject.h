@@ -820,6 +820,21 @@ public:
       const char*   in_pFieldDocs   = NULL,
       U32 flags = 0 );
 
+   /// Register a complex field.
+   ///
+   /// @param  in_pFieldname     Name of the field.
+   /// @param  in_fieldType      Type of the field. @see ConsoleDynamicTypes
+   /// @param  in_fieldOffset    Offset to  the field from the start of the class; calculated using the Offset() macro.
+   /// @param  in_elementCount   Number of elements in this field. Arrays of elements are assumed to be contiguous in memory.
+   /// @param  in_pFieldDocs     Usage string for this field. @see console_autodoc
+   static void addField(const char*   in_pFieldname,
+      const U32     in_fieldType,
+      const dsize_t in_fieldOffset,
+      AbstractClassRep::WriteDataNotify in_writeDataFn,
+      const U32     in_elementCount = 1,
+      const char*   in_pFieldDocs   = NULL,
+      U32 flags = 0 );
+
    /// Register a simple field.
    ///
    /// @param  in_pFieldname  Name of the field.
@@ -829,6 +844,19 @@ public:
    static void addField(const char*   in_pFieldname,
       const U32     in_fieldType,
       const dsize_t in_fieldOffset,
+      const char*   in_pFieldDocs,
+      U32 flags = 0 );
+
+   /// Register a simple field.
+   ///
+   /// @param  in_pFieldname  Name of the field.
+   /// @param  in_fieldType   Type of the field. @see ConsoleDynamicTypes
+   /// @param  in_fieldOffset Offset to  the field from the start of the class; calculated using the Offset() macro.
+   /// @param  in_pFieldDocs  Usage string for this field. @see console_autodoc
+   static void addField(const char*   in_pFieldname,
+      const U32     in_fieldType,
+      const dsize_t in_fieldOffset,
+      AbstractClassRep::WriteDataNotify in_writeDataFn,
       const char*   in_pFieldDocs,
       U32 flags = 0 );
 
@@ -844,6 +872,22 @@ public:
    static void addFieldV(const char*   in_pFieldname,
       const U32      in_fieldType,
       const dsize_t  in_fieldOffset,
+      TypeValidator *v,
+      const char *   in_pFieldDocs = NULL);
+
+   /// Register a validated field.
+   ///
+   /// A validated field is just like a normal field except that you can't
+   /// have it be an array, and that you give it a pointer to a TypeValidator
+   /// subclass, which is then used to validate any value placed in it. Invalid
+   /// values are ignored and an error is printed to the console.
+   ///
+   /// @see addField
+   /// @see typeValidators.h
+   static void addFieldV(const char*   in_pFieldname,
+      const U32      in_fieldType,
+      const dsize_t  in_fieldOffset,
+      AbstractClassRep::WriteDataNotify in_writeDataFn,
       TypeValidator *v,
       const char *   in_pFieldDocs = NULL);
 
@@ -1224,6 +1268,24 @@ inline bool defaultProtectedWriteFn( void* obj, StringTableEntry pFieldName )
 {
     return true;
 }
+
+#define defineValueProtectedWriteFn( DEFAULT, name ) \
+   bool name##ValueProtectedWriteFn( void* obj, StringTableEntry pFieldName ) \
+{ \
+   SimObject* object = static_cast<SimObject*>(obj); \
+   if(strcmp(DEFAULT, object->getDataField(pFieldName, NULL))) \
+      return false; \
+   return true; \
+} \
+
+#define defineMethodProtectedWriteFn( className, METHOD, DEFAULT, name ) \
+   bool name##MethodProtectedWriteFn( void* obj, StringTableEntry pFieldName ) \
+{ \
+   return static_cast<className*>(obj)->##METHOD##() == DEFAULT; \
+} \
+
+#define getValueProtectedWriteFn(name) name##ValueProtectedWriteFn
+#define getMethodProtectedWriteFn(name) name##MethodProtectedWriteFn
 
 /// @}
 
