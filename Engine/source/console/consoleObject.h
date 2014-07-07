@@ -1273,16 +1273,14 @@ inline bool defaultProtectedWriteFn( void* obj, StringTableEntry pFieldName )
    bool name##ValueProtectedWriteFn( void* obj, StringTableEntry pFieldName ) \
 { \
    SimObject* object = static_cast<SimObject*>(obj); \
-   if(strcmp(DEFAULT, object->getDataField(pFieldName, NULL))) \
-      return false; \
-   return true; \
-} \
+   return strcmp(DEFAULT, object->getDataField(pFieldName, NULL)) != 0; \
+}
 
 #define defineMethodProtectedWriteFn( className, METHOD, DEFAULT, name ) \
    bool name##MethodProtectedWriteFn( void* obj, StringTableEntry pFieldName ) \
 { \
-   return static_cast<className*>(obj)->##METHOD##() == DEFAULT; \
-} \
+   return static_cast<className*>(obj)->##METHOD##() != DEFAULT; \
+}
 
 #define getValueProtectedWriteFn(name) name##ValueProtectedWriteFn
 #define getMethodProtectedWriteFn(name) name##MethodProtectedWriteFn

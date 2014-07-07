@@ -458,6 +458,23 @@ void ConsoleObject::addField(const char*  in_pFieldname,
       flags );
 }
 
+void ConsoleObject::addField(const char*  in_pFieldname,
+                       const U32 in_fieldType,
+                       const dsize_t in_fieldOffset,
+                       AbstractClassRep::WriteDataNotify in_writeDataFn,
+                       const char* in_pFieldDocs,
+                       U32 flags )
+{
+   addField(
+      in_pFieldname,
+      in_fieldType,
+      in_fieldOffset,
+      in_writeDataFn,
+      1,
+      in_pFieldDocs,
+      flags );
+}
+
 void ConsoleObject::addProtectedField(const char*  in_pFieldname,
                        const U32 in_fieldType,
                        const dsize_t in_fieldOffset,
@@ -479,10 +496,26 @@ void ConsoleObject::addProtectedField(const char*  in_pFieldname,
       flags );
 }
 
+void ConsoleObject::addField(const char*  in_pFieldname,
+                       const U32 in_fieldType,
+                       const dsize_t in_fieldOffset,
+                       const U32 in_elementCount,
+                       const char* in_pFieldDocs,
+                       U32 flags )
+{
+   addField(in_pFieldname,
+      in_fieldType,
+      in_fieldOffset,
+      &defaultProtectedWriteFn,
+      in_elementCount,
+      in_pFieldDocs,
+      flags);
+}
 
 void ConsoleObject::addField(const char*  in_pFieldname,
                        const U32 in_fieldType,
                        const dsize_t in_fieldOffset,
+                       AbstractClassRep::WriteDataNotify in_writeDataFn,
                        const U32 in_elementCount,
                        const char* in_pFieldDocs,
                        U32 flags )
@@ -501,7 +534,7 @@ void ConsoleObject::addField(const char*  in_pFieldname,
 
    f.setDataFn = &defaultProtectedSetFn;
    f.getDataFn    = &defaultProtectedGetFn;
-   f.writeDataFn  = &defaultProtectedWriteFn;
+   f.writeDataFn  = in_writeDataFn;
 
    ConsoleBaseType* conType = ConsoleBaseType::getType( in_fieldType );
    AssertFatal( conType, "ConsoleObject::addField - invalid console type" );
@@ -549,6 +582,21 @@ void ConsoleObject::addFieldV(const char*  in_pFieldname,
                        TypeValidator *v,
                        const char* in_pFieldDocs)
 {
+   addFieldV(in_pFieldname,
+      in_fieldType,
+      in_fieldOffset,
+      &defaultProtectedWriteFn,
+      v,
+      in_pFieldDocs);
+}
+
+void ConsoleObject::addFieldV(const char*  in_pFieldname,
+                       const U32 in_fieldType,
+                       const dsize_t in_fieldOffset,
+                       AbstractClassRep::WriteDataNotify in_writeDataFn,
+                       TypeValidator *v,
+                       const char* in_pFieldDocs)
+{
    AbstractClassRep::Field f;
    f.pFieldname   = StringTable->insert(in_pFieldname);
    if(in_pFieldDocs)
@@ -559,7 +607,7 @@ void ConsoleObject::addFieldV(const char*  in_pFieldname,
    f.table        = NULL;
    f.setDataFn    = &defaultProtectedSetFn;
    f.getDataFn    = &defaultProtectedGetFn;
-   f.writeDataFn  = &defaultProtectedWriteFn;
+   f.writeDataFn  = in_writeDataFn;
    f.validator    = v;
    v->fieldIndex  = sg_tempFieldList.size();
 

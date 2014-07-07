@@ -541,7 +541,7 @@ defineMethodProtectedWriteFn( SceneObject, getScale, Point3F::One, scale );
 defineMethodProtectedWriteFn( SceneObject, isRenderEnabled, true, isRenderEnabled );
 defineMethodProtectedWriteFn( SceneObject, isSelectionEnabled, true, isSelectionEnabled );
 defineMethodProtectedWriteFn( SceneObject, isMounted, false, isMounted );
-defineValueProtectedWriteFn( "0 0 0 1", rotation );
+defineValueProtectedWriteFn( "1 0 0 0", rotation );
 
 void SceneObject::initPersistFields()
 {

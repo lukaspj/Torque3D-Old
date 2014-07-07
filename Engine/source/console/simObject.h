@@ -360,7 +360,7 @@ class SimObject: public ConsoleObject, public TamlCallbacks
 
       // Group hierarchy protected set method 
       static bool setProtectedParent(void *object, const char *index, const char *data);
-      static bool writeParentGroup(void *obj, StringTableEntry fieldName)                 { static_cast<SimObject*>(obj)->getGroup() != NULL ? true : false; };
+      static bool writeParentGroup(void *obj, StringTableEntry fieldName)                 { return static_cast<SimObject*>(obj)->getGroup() != NULL; };
 
       // Object name protected set method
       static bool setProtectedName(void *obj, const char *index, const char *data);

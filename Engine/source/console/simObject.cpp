@@ -157,7 +157,7 @@ void SimObject::initPersistFields()
       addProtectedField( "class", TypeString, Offset(mClassName, SimObject), &setClass, &defaultProtectedGetFn, &writeClass,
          "Script class of object." );
 
-      addProtectedField( "superClass", TypeString, Offset(mSuperClassName, SimObject), &setSuperClass, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+      addProtectedField( "superClass", TypeString, Offset(mSuperClassName, SimObject), &setSuperClass, &defaultProtectedGetFn, &writeSuperclass,
          "Script super-class of object." );
 
       // For legacy support
@@ -184,6 +184,7 @@ void SimObject::initPersistFields()
          "Whether the object can be saved out. If false, the object is purely transient in nature." );
 
       addField( "canSaveDynamicFields", TypeBool, Offset(mCanSaveFieldDictionary, SimObject), 
+         &getMethodProtectedWriteFn(canSaveDynamicFields),
          "True if dynamic fields (added at runtime) should be saved. Defaults to true." );
    
       addProtectedField( "persistentId", TypePID, Offset( mPersistentId, SimObject ),
