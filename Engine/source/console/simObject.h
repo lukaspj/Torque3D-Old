@@ -353,12 +353,19 @@ class SimObject: public ConsoleObject, public TamlCallbacks
          { static_cast<SimObject*>(object)->setClassNamespace(data); return false; };
       static bool setSuperClass(void *object, const char *index, const char *data)     
          { static_cast<SimObject*>(object)->setSuperClassNamespace(data); return false; };
+       static bool writeSuperclass( void* obj, StringTableEntry pFieldName )              { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->mSuperClassName != NULL && simObject->mSuperClassName != StringTable->EmptyString(); }
+       static bool writeClass( void* obj, StringTableEntry pFieldName )                   { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->mClassName != NULL && simObject->mClassName != StringTable->EmptyString(); }
+
+       static bool writePersistentId( void* obj, StringTableEntry pFieldName )            { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->mPersistentId != NULL; };
 
       // Group hierarchy protected set method 
       static bool setProtectedParent(void *object, const char *index, const char *data);
+      static bool writeParentGroup(void *obj, StringTableEntry fieldName)                 { static_cast<SimObject*>(obj)->getGroup() != NULL ? true : false; };
 
       // Object name protected set method
-      static bool setProtectedName(void *object, const char *index, const char *data);
+      static bool setProtectedName(void *obj, const char *index, const char *data);
+      static bool writeName(void *obj, StringTableEntry fieldName)                        { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->getName() != NULL && simObject->getName() != StringTable->EmptyString(); };
+      static bool writeInternalName(void *obj, StringTableEntry fieldName)                { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->mInternalName != NULL && simObject->mInternalName != StringTable->EmptyString(); };
 
    public:
       inline void setProgenitorFile( const char* pFile ) { mProgenitorFile = StringTable->insert( pFile ); }
