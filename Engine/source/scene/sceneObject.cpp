@@ -536,18 +536,25 @@ void SceneObject::setHidden( bool hidden )
 
 //-----------------------------------------------------------------------------
 
+defineMethodProtectedWriteFn( SceneObject, getPosition, Point3F::One, position );
+defineMethodProtectedWriteFn( SceneObject, getScale, Point3F::One, scale );
+defineMethodProtectedWriteFn( SceneObject, isRenderEnabled, true, isRenderEnabled );
+defineMethodProtectedWriteFn( SceneObject, isSelectionEnabled, true, isSelectionEnabled );
+defineMethodProtectedWriteFn( SceneObject, isMounted, false, isMounted );
+defineValueProtectedWriteFn( "0 0 0 1", rotation );
+
 void SceneObject::initPersistFields()
 {
    addGroup( "Transform" );
-
+   
       addProtectedField( "position", TypeMatrixPosition, Offset( mObjToWorld, SceneObject ),
-         &_setFieldPosition, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+         &_setFieldPosition, &defaultProtectedGetFn, &getMethodProtectedWriteFn(position),
          "Object world position." );
       addProtectedField( "rotation", TypeMatrixRotation, Offset( mObjToWorld, SceneObject ),
-         &_setFieldRotation, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+         &_setFieldRotation, &defaultProtectedGetFn, &getValueProtectedWriteFn(rotation),
          "Object world orientation." );
       addProtectedField( "scale", TypePoint3F, Offset( mObjScale, SceneObject ),
-         &_setFieldScale, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+         &_setFieldScale, &defaultProtectedGetFn, &getMethodProtectedWriteFn(scale),
          "Object world scale." );
 
    endGroup( "Transform" );
@@ -555,12 +562,12 @@ void SceneObject::initPersistFields()
    addGroup( "Editing" );
 
       addProtectedField( "isRenderEnabled", TypeBool, Offset( mObjectFlags, SceneObject ),
-         &_setRenderEnabled, &_getRenderEnabled, &defaultProtectedWriteFn,
+         &_setRenderEnabled, &_getRenderEnabled, &getMethodProtectedWriteFn(isRenderEnabled),
          "Controls client-side rendering of the object.\n"
          "@see isRenderable()\n" );
 
       addProtectedField( "isSelectionEnabled", TypeBool, Offset( mObjectFlags, SceneObject ),
-         &_setSelectionEnabled, &_getSelectionEnabled, &defaultProtectedWriteFn,
+         &_setSelectionEnabled, &_getSelectionEnabled, &getMethodProtectedWriteFn(isSelectionEnabled),
          "Determines if the object may be selected from wihin the Tools.\n"
          "@see isSelectable()\n" );
 
@@ -568,13 +575,13 @@ void SceneObject::initPersistFields()
 
    addGroup( "Mounting" );
 
-      addProtectedField( "mountPID", TypePID, Offset( mMountPID, SceneObject ), &_setMountPID, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+      addProtectedField( "mountPID", TypePID, Offset( mMountPID, SceneObject ), &_setMountPID, &defaultProtectedGetFn, &getMethodProtectedWriteFn(isMounted),
          "@brief PersistentID of object we are mounted to.\n\n"
          "Unlike the SimObjectID that is determined at run time, the PersistentID of an object is saved with the level/mission and "
          "may be used to form a link between objects." );
-      addField( "mountNode", TypeS32, Offset( mMount.node, SceneObject ), "Node we are mounted to." );
-      addField( "mountPos", TypeMatrixPosition, Offset( mMount.xfm, SceneObject ), "Position we are mounted at ( object space of our mount object )." );
-      addField( "mountRot", TypeMatrixRotation, Offset( mMount.xfm, SceneObject ), "Rotation we are mounted at ( object space of our mount object )." );
+      addField( "mountNode", TypeS32, Offset( mMount.node, SceneObject ), &getMethodProtectedWriteFn(isMounted), "Node we are mounted to." );
+      addField( "mountPos", TypeMatrixPosition, Offset( mMount.xfm, SceneObject ), &getMethodProtectedWriteFn(isMounted), "Position we are mounted at ( object space of our mount object )." );
+      addField( "mountRot", TypeMatrixRotation, Offset( mMount.xfm, SceneObject ), &getMethodProtectedWriteFn(isMounted), "Rotation we are mounted at ( object space of our mount object )." );
 
    endGroup( "Mounting" );
 
