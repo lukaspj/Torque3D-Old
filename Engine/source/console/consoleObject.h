@@ -1269,11 +1269,23 @@ inline bool defaultProtectedWriteFn( void* obj, StringTableEntry pFieldName )
     return true;
 }
 
-#define defineValueProtectedWriteFn( DEFAULT, name ) \
-   bool name##ValueProtectedWriteFn( void* obj, StringTableEntry pFieldName ) \
+#define defineDefaultValueWriteFn( DEFAULT, name ) \
+   bool name##ValueWriteFn( void* obj, StringTableEntry pFieldName ) \
 { \
-   SimObject* object = static_cast<SimObject*>(obj); \
-   return strcmp(DEFAULT, object->getDataField(pFieldName, NULL)) != 0; \
+   return strcmp(DEFAULT, static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL)) != 0; \
+}
+
+#define defineDefaultNonEmptyValueWriteFn( DEFAULT, name ) \
+   bool name##NonEmptyValueWriteFn( void* obj, StringTableEntry pFieldName ) \
+{ \
+   const char* val = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL); \
+   return strcmp(val, "") != 0 && strcmp(DEFAULT, val) != 0; \
+}
+
+#define defineDefaultBoolWriteFn( DEFAULT, name ) \
+   bool name##BoolWriteFn( void* obj, StringTableEntry pFieldName ) \
+{ \
+   return dAtob(static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL)) != DEFAULT; \
 }
 
 #define defineMethodProtectedWriteFn( className, METHOD, DEFAULT, name ) \
@@ -1282,8 +1294,10 @@ inline bool defaultProtectedWriteFn( void* obj, StringTableEntry pFieldName )
    return static_cast<className*>(obj)->##METHOD##() != DEFAULT; \
 }
 
-#define getValueProtectedWriteFn(name) name##ValueProtectedWriteFn
+#define getDefaultValueWriteFn(name) name##ValueWriteFn
+#define getDefaultNonEmptyValueWriteFn(name) name##NonEmptyValueWriteFn
 #define getMethodProtectedWriteFn(name) name##MethodProtectedWriteFn
+#define getDefaultBoolWriteFn(name) name##BoolWriteFn
 
 /// @}
 

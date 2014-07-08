@@ -77,8 +77,8 @@ defineMethodProtectedWriteFn( GuiContainer, getAnchorTop, true, anchorTop );
 defineMethodProtectedWriteFn( GuiContainer, getAnchorBottom, false, anchorBottom );
 defineMethodProtectedWriteFn( GuiContainer, getAnchorLeft, true, anchorLeft );
 defineMethodProtectedWriteFn( GuiContainer, getAnchorRight, false, anchorRight );
-defineValueProtectedWriteFn( "0 0 0 0", margin );
-defineValueProtectedWriteFn( "0 0 0 0", padding );
+defineDefaultValueWriteFn( "0 0 0 0", margin );
+defineDefaultValueWriteFn( "0 0 0 0", padding );
 
 void GuiContainer::initPersistFields()
 {
@@ -92,8 +92,8 @@ void GuiContainer::initPersistFields()
    addGroup( "Layout" );
 
       addProtectedField("docking",  TYPEID< Docking::DockingType >(),   Offset(mSizingOptions.mDocking, GuiContainer), &setDockingField, &defaultProtectedGetFn, &defaultProtectedWriteFn, "" );
-      addField("margin",         TypeRectSpacingI, Offset(mSizingOptions.mPadding, GuiContainer), &getValueProtectedWriteFn(margin));
-      addField("padding",        TypeRectSpacingI, Offset(mSizingOptions.mInternalPadding, GuiContainer), &getValueProtectedWriteFn(padding));
+      addField("margin",         TypeRectSpacingI, Offset(mSizingOptions.mPadding, GuiContainer), &getDefaultValueWriteFn(margin));
+      addField("padding",        TypeRectSpacingI, Offset(mSizingOptions.mInternalPadding, GuiContainer), &getDefaultValueWriteFn(padding));
       addField("anchorTop",      TypeBool,          Offset(mSizingOptions.mAnchorTop, GuiContainer), &getMethodProtectedWriteFn(anchorTop));
       addField("anchorBottom",   TypeBool,          Offset(mSizingOptions.mAnchorBottom, GuiContainer), &getMethodProtectedWriteFn(anchorBottom));
       addField("anchorLeft",     TypeBool,          Offset(mSizingOptions.mAnchorLeft, GuiContainer), &getMethodProtectedWriteFn(anchorLeft));

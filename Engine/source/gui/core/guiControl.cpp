@@ -244,9 +244,9 @@ defineMethodProtectedWriteFn( GuiControl, getMinExtent, Point2I(8,2), minExtent 
 defineMethodProtectedWriteFn( GuiControl, isVisible, true, visible);
 defineMethodProtectedWriteFn( GuiControl, isActive, true, active);
 defineMethodProtectedWriteFn( GuiControl, getTooltipProfile, NULL, tooltipProfile);
-defineValueProtectedWriteFn( "1000", hoverTime );
-defineValueProtectedWriteFn( "1", isContainer );
-defineValueProtectedWriteFn( "", emptyStringValue );
+defineDefaultValueWriteFn( "1000", hoverTime );
+defineDefaultValueWriteFn( "1", isContainer );
+defineDefaultValueWriteFn( "", emptyStringValue );
 
 void GuiControl::initPersistFields()
 {
@@ -267,7 +267,7 @@ void GuiControl::initPersistFields()
 
    addGroup( "Control");
 
-      addProtectedField("profile",  TYPEID< GuiControlProfile >(),   Offset(mProfile, GuiControl), &setProfileProt, &defaultProtectedGetFn, &getValueProtectedWriteFn(emptyStringValue),
+      addProtectedField("profile",  TYPEID< GuiControlProfile >(),   Offset(mProfile, GuiControl), &setProfileProt, &defaultProtectedGetFn, &getDefaultValueWriteFn(emptyStringValue),
          "The control profile that determines fill styles, font settings, etc." );
 
       addProtectedField( "visible", TypeBool,         Offset(mVisible, GuiControl), &_setVisible, &defaultProtectedGetFn, &getMethodProtectedWriteFn(visible),
@@ -278,17 +278,17 @@ void GuiControl::initPersistFields()
       addDeprecatedField("modal");
       addDeprecatedField("setFirstResponder");
 
-      addField("variable",          TypeString,       Offset(mConsoleVariable, GuiControl), &getValueProtectedWriteFn(emptyStringValue),
+      addField("variable",          TypeString,       Offset(mConsoleVariable, GuiControl), &getDefaultValueWriteFn(emptyStringValue),
          "Name of the variable to which the value of this control will be synchronized." );
-      addField("command",           TypeRealString,   Offset(mConsoleCommand, GuiControl), &getValueProtectedWriteFn(emptyStringValue),
+      addField("command",           TypeRealString,   Offset(mConsoleCommand, GuiControl), &getDefaultValueWriteFn(emptyStringValue),
          "Command to execute on the primary action of the control.\n\n"
          "@note Within this script snippet, the control on which the #command is being executed is bound to "
             "the global variable $ThisControl." );
-      addField("altCommand",        TypeRealString,   Offset(mAltConsoleCommand, GuiControl), &getValueProtectedWriteFn(emptyStringValue),
+      addField("altCommand",        TypeRealString,   Offset(mAltConsoleCommand, GuiControl), &getDefaultValueWriteFn(emptyStringValue),
          "Command to execute on the secondary action of the control.\n\n"
          "@note Within this script snippet, the control on which the #altCommand is being executed is bound to "
             "the global variable $ThisControl." );
-      addField("accelerator",       TypeString,       Offset(mAcceleratorKey, GuiControl), &getValueProtectedWriteFn(emptyStringValue),
+      addField("accelerator",       TypeString,       Offset(mAcceleratorKey, GuiControl), &getDefaultValueWriteFn(emptyStringValue),
          "Key combination that triggers the control's primary action when the control is on the canvas." );
 
    endGroup( "Control" );	
@@ -297,19 +297,19 @@ void GuiControl::initPersistFields()
       addProtectedField("tooltipProfile", TYPEID< GuiControlProfile >(), Offset(mTooltipProfile, GuiControl), 
          &setTooltipProfileProt, &defaultProtectedGetFn, &getMethodProtectedWriteFn(tooltipProfile),
          "Control profile to use when rendering tooltips for this control." );
-      addField("tooltip",           TypeRealString,   Offset(mTooltip, GuiControl), &getValueProtectedWriteFn(emptyStringValue),
+      addField("tooltip",           TypeRealString,   Offset(mTooltip, GuiControl), &getDefaultValueWriteFn(emptyStringValue),
          "String to show in tooltip for this control." );
-      addField("hovertime",         TypeS32,          Offset(mTipHoverTime, GuiControl), &getValueProtectedWriteFn(hoverTime),
+      addField("hovertime",         TypeS32,          Offset(mTipHoverTime, GuiControl), &getDefaultValueWriteFn(hoverTime),
          "Time for mouse to hover over control until tooltip is shown (in milliseconds)." );
    endGroup( "ToolTip" );
 
    addGroup( "Editing" );
-      addField("isContainer",       TypeBool,      Offset(mIsContainer, GuiControl), &getValueProtectedWriteFn(isContainer),
+      addField("isContainer",       TypeBool,      Offset(mIsContainer, GuiControl), &getDefaultValueWriteFn(isContainer),
          "If true, the control may contain child controls." );
    endGroup( "Editing" );
 
    addGroup( "Localization" );
-      addField("langTableMod",      TypeString,       Offset(mLangTableName, GuiControl), &getValueProtectedWriteFn(emptyStringValue),
+      addField("langTableMod",      TypeString,       Offset(mLangTableName, GuiControl), &getDefaultValueWriteFn(emptyStringValue),
          "Name of string table to use for lookup of internationalized text." );
    endGroup( "Localization" );
 

@@ -536,12 +536,12 @@ void SceneObject::setHidden( bool hidden )
 
 //-----------------------------------------------------------------------------
 
-defineMethodProtectedWriteFn( SceneObject, getPosition, Point3F::One, position );
+defineMethodProtectedWriteFn( SceneObject, getPosition, Point3F::Zero, position );
 defineMethodProtectedWriteFn( SceneObject, getScale, Point3F::One, scale );
 defineMethodProtectedWriteFn( SceneObject, isRenderEnabled, true, isRenderEnabled );
 defineMethodProtectedWriteFn( SceneObject, isSelectionEnabled, true, isSelectionEnabled );
 defineMethodProtectedWriteFn( SceneObject, isMounted, false, isMounted );
-defineValueProtectedWriteFn( "1 0 0 0", rotation );
+defineDefaultValueWriteFn( "1 0 0 0", rotation );
 
 void SceneObject::initPersistFields()
 {
@@ -551,7 +551,7 @@ void SceneObject::initPersistFields()
          &_setFieldPosition, &defaultProtectedGetFn, &getMethodProtectedWriteFn(position),
          "Object world position." );
       addProtectedField( "rotation", TypeMatrixRotation, Offset( mObjToWorld, SceneObject ),
-         &_setFieldRotation, &defaultProtectedGetFn, &getValueProtectedWriteFn(rotation),
+         &_setFieldRotation, &defaultProtectedGetFn, &getDefaultValueWriteFn(rotation),
          "Object world orientation." );
       addProtectedField( "scale", TypePoint3F, Offset( mObjScale, SceneObject ),
          &_setFieldScale, &defaultProtectedGetFn, &getMethodProtectedWriteFn(scale),

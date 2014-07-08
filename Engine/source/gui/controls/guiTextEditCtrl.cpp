@@ -157,14 +157,14 @@ GuiTextEditCtrl::~GuiTextEditCtrl()
    }
 }
 
-defineValueProtectedWriteFn(StringTable->insert("0"), historySize);
-defineValueProtectedWriteFn(StringTable->insert("0"), tabComplete);
-defineValueProtectedWriteFn(StringTable->insert("0"), sinkAllKeyEvents);
-defineValueProtectedWriteFn(StringTable->insert("0"), password);
+defineDefaultValueWriteFn(StringTable->insert("0"), historySize);
+defineDefaultValueWriteFn(StringTable->insert("0"), tabComplete);
+defineDefaultValueWriteFn(StringTable->insert("0"), sinkAllKeyEvents);
+defineDefaultValueWriteFn(StringTable->insert("0"), password);
 #if defined(__MACOSX__)
-   defineValueProtectedWriteFn(StringTable->insert( bullet ), passwordMask);
+   defineDefaultValueWriteFn(StringTable->insert( bullet ), passwordMask);
 #else
-   defineValueProtectedWriteFn(StringTable->insert( "*" ), passwordMask);
+   defineDefaultValueWriteFn(StringTable->insert( "*" ), passwordMask);
 #endif
 
 void GuiTextEditCtrl::initPersistFields()
@@ -175,17 +175,17 @@ void GuiTextEditCtrl::initPersistFields()
          "Script command to be called when the first validater is lost.\n");
       addField("escapeCommand",     TypeRealString,Offset(mEscapeCommand,     GuiTextEditCtrl), 
          "Script command to be called when the Escape key is pressed.\n");
-      addField("historySize",       TypeS32,       Offset(mHistorySize,       GuiTextEditCtrl), &getValueProtectedWriteFn(historySize),
+      addField("historySize",       TypeS32,       Offset(mHistorySize,       GuiTextEditCtrl), &getDefaultValueWriteFn(historySize),
          "How large of a history buffer to maintain.\n");
-      addField("tabComplete",       TypeBool,      Offset(mTabComplete,       GuiTextEditCtrl), &getValueProtectedWriteFn(tabComplete),
+      addField("tabComplete",       TypeBool,      Offset(mTabComplete,       GuiTextEditCtrl), &getDefaultValueWriteFn(tabComplete),
          "If true, when the 'tab' key is pressed, it will act as if the Enter key was pressed on the control.\n");
       addField("deniedSound",       TypeSFXTrackName, Offset(mDeniedSound, GuiTextEditCtrl), 
          "If the attempted text cannot be entered, this sound effect will be played.\n");
-      addField("sinkAllKeyEvents",  TypeBool,      Offset(mSinkAllKeyEvents,  GuiTextEditCtrl), &getValueProtectedWriteFn(sinkAllKeyEvents),
+      addField("sinkAllKeyEvents",  TypeBool,      Offset(mSinkAllKeyEvents,  GuiTextEditCtrl), &getDefaultValueWriteFn(sinkAllKeyEvents),
          "If true, every key event will act as if the Enter key was pressed.\n");
-      addField("password",          TypeBool,      Offset(mPasswordText,      GuiTextEditCtrl), &getValueProtectedWriteFn(password),
+      addField("password",          TypeBool,      Offset(mPasswordText,      GuiTextEditCtrl), &getDefaultValueWriteFn(password),
          "If true, all characters entered will be stored in the control, however will display as the character stored in passwordMask.\n");
-      addField("passwordMask",      TypeString,    Offset(mPasswordMask,      GuiTextEditCtrl), &getValueProtectedWriteFn(passwordMask),
+      addField("passwordMask",      TypeString,    Offset(mPasswordMask,      GuiTextEditCtrl), &getDefaultValueWriteFn(passwordMask),
          "If 'password' is true, this is the character that will be used to mask the characters in the control.\n");
       
    endGroup( "Text Input" );

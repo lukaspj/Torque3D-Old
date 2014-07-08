@@ -237,7 +237,8 @@ DefineEngineFunction(TamlWrite, bool, (SimObject* simObject, const char* filenam
     if ( simObject == NULL )
     {
         // No, so warn.
-       Con::warnf( "TamlWrite() - Could not find object '%s' to write to file '%s'.", simObject->getIdString(), filename );
+       //Con::warnf( "TamlWrite() - Could not find object '%s' to write to file '%s'.", simObject->getIdString(), filename );
+       Con::warnf( "TamlWrite() - Could not find object to write to file '%s'.", filename );
         return false;
     }
 
