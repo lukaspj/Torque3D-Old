@@ -204,7 +204,7 @@ void TamlXmlWriter::compileCustomElements( TiXmlElement* pXmlElement, const Taml
         StringTableEntry extendedElementName = StringTable->insert( extendedElementNameBuffer );
 
         // Create element.
-        TiXmlElement* pExtendedPropertyElement = new TiXmlElement( extendedElementName );
+        TiXmlElement* pExtendedPropertyElement = new fsTiXmlElement( extendedElementName );
 
         // Fetch node children.
         const TamlCustomNodeVector& nodeChildren = pCustomNode->getChildren();
@@ -251,7 +251,7 @@ void TamlXmlWriter::compileCustomNode( TiXmlElement* pXmlElement, const TamlCust
     }
 
     // Create element.
-    TiXmlElement* pNodeElement = new TiXmlElement( pCustomNode->getNodeName() );
+    TiXmlElement* pNodeElement = new fsTiXmlElement( pCustomNode->getNodeName() );
 
     // Is there any node text?
     if ( !pCustomNode->getNodeTextField().isValueEmpty() )
