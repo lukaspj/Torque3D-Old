@@ -1753,7 +1753,7 @@ void ConvexShape::Geometry::generate( const Vector< PlaneF > &planes, const Vect
 
 static StringTableEntry surfacesCustomNodeName = StringTable->insert("Surfaces");
 static StringTableEntry surfaceNodeName = StringTable->insert("Surface");
-static StringTableEntry surfaceQuatName = StringTable->insert("Quat");
+static StringTableEntry surfaceQuatName = StringTable->insert("Rotation");
 static StringTableEntry surfacePositionName = StringTable->insert("Position");
 
 void ConvexShape::onTamlCustomWrite( TamlCustomNodes& customNodes )
@@ -1777,8 +1777,10 @@ void ConvexShape::onTamlCustomWrite( TamlCustomNodes& customNodes )
          // Add cell alias.
          TamlCustomNode* pNode = pCustomCellNodes->addNode( surfaceNodeName );
          
+         AngAxisF axis(quat);
+
          // Add cell properties.
-         pNode->addField( surfaceQuatName, quat );
+         pNode->addField( surfaceQuatName, axis );
          pNode->addField( surfacePositionName, pos );
       }
    }
@@ -1838,7 +1840,9 @@ void ConvexShape::onTamlCustomRead( const TamlCustomNodes& customNodes )
             // Check common fields.
             if ( fieldName == surfaceQuatName )
             {
-               pField->getFieldValue( quat );
+               AngAxisF axis;
+               pField->getFieldValue( axis );
+               quat = QuatF(axis);
             }
             else if ( fieldName == surfacePositionName )
             {
