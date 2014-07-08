@@ -637,7 +637,9 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
         // Ignore if field not appropriate.
         if( pField->type == AbstractClassRep::DeprecatedFieldType ||
             pField->type == AbstractClassRep::StartGroupFieldType ||
-            pField->type == AbstractClassRep::EndGroupFieldType)
+            pField->type == AbstractClassRep::EndGroupFieldType ||
+            pField->type == AbstractClassRep::StartArrayFieldType ||
+            pField->type == AbstractClassRep::EndArrayFieldType)
             continue;
 
         // Fetch fieldname.
