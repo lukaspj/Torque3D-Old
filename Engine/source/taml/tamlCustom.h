@@ -162,6 +162,13 @@ public:
         dSprintf( fieldValueBuffer, sizeof(fieldValueBuffer), "%.5g %0.5g %.5g %.5g", fieldValue.x, fieldValue.y, fieldValue.z, fieldValue.w );
         set( pFieldName, fieldValueBuffer );
     }
+    
+    inline void setFieldValue( const char* pFieldName, const AngAxisF& fieldValue )
+    {
+        char fieldValueBuffer[32];
+        dSprintf( fieldValueBuffer, sizeof(fieldValueBuffer), "%.5g %0.5g %.5g %.5g", fieldValue.axis.x, fieldValue.axis.y, fieldValue.axis.z, fieldValue.angle );
+        set( pFieldName, fieldValueBuffer );
+    }
 
     inline void setFieldValue( const char* pFieldName, const U32 fieldValue )
     {
@@ -256,6 +263,15 @@ public:
         {
             // Warn.
             Con::warnf( "TamlCustomField - Reading QuatF but it has an incorrect format: '%s'.", mFieldValue );
+        }
+    }
+    
+    inline void getFieldValue( AngAxisF& fieldValue ) const
+    {
+        if ( dSscanf( mFieldValue, "%g %g %g %g", &fieldValue.axis.x, &fieldValue.axis.y, &fieldValue.axis.z, &fieldValue.angle ) != 4 )
+        {
+            // Warn.
+            Con::warnf( "TamlCustomField - Reading AngAxisF but it has an incorrect format: '%s'.", mFieldValue );
         }
     }
 
@@ -481,6 +497,13 @@ public:
     }
     
     inline TamlCustomField* addField( const char* pFieldName, const QuatF& fieldValue )
+    {
+        TamlCustomField* pNodeField = TamlCustomFieldFactory.createObject();
+        pNodeField->setFieldValue( pFieldName, fieldValue );
+        return registerField( pNodeField );
+    }
+    
+    inline TamlCustomField* addField( const char* pFieldName, const AngAxisF& fieldValue )
     {
         TamlCustomField* pNodeField = TamlCustomFieldFactory.createObject();
         pNodeField->setFieldValue( pFieldName, fieldValue );
