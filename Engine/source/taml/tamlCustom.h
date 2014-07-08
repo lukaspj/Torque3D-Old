@@ -140,6 +140,20 @@ public:
         set( pFieldName, fieldValueBuffer );
     }
 
+    inline void setFieldValue( const char* pFieldName, const Point3I& fieldValue )
+    {
+        char fieldValueBuffer[32];
+        dSprintf( fieldValueBuffer, sizeof(fieldValueBuffer), "%d %d %d", fieldValue.x, fieldValue.y, fieldValue.z );
+        set( pFieldName, fieldValueBuffer );
+    }
+    
+    inline void setFieldValue( const char* pFieldName, const Point3F& fieldValue )
+    {
+        char fieldValueBuffer[32];
+        dSprintf( fieldValueBuffer, sizeof(fieldValueBuffer), "%.5g %0.5g %.5g", fieldValue.x, fieldValue.y, fieldValue.z );
+        set( pFieldName, fieldValueBuffer );
+    }
+
     inline void setFieldValue( const char* pFieldName, const U32 fieldValue )
     {
         char fieldValueBuffer[16];
@@ -203,6 +217,24 @@ public:
     inline void getFieldValue( Point2F& fieldValue ) const
     {
         if ( dSscanf( mFieldValue, "%g %g", &fieldValue.x, &fieldValue.y ) != 2 )
+        {
+            // Warn.
+            Con::warnf( "TamlCustomField - Reading point2F but it has an incorrect format: '%s'.", mFieldValue );
+        }
+    }
+
+    inline void getFieldValue( Point3I& fieldValue ) const
+    {
+       if ( dSscanf( mFieldValue, "%d %d %d", &fieldValue.x, &fieldValue.y, &fieldValue.z ) != 3 )
+        {
+            // Warn.
+            Con::warnf( "TamlCustomField - Reading point2I but it has an incorrect format: '%s'.", mFieldValue );
+        }
+    }
+
+    inline void getFieldValue( Point3F& fieldValue ) const
+    {
+        if ( dSscanf( mFieldValue, "%g %g %g", &fieldValue.x, &fieldValue.y, &fieldValue.z ) != 3 )
         {
             // Warn.
             Con::warnf( "TamlCustomField - Reading point2F but it has an incorrect format: '%s'.", mFieldValue );
@@ -409,6 +441,21 @@ public:
     }
 
     inline TamlCustomField* addField( const char* pFieldName, const Point2F& fieldValue )
+    {
+        TamlCustomField* pNodeField = TamlCustomFieldFactory.createObject();
+        pNodeField->setFieldValue( pFieldName, fieldValue );
+        return registerField( pNodeField );
+    }
+
+    inline TamlCustomField* addField( const char* pFieldName, const Point3I& fieldValue )
+    {
+        TamlCustomField* pNodeField = TamlCustomFieldFactory.createObject();
+        pNodeField->setFieldValue( pFieldName, fieldValue );
+        return registerField( pNodeField );
+
+    }
+
+    inline TamlCustomField* addField( const char* pFieldName, const Point3F& fieldValue )
     {
         TamlCustomField* pNodeField = TamlCustomFieldFactory.createObject();
         pNodeField->setFieldValue( pFieldName, fieldValue );
