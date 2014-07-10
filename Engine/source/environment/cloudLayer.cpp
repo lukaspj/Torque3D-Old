@@ -37,6 +37,7 @@
 #include "materials/shaderData.h"
 #include "lighting/lightInfo.h"
 #include "math/mathIO.h"
+#include "taml/tamlCustom.h"
 
 ConsoleDocClass( CloudLayer,
    "@brief A layer of clouds which change shape over time and are affected by scene lighting.\n\n"
@@ -488,4 +489,114 @@ void CloudLayer::_initBuffers()
    }
 
    mPB.unlock();   
+}
+
+static StringTableEntry texturesCustomNodeName = StringTable->insert("Textures");
+static StringTableEntry textureNodeName = StringTable->insert("Texture");
+static StringTableEntry textureScaleName = StringTable->insert("Scale");
+static StringTableEntry textureDirName = StringTable->insert("Direction");
+static StringTableEntry textureSpeedName = StringTable->insert("Speed");
+
+void CloudLayer::onTamlCustomWrite( TamlCustomNodes& customNodes )
+{
+   // Debug Profiling.
+   PROFILE_SCOPE(CloudLayer_OnTamlCustomWrite);
+
+   // Call parent.
+   Parent::onTamlCustomWrite( customNodes );
+
+   if (TEX_COUNT > 0)
+   {
+      // Add cell custom node.
+      TamlCustomNode* pCustomCellNodes = customNodes.addNode( texturesCustomNodeName );
+
+      // Iterate explicit frames.
+      for( U8 i = 0; i < TEX_COUNT; i++ )
+      {
+         F32 texScale = mTexScale[i];
+         Point2F texDir = mTexDirection[i];
+         F32 texSpeed = mTexSpeed[i];   
+
+         // Add cell alias.
+         TamlCustomNode* pNode = pCustomCellNodes->addNode( textureNodeName );
+
+         // Add cell properties.
+         pNode->addField( textureScaleName, texScale );
+         pNode->addField( textureDirName, texDir );
+         pNode->addField( textureSpeedName, texSpeed );
+      }
+   }
+}
+
+void CloudLayer::onTamlCustomRead( const TamlCustomNodes& customNodes )
+{
+   // Debug Profiling.
+   PROFILE_SCOPE(CloudLayer_OnTamlCustomRead);
+
+   // Call parent.
+   Parent::onTamlCustomRead( customNodes );
+
+   // Find cell custom node.
+   const TamlCustomNode* pCustomCellNodes = customNodes.findNode( texturesCustomNodeName );
+
+   // Continue if we have explicit cells.
+   if ( pCustomCellNodes != NULL )
+   {
+      // Fetch children cell nodes.
+      const TamlCustomNodeVector& cellNodes = pCustomCellNodes->getChildren();
+
+      U8 idx = 0;
+
+      // Iterate cells.
+      for( TamlCustomNodeVector::const_iterator cellNodeItr = cellNodes.begin(); cellNodeItr != cellNodes.end(); ++cellNodeItr )
+      {
+         // Fetch cell node.
+         TamlCustomNode* pCellNode = *cellNodeItr;
+
+         // Fetch node name.
+         StringTableEntry nodeName = pCellNode->getNodeName();
+
+         // Is this a valid alias?
+         if ( nodeName != textureNodeName )
+         {
+            // No, so warn.
+            Con::warnf( "CloudLayer::onTamlCustomRead() - Encountered an unknown custom name of '%s'.  Only '%s' is valid.", nodeName, textureNodeName );
+            continue;
+         }
+
+         // Fetch fields.
+         const TamlCustomFieldVector& fields = pCellNode->getFields();
+
+         // Iterate property fields.
+         for ( TamlCustomFieldVector::const_iterator fieldItr = fields.begin(); fieldItr != fields.end(); ++fieldItr )
+         {
+            // Fetch field.
+            const TamlCustomField* pField = *fieldItr;
+
+            // Fetch field name.
+            StringTableEntry fieldName = pField->getFieldName();
+
+            // Check common fields.
+            if ( fieldName == textureScaleName )
+            {
+               pField->getFieldValue( mTexScale[idx] );
+            }
+            else if ( fieldName == textureDirName )
+            {
+               pField->getFieldValue( mTexDirection[idx] );
+            }
+            else if ( fieldName == textureSpeedName )
+            {
+               pField->getFieldValue( mTexSpeed[idx] );
+            }
+            else
+            {
+               // Unknown name so warn.
+               Con::warnf( "CloudLayer::onTamlCustomRead() - Encountered an unknown custom field name of '%s'.", fieldName );
+               continue;
+            }
+         }
+         idx++;
+      }
+   }
 }
