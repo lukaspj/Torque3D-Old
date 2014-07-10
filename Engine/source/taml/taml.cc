@@ -664,7 +664,8 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
             // Fetch object field value.
             const char* pFieldValue = pSimObject->getDataField( fieldName, indexBuffer );
 
-            if(!pFieldValue) continue;
+            if(!pFieldValue)
+               pFieldValue = StringTable->EmptyString();
 
             U32 nBufferSize = dStrlen( pFieldValue ) + 1;
             FrameTemp<char> valueCopy( nBufferSize );
