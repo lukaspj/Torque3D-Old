@@ -177,6 +177,12 @@ public:
    virtual VectorF getFlow( const Point3F &pos ) const { return Point3F::Zero; }
    virtual void updateUnderwaterEffect( SceneRenderState *state );
    virtual bool isUnderwater( const Point3F &pnt ) const { return false; }
+         
+   /// Called during the writing of the object to allow custom properties to be written.
+   virtual void onTamlCustomWrite( TamlCustomNodes& customNodes );
+
+   /// Called during the reading of the object to allow custom properties to be read.
+   virtual void onTamlCustomRead( const TamlCustomNodes& customNodes );
 
 protected:
       

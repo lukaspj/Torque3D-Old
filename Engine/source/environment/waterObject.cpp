@@ -44,6 +44,7 @@
 #include "sfx/sfxAmbience.h"
 #include "T3D/sfx/sfx3DWorld.h"
 #include "sfx/sfxTypes.h"
+#include "taml/tamlCustom.h"
 
 
 GFXImplementVertexFormat( GFXWaterVertex )
@@ -1204,4 +1205,286 @@ S32 WaterObject::getMaterialIndex( const Point3F &camPos )
    }
 
    return matIdx;
+}
+
+static StringTableEntry wavesCustomNodeName = StringTable->insert("Waves");
+static StringTableEntry waveNodeName = StringTable->insert("Wave");
+static StringTableEntry waveDirectionName = StringTable->insert("Direction");
+static StringTableEntry waveSpeedName = StringTable->insert("Speed");
+static StringTableEntry waveMagnitudeName = StringTable->insert("Magnitude");
+
+static StringTableEntry ripplesCustomNodeName = StringTable->insert("Ripples");
+static StringTableEntry rippleNodeName = StringTable->insert("Ripple");
+static StringTableEntry rippleDirectionName = StringTable->insert("Direction");
+static StringTableEntry rippleSpeedName = StringTable->insert("Speed");
+static StringTableEntry rippleTexScaleName = StringTable->insert("TexScale");
+static StringTableEntry rippleMagnitudeName = StringTable->insert("Magnitude");
+
+static StringTableEntry foamsCustomNodeName = StringTable->insert("Foams");
+static StringTableEntry foamNodeName = StringTable->insert("Foam");
+static StringTableEntry foamDirectionName = StringTable->insert("Direction");
+static StringTableEntry foamSpeedName = StringTable->insert("Speed");
+static StringTableEntry foamTexScaleName = StringTable->insert("TexScale");
+static StringTableEntry foamOpacityName = StringTable->insert("Opacity");
+
+void WaterObject::onTamlCustomWrite( TamlCustomNodes& customNodes )
+{
+   // Debug Profiling.
+   PROFILE_SCOPE(WaterObject_OnTamlCustomWrite);
+
+   // Call parent.
+   Parent::onTamlCustomWrite( customNodes );
+
+   if (MAX_WAVES > 0)
+   {
+      // Add cell custom node.
+      TamlCustomNode* pCustomCellNodes = customNodes.addNode( wavesCustomNodeName );
+
+      // Iterate explicit frames.
+      for( U8 i = 0; i < MAX_WAVES; i++ )
+      {
+         // Add cell alias.
+         TamlCustomNode* pNode = pCustomCellNodes->addNode( waveNodeName );
+         
+
+         // Add cell properties.
+         pNode->addField( waveDirectionName, mWaveDir[i] );
+         pNode->addField( waveSpeedName, mWaveSpeed[i] );
+         pNode->addField( waveMagnitudeName, mWaveMagnitude[i] );
+      }
+      
+      // Add cell custom node.
+      pCustomCellNodes = customNodes.addNode( ripplesCustomNodeName );
+
+      // Iterate explicit frames.
+      for( U8 i = 0; i < MAX_WAVES; i++ )
+      {
+         // Add cell alias.
+         TamlCustomNode* pNode = pCustomCellNodes->addNode( rippleNodeName );
+         
+
+         // Add cell properties.
+         pNode->addField( rippleDirectionName, mRippleDir[i] );
+         pNode->addField( rippleSpeedName, mRippleSpeed[i] );
+         pNode->addField( rippleTexScaleName, mRippleTexScale[i] );
+         pNode->addField( rippleMagnitudeName, mRippleMagnitude[i] );
+      }
+   }
+
+   if(MAX_FOAM > 0)
+   {
+      
+      // Add cell custom node.
+      TamlCustomNode* pCustomCellNodes = customNodes.addNode( foamsCustomNodeName );
+
+      // Iterate explicit frames.
+      for( U8 i = 0; i < MAX_FOAM; i++ )
+      {
+         // Add cell alias.
+         TamlCustomNode* pNode = pCustomCellNodes->addNode( foamNodeName );
+         
+
+         // Add cell properties.
+         pNode->addField( foamDirectionName, mFoamDir[i] );
+         pNode->addField( foamSpeedName, mFoamSpeed[i] );
+         pNode->addField( foamTexScaleName, mFoamTexScale[i] );
+         pNode->addField( foamOpacityName, mFoamOpacity[i] );
+      }
+   }
+}
+
+void WaterObject::onTamlCustomRead( const TamlCustomNodes& customNodes )
+{
+   // Debug Profiling.
+   PROFILE_SCOPE(WaterObject_OnTamlCustomRead);
+
+   // Call parent.
+   Parent::onTamlCustomRead( customNodes );
+
+   // Find cell custom node.
+   const TamlCustomNode* pWaveCustomCellNodes = customNodes.findNode( wavesCustomNodeName );
+   const TamlCustomNode* pRippleCustomCellNodes = customNodes.findNode( ripplesCustomNodeName );
+   const TamlCustomNode* pFoamCustomCellNodes = customNodes.findNode( foamsCustomNodeName );
+
+   // Continue if we have explicit cells.
+   if ( pWaveCustomCellNodes != NULL 
+      && pRippleCustomCellNodes != NULL
+      && pFoamCustomCellNodes != NULL)
+   {
+      // Fetch children cell nodes.
+      const TamlCustomNodeVector& waveCellNodes = pWaveCustomCellNodes->getChildren();
+
+      // Iterate cells.
+      for( TamlCustomNodeVector::const_iterator cellNodeItr = waveCellNodes.begin(); cellNodeItr != waveCellNodes.end(); ++cellNodeItr )
+      {
+         // Fetch cell node.
+         TamlCustomNode* pCellNode = *cellNodeItr;
+
+         // Fetch node name.
+         StringTableEntry nodeName = pCellNode->getNodeName();
+
+         // Is this a valid alias?
+         if ( nodeName != waveNodeName )
+         {
+            // No, so warn.
+            Con::warnf( "WaterObject::onTamlCustomRead() - Encountered an unknown custom name of '%s'.  Only '%s' is valid.", nodeName, waveNodeName );
+            continue;
+         }
+
+         // Fetch fields.
+         const TamlCustomFieldVector& fields = pCellNode->getFields();
+
+         U8 idx = 0;
+         // Iterate property fields.
+         for ( TamlCustomFieldVector::const_iterator fieldItr = fields.begin(); fieldItr != fields.end(); ++fieldItr )
+         {
+            // Fetch field.
+            const TamlCustomField* pField = *fieldItr;
+
+            // Fetch field name.
+            StringTableEntry fieldName = pField->getFieldName();
+
+            // Check common fields.
+            if ( fieldName == waveDirectionName )
+            {
+               pField->getFieldValue( mWaveDir[idx] );
+            }
+            else if ( fieldName == waveSpeedName )
+            {
+               pField->getFieldValue( mWaveSpeed[idx] );
+            }
+            else if ( fieldName == waveMagnitudeName )
+            {
+               pField->getFieldValue( mWaveMagnitude[idx] );
+            }
+            else
+            {
+               // Unknown name so warn.
+               Con::warnf( "WaterObject::onTamlCustomRead() - Encountered an unknown custom field name of '%s'.", fieldName );
+               continue;
+            }
+            idx++;
+         }
+      }
+
+      // Fetch children cell nodes.
+      const TamlCustomNodeVector& rippleCellNodes = pRippleCustomCellNodes->getChildren();
+
+      // Iterate cells.
+      for( TamlCustomNodeVector::const_iterator cellNodeItr = rippleCellNodes.begin(); cellNodeItr != rippleCellNodes.end(); ++cellNodeItr )
+      {
+         // Fetch cell node.
+         TamlCustomNode* pCellNode = *cellNodeItr;
+
+         // Fetch node name.
+         StringTableEntry nodeName = pCellNode->getNodeName();
+
+         // Is this a valid alias?
+         if ( nodeName != waveNodeName )
+         {
+            // No, so warn.
+            Con::warnf( "WaterObject::onTamlCustomRead() - Encountered an unknown custom name of '%s'.  Only '%s' is valid.", nodeName, rippleNodeName );
+            continue;
+         }
+
+         // Fetch fields.
+         const TamlCustomFieldVector& fields = pCellNode->getFields();
+
+         U8 idx = 0;
+         // Iterate property fields.
+         for ( TamlCustomFieldVector::const_iterator fieldItr = fields.begin(); fieldItr != fields.end(); ++fieldItr )
+         {
+            // Fetch field.
+            const TamlCustomField* pField = *fieldItr;
+
+            // Fetch field name.
+            StringTableEntry fieldName = pField->getFieldName();
+
+            // Check common fields.
+            if ( fieldName == rippleDirectionName )
+            {
+               pField->getFieldValue( mRippleDir[idx] );
+            }
+            else if ( fieldName == rippleSpeedName )
+            {
+               pField->getFieldValue( mRippleSpeed[idx] );
+            }
+            else if ( fieldName == rippleTexScaleName )
+            {
+               pField->getFieldValue( mRippleTexScale[idx] );
+            }
+            else if ( fieldName == rippleMagnitudeName )
+            {
+               pField->getFieldValue( mRippleMagnitude[idx] );
+            }
+            else
+            {
+               // Unknown name so warn.
+               Con::warnf( "WaterObject::onTamlCustomRead() - Encountered an unknown custom field name of '%s'.", fieldName );
+               continue;
+            }
+            idx++;
+         }
+      }
+
+      // Fetch children cell nodes.
+      const TamlCustomNodeVector& foamCellNodes = pFoamCustomCellNodes->getChildren();
+
+      // Iterate cells.
+      for( TamlCustomNodeVector::const_iterator cellNodeItr = foamCellNodes.begin(); cellNodeItr != foamCellNodes.end(); ++cellNodeItr )
+      {
+         // Fetch cell node.
+         TamlCustomNode* pCellNode = *cellNodeItr;
+
+         // Fetch node name.
+         StringTableEntry nodeName = pCellNode->getNodeName();
+
+         // Is this a valid alias?
+         if ( nodeName != waveNodeName )
+         {
+            // No, so warn.
+            Con::warnf( "WaterObject::onTamlCustomRead() - Encountered an unknown custom name of '%s'.  Only '%s' is valid.", nodeName, foamNodeName );
+            continue;
+         }
+
+         // Fetch fields.
+         const TamlCustomFieldVector& fields = pCellNode->getFields();
+
+         U8 idx = 0;
+         // Iterate property fields.
+         for ( TamlCustomFieldVector::const_iterator fieldItr = fields.begin(); fieldItr != fields.end(); ++fieldItr )
+         {
+            // Fetch field.
+            const TamlCustomField* pField = *fieldItr;
+
+            // Fetch field name.
+            StringTableEntry fieldName = pField->getFieldName();
+
+            // Check common fields.
+            if ( fieldName == foamDirectionName )
+            {
+               pField->getFieldValue( mFoamDir[idx] );
+            }
+            else if ( fieldName == foamSpeedName )
+            {
+               pField->getFieldValue( mFoamSpeed[idx] );
+            }
+            else if ( fieldName == foamTexScaleName )
+            {
+               pField->getFieldValue( mFoamTexScale[idx] );
+            }
+            else if ( fieldName == foamOpacityName )
+            {
+               pField->getFieldValue( mFoamOpacity[idx] );
+            }
+            else
+            {
+               // Unknown name so warn.
+               Con::warnf( "WaterObject::onTamlCustomRead() - Encountered an unknown custom field name of '%s'.", fieldName );
+               continue;
+            }
+            idx++;
+         }
+      }
+   }
 }
