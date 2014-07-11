@@ -667,6 +667,9 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
             if(!pFieldValue)
                pFieldValue = StringTable->EmptyString();
 
+            if(pField->type == TypeBool)
+               pFieldValue = dAtob(pFieldValue) ? "true" : "false";
+
             U32 nBufferSize = dStrlen( pFieldValue ) + 1;
             FrameTemp<char> valueCopy( nBufferSize );
             dStrcpy( (char *)valueCopy, pFieldValue );
