@@ -47,7 +47,7 @@ void SceneAmbientSoundObject< Base >::initPersistFields()
 {
    Parent::addGroup( "Sound" );
       Parent::addProtectedField( "soundAmbience", TypeSFXAmbienceName, Offset( mSoundAmbience, SceneAmbientSoundObject ),
-         &_setSoundAmbience, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+         &_setSoundAmbience, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(),
          "Ambient sound environment for the space." );
    Parent::endGroup( "Sound" );
 

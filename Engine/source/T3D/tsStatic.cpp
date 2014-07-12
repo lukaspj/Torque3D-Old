@@ -145,10 +145,10 @@ void TSStatic::initPersistFields()
 {
    addGroup("Media");
 
-      addField("shapeName",   TypeShapeFilename,  Offset( mShapeName, TSStatic ), &writeShapeName,
+      addField("shapeName",   TypeShapeFilename,  Offset( mShapeName, TSStatic ), new AbstractClassRep::WriteDataNotify(), //&writeShapeName,
          "%Path and filename of the model file (.DTS, .DAE) to use for this TSStatic." );
 
-      addProtectedField( "skin", TypeRealString, Offset( mAppliedSkinName, TSStatic ), &_setFieldSkin, &_getFieldSkin, &writeSkinName,
+      addProtectedField( "skin", TypeRealString, Offset( mAppliedSkinName, TSStatic ), &_setFieldSkin, &_getFieldSkin, new AbstractClassRep::WriteDataNotify(), //&writeSkinName,
       "@brief The skin applied to the shape.\n\n"
 
       "'Skinning' the shape effectively renames the material targets, allowing "
@@ -178,23 +178,23 @@ void TSStatic::initPersistFields()
 
    addGroup("Rendering");
 
-      addField( "playAmbient",   TypeBool,   Offset( mPlayAmbient, TSStatic ), &getDefaultBoolWriteFn(playAmbient),
+      addField( "playAmbient",   TypeBool,   Offset( mPlayAmbient, TSStatic ), getDefaultBoolWriteFn(playAmbient),
          "Enables automatic playing of the animation sequence named \"ambient\" (if it exists) when the TSStatic is loaded.");
-      addField( "meshCulling",   TypeBool,   Offset( mMeshCulling, TSStatic ), &getDefaultBoolWriteFn(meshCulling),
+      addField( "meshCulling",   TypeBool,   Offset( mMeshCulling, TSStatic ), getDefaultBoolWriteFn(meshCulling),
          "Enables detailed culling of meshes within the TSStatic. Should only be used "
          "with large complex shapes like buildings which contain many submeshes." );
-      addField( "originSort",    TypeBool,   Offset( mUseOriginSort, TSStatic ), &getDefaultBoolWriteFn(originSort),
+      addField( "originSort",    TypeBool,   Offset( mUseOriginSort, TSStatic ), getDefaultBoolWriteFn(originSort),
          "Enables translucent sorting of the TSStatic by its origin instead of the bounds." );
 
    endGroup("Rendering");
 
    addGroup("Collision");
 
-      addField( "collisionType",    TypeTSMeshType,   Offset( mCollisionType,   TSStatic ), &getDefaultValueWriteFn(collisionType),
+      addField( "collisionType",    TypeTSMeshType,   Offset( mCollisionType,   TSStatic ), getDefaultValueWriteFn(collisionType),
          "The type of mesh data to use for collision queries." );
-      addField( "decalType",        TypeTSMeshType,   Offset( mDecalType,   TSStatic ), &getDefaultValueWriteFn(decalType),
+      addField( "decalType",        TypeTSMeshType,   Offset( mDecalType,   TSStatic ), getDefaultValueWriteFn(decalType),
          "The type of mesh data used to clip decal polygons against." );
-      addField( "allowPlayerStep",  TypeBool,         Offset( mAllowPlayerStep, TSStatic ), &getDefaultBoolWriteFn(allowPlayerStep),
+      addField( "allowPlayerStep",  TypeBool,         Offset( mAllowPlayerStep, TSStatic ), getDefaultBoolWriteFn(allowPlayerStep),
          "@brief Allow a Player to walk up sloping polygons in the TSStatic (based on the collisionType).\n\n"
          "When set to false, the slightest bump will stop the player from walking on top of the object.\n");
    
@@ -202,9 +202,9 @@ void TSStatic::initPersistFields()
 
    addGroup("Debug");
 
-      addField( "renderNormals", TypeF32, Offset( mRenderNormalScalar, TSStatic ), &getDefaultValueWriteFn(renderNormals),
+      addField( "renderNormals", TypeF32, Offset( mRenderNormalScalar, TSStatic ), getDefaultValueWriteFn(renderNormals),
          "Debug rendering mode shows the normals for each point in the TSStatic's mesh." );
-      addField( "forceDetail",   TypeS32, Offset( mForceDetail, TSStatic ), &getDefaultValueWriteFn(forceDetail),
+      addField( "forceDetail",   TypeS32, Offset( mForceDetail, TSStatic ), getDefaultValueWriteFn(forceDetail),
          "Forces rendering to a particular detail level." );
 
    endGroup("Debug");

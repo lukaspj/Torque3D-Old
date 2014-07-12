@@ -434,7 +434,12 @@ public:
    typedef const char *(*GetDataNotify)( void *obj, const char *data );
 
    /// This is a function pointer typedef to support optional writing for fields.
-   typedef bool (*WriteDataNotify)( void* obj, const char* pFieldName );
+   //typedef bool (*WriteDataNotify)( void* obj, const char* pFieldName );
+   struct WriteDataNotify
+   {
+      WriteDataNotify() {};
+      virtual bool fn(void* obj, StringTableEntry pFieldName) const { return true; }
+   };
 
    /// These are special field type values used to mark
    /// groups and arrays in the field list.
@@ -510,7 +515,7 @@ public:
       TypeValidator *validator;     ///< Validator, if any.
       SetDataNotify  setDataFn;     ///< Set data notify Fn
       GetDataNotify  getDataFn;     ///< Get data notify Fn
-      WriteDataNotify writeDataFn;  ///< Function to determine whether data should be written or not.
+      WriteDataNotify *writeDataFn;  ///< Function to determine whether data should be written or not.
    };
    typedef Vector<Field> FieldList;
 
@@ -830,7 +835,7 @@ public:
    static void addField(const char*   in_pFieldname,
       const U32     in_fieldType,
       const dsize_t in_fieldOffset,
-      AbstractClassRep::WriteDataNotify in_writeDataFn,
+      AbstractClassRep::WriteDataNotify* in_writeDataFn,
       const U32     in_elementCount = 1,
       const char*   in_pFieldDocs   = NULL,
       U32 flags = 0 );
@@ -856,7 +861,7 @@ public:
    static void addField(const char*   in_pFieldname,
       const U32     in_fieldType,
       const dsize_t in_fieldOffset,
-      AbstractClassRep::WriteDataNotify in_writeDataFn,
+      AbstractClassRep::WriteDataNotify* in_writeDataFn,
       const char*   in_pFieldDocs,
       U32 flags = 0 );
 
@@ -887,7 +892,7 @@ public:
    static void addFieldV(const char*   in_pFieldname,
       const U32      in_fieldType,
       const dsize_t  in_fieldOffset,
-      AbstractClassRep::WriteDataNotify in_writeDataFn,
+      AbstractClassRep::WriteDataNotify* in_writeDataFn,
       TypeValidator *v,
       const char *   in_pFieldDocs = NULL);
 
@@ -905,7 +910,7 @@ public:
       const dsize_t in_fieldOffset,
       AbstractClassRep::SetDataNotify in_setDataFn,
       AbstractClassRep::GetDataNotify in_getDataFn,
-      AbstractClassRep::WriteDataNotify in_writeDataFn,
+      AbstractClassRep::WriteDataNotify* in_writeDataFn,
       const U32     in_elementCount,
       const char*   in_pFieldDocs   = NULL,
       U32 flags = 0 );
@@ -923,7 +928,7 @@ public:
       const dsize_t in_fieldOffset,
       AbstractClassRep::SetDataNotify in_setDataFn,
       AbstractClassRep::GetDataNotify in_getDataFn = &defaultProtectedGetFn,
-      AbstractClassRep::WriteDataNotify in_writeDataFn = &defaultProtectedWriteFn,
+      AbstractClassRep::WriteDataNotify* in_writeDataFn = new AbstractClassRep::WriteDataNotify(),
       const char*   in_pFieldDocs = NULL,
       U32 flags = 0 );
 
@@ -1294,10 +1299,10 @@ inline bool defaultProtectedWriteFn( void* obj, StringTableEntry pFieldName )
    return static_cast<className*>(obj)->##METHOD##() != DEFAULT; \
 }
 
-#define getDefaultValueWriteFn(name) name##ValueWriteFn
-#define getDefaultNonEmptyValueWriteFn(name) name##NonEmptyValueWriteFn
-#define getMethodProtectedWriteFn(name) name##MethodProtectedWriteFn
-#define getDefaultBoolWriteFn(name) name##BoolWriteFn
+#define getDefaultValueWriteFn(name) new AbstractClassRep::WriteDataNotify()
+#define getDefaultNonEmptyValueWriteFn(name) new AbstractClassRep::WriteDataNotify()
+#define getMethodProtectedWriteFn(name) new AbstractClassRep::WriteDataNotify()
+#define getDefaultBoolWriteFn(name) new AbstractClassRep::WriteDataNotify()
 
 /// @}
 

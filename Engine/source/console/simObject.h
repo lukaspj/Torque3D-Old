@@ -1029,4 +1029,26 @@ class SimObjectPtr : public WeakRefPtr< T >
       }
 };
 
+struct DefaultValueWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   const char* defaultValue;
+   DefaultValueWriteFn(const char* _val) : defaultValue(_val) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      return dStricmp(value, defaultValue) != 0;
+   }
+};
+
+struct DefaultBoolWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   bool defaultValue;
+   DefaultBoolWriteFn(bool _val) : defaultValue(_val) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      return dAtob(value) != defaultValue;
+   }
+};
+
 #endif // _SIMOBJECT_H_

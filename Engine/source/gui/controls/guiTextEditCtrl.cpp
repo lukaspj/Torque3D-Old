@@ -175,17 +175,17 @@ void GuiTextEditCtrl::initPersistFields()
          "Script command to be called when the first validater is lost.\n");
       addField("escapeCommand",     TypeRealString,Offset(mEscapeCommand,     GuiTextEditCtrl), 
          "Script command to be called when the Escape key is pressed.\n");
-      addField("historySize",       TypeS32,       Offset(mHistorySize,       GuiTextEditCtrl), &getDefaultValueWriteFn(historySize),
+      addField("historySize",       TypeS32,       Offset(mHistorySize,       GuiTextEditCtrl), getDefaultValueWriteFn(historySize),
          "How large of a history buffer to maintain.\n");
-      addField("tabComplete",       TypeBool,      Offset(mTabComplete,       GuiTextEditCtrl), &getDefaultValueWriteFn(tabComplete),
+      addField("tabComplete",       TypeBool,      Offset(mTabComplete,       GuiTextEditCtrl), getDefaultValueWriteFn(tabComplete),
          "If true, when the 'tab' key is pressed, it will act as if the Enter key was pressed on the control.\n");
       addField("deniedSound",       TypeSFXTrackName, Offset(mDeniedSound, GuiTextEditCtrl), 
          "If the attempted text cannot be entered, this sound effect will be played.\n");
-      addField("sinkAllKeyEvents",  TypeBool,      Offset(mSinkAllKeyEvents,  GuiTextEditCtrl), &getDefaultValueWriteFn(sinkAllKeyEvents),
+      addField("sinkAllKeyEvents",  TypeBool,      Offset(mSinkAllKeyEvents,  GuiTextEditCtrl), getDefaultValueWriteFn(sinkAllKeyEvents),
          "If true, every key event will act as if the Enter key was pressed.\n");
-      addField("password",          TypeBool,      Offset(mPasswordText,      GuiTextEditCtrl), &getDefaultValueWriteFn(password),
+      addField("password",          TypeBool,      Offset(mPasswordText,      GuiTextEditCtrl), getDefaultValueWriteFn(password),
          "If true, all characters entered will be stored in the control, however will display as the character stored in passwordMask.\n");
-      addField("passwordMask",      TypeString,    Offset(mPasswordMask,      GuiTextEditCtrl), &getDefaultValueWriteFn(passwordMask),
+      addField("passwordMask",      TypeString,    Offset(mPasswordMask,      GuiTextEditCtrl), getDefaultValueWriteFn(passwordMask),
          "If 'password' is true, this is the character that will be used to mask the characters in the control.\n");
       
    endGroup( "Text Input" );

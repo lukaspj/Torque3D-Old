@@ -109,13 +109,13 @@ void ForestBrushTool::initPersistFields()
       addField( "mode", TYPEID< BrushMode >(), Offset( mMode, ForestBrushTool) );
       
       addProtectedField( "size", TypeF32, Offset( mSize, ForestBrushTool ), 
-         &protectedSetSize, &defaultProtectedGetFn, &defaultProtectedWriteFn, "Brush Size" );
+         &protectedSetSize, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), "Brush Size" );
 
       addProtectedField( "pressure", TypeF32, Offset( mPressure, ForestBrushTool ), 
-         &protectedSetPressure, &defaultProtectedGetFn, &defaultProtectedWriteFn, "Brush Pressure" );
+         &protectedSetPressure, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), "Brush Pressure" );
 
       addProtectedField( "hardness", TypeF32, Offset( mHardness, ForestBrushTool ), 
-         &protectedSetHardness, &defaultProtectedGetFn, &defaultProtectedWriteFn, "Brush Hardness" );
+         &protectedSetHardness, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), "Brush Hardness" );
 
    endGroup( "ForestBrushTool" );
 

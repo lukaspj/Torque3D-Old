@@ -302,10 +302,10 @@ void DecalRoad::initPersistFields()
 
       addField( "material", TypeMaterialName, Offset( mMaterialName, DecalRoad ), "Material used for rendering." ); 
 
-      addProtectedField( "textureLength", TypeF32, Offset( mTextureLength, DecalRoad ), &DecalRoad::ptSetTextureLength, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+      addProtectedField( "textureLength", TypeF32, Offset( mTextureLength, DecalRoad ), &DecalRoad::ptSetTextureLength, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(),
          "The length in meters of textures mapped to the DecalRoad" );      
 
-      addProtectedField( "breakAngle", TypeF32, Offset( mBreakAngle, DecalRoad ), &DecalRoad::ptSetBreakAngle, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+      addProtectedField( "breakAngle", TypeF32, Offset( mBreakAngle, DecalRoad ), &DecalRoad::ptSetBreakAngle, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(),
          "Angle in degrees - DecalRoad will subdivided the spline if its curve is greater than this threshold." );      
 
       addField( "renderPriority", TypeS32, Offset( mRenderPriority, DecalRoad ), 
@@ -315,7 +315,7 @@ void DecalRoad::initPersistFields()
 
    addGroup( "Internal" );
 
-      addProtectedField( "node", TypeString, NULL, &addNodeFromField, &emptyStringProtectedGetFn, &defaultProtectedWriteFn,
+      addProtectedField( "node", TypeString, NULL, &addNodeFromField, &emptyStringProtectedGetFn, new AbstractClassRep::WriteDataNotify(),
          "Do not modify, for internal use." );
 
    endGroup( "Internal" );

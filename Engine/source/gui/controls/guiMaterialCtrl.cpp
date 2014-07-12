@@ -49,7 +49,7 @@ GuiMaterialCtrl::GuiMaterialCtrl()
 void GuiMaterialCtrl::initPersistFields()
 {
    addGroup( "Material" );
-   addProtectedField( "materialName", TypeStringFilename, Offset( mMaterialName, GuiMaterialCtrl ), &GuiMaterialCtrl::_setMaterial, &defaultProtectedGetFn, &defaultProtectedWriteFn, "" );
+   addProtectedField( "materialName", TypeStringFilename, Offset( mMaterialName, GuiMaterialCtrl ), &GuiMaterialCtrl::_setMaterial, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), "" );
    endGroup( "Material" );
 
    Parent::initPersistFields();

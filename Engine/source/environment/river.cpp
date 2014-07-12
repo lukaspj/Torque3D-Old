@@ -644,7 +644,7 @@ void River::initPersistFields()
 
    addGroup( "Internal" );
 
-      addProtectedField( "Node", TypeString, NULL, &addNodeFromField, &emptyStringProtectedGetFn, &defaultProtectedWriteFn, "For internal use, do not modify." );
+      addProtectedField( "Node", TypeString, NULL, &addNodeFromField, &emptyStringProtectedGetFn, new AbstractClassRep::WriteDataNotify(), "For internal use, do not modify." );
 
    endGroup( "Internal" );
 

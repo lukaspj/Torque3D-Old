@@ -141,27 +141,27 @@ void SimObject::initPersistFields()
 {
    addGroup( "Ungrouped" );
 
-      addProtectedField( "name", TypeName, Offset(objectName, SimObject), &setProtectedName, &defaultProtectedGetFn, &writeName,
+      addProtectedField( "name", TypeName, Offset(objectName, SimObject), &setProtectedName, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), //&writeName,
          "Optional global name of this object." );
                   
    endGroup( "Ungrouped" );
 
    addGroup( "Object" );
 
-      addField( "internalName", TypeString, Offset(mInternalName, SimObject), &writeInternalName, 
+      addField( "internalName", TypeString, Offset(mInternalName, SimObject), new AbstractClassRep::WriteDataNotify(), //&writeInternalName, 
          "Optional name that may be used to lookup this object within a SimSet.");
 
-      addProtectedField( "parentGroup", TYPEID< SimObject >(), Offset(mGroup, SimObject), &setProtectedParent, &defaultProtectedGetFn, &writeParentGroup,
+      addProtectedField( "parentGroup", TYPEID< SimObject >(), Offset(mGroup, SimObject), &setProtectedParent, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), //&writeParentGroup,
          "Group hierarchy parent of the object." );
 
-      addProtectedField( "class", TypeString, Offset(mClassName, SimObject), &setClass, &defaultProtectedGetFn, &writeClass,
+      addProtectedField( "class", TypeString, Offset(mClassName, SimObject), &setClass, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), //&writeClass,
          "Script class of object." );
 
-      addProtectedField( "superClass", TypeString, Offset(mSuperClassName, SimObject), &setSuperClass, &defaultProtectedGetFn, &writeSuperclass,
+      addProtectedField( "superClass", TypeString, Offset(mSuperClassName, SimObject), &setSuperClass, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), //&writeSuperclass,
          "Script super-class of object." );
 
       // For legacy support
-      addProtectedField( "className", TypeString, Offset(mClassName, SimObject), &setClass, &defaultProtectedGetFn, &defaultProtectedWriteFn,
+      addProtectedField( "className", TypeString, Offset(mClassName, SimObject), &setClass, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(),
          "Script class of object.", AbstractClassRep::FIELD_HideInInspectors );
 
    endGroup( "Object" );
@@ -169,10 +169,10 @@ void SimObject::initPersistFields()
    addGroup( "Editing" );
    
       addProtectedField( "hidden", TypeBool, NULL,
-         &_setHidden, &_getHidden, &getMethodProtectedWriteFn(hidden),
+         &_setHidden, &_getHidden, getMethodProtectedWriteFn(hidden),
          "Whether the object is visible." );
       addProtectedField( "locked", TypeBool, NULL,
-         &_setLocked, &_getLocked, &getMethodProtectedWriteFn(locked),
+         &_setLocked, &_getLocked, getMethodProtectedWriteFn(locked),
          "Whether the object can be edited." );
    
    endGroup( "Editing" );
@@ -180,15 +180,15 @@ void SimObject::initPersistFields()
    addGroup( "Persistence" );
    
       addProtectedField( "canSave", TypeBool, Offset( mFlags, SimObject ),
-         &_setCanSave, &_getCanSave, &getMethodProtectedWriteFn(canSave),
+         &_setCanSave, &_getCanSave, getMethodProtectedWriteFn(canSave),
          "Whether the object can be saved out. If false, the object is purely transient in nature." );
 
       addField( "canSaveDynamicFields", TypeBool, Offset(mCanSaveFieldDictionary, SimObject), 
-         &getMethodProtectedWriteFn(canSaveDynamicFields),
+         getMethodProtectedWriteFn(canSaveDynamicFields),
          "True if dynamic fields (added at runtime) should be saved. Defaults to true." );
    
       addProtectedField( "persistentId", TypePID, Offset( mPersistentId, SimObject ),
-         &_setPersistentID, &defaultProtectedGetFn, &writePersistentId,
+         &_setPersistentID, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), //&writePersistentId,
          "The universally unique identifier for the object." );
    
    endGroup( "Persistence" );

@@ -340,22 +340,22 @@ void Material::initPersistFields()
       // an empty string and writes only apply if the value is not empty.
       //
       addProtectedField("baseTex",        TypeImageFilename,   Offset(mDiffuseMapFilename, Material), 
-         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, &defaultProtectedWriteFn, MAX_STAGES, 
+         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, new AbstractClassRep::WriteDataNotify(), MAX_STAGES, 
          "For backwards compatibility.\n@see diffuseMap\n" ); 
       addProtectedField("detailTex",      TypeImageFilename,   Offset(mDetailMapFilename, Material), 
-         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, &defaultProtectedWriteFn, MAX_STAGES, 
+         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, new AbstractClassRep::WriteDataNotify(), MAX_STAGES, 
          "For backwards compatibility.\n@see detailMap\n"); 
       addProtectedField("overlayTex",     TypeImageFilename,   Offset(mOverlayMapFilename, Material),
-         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, &defaultProtectedWriteFn, MAX_STAGES, 
+         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, new AbstractClassRep::WriteDataNotify(), MAX_STAGES, 
          "For backwards compatibility.\n@see overlayMap\n"); 
       addProtectedField("bumpTex",        TypeImageFilename,   Offset(mNormalMapFilename, Material),
-         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, &defaultProtectedWriteFn, MAX_STAGES, 
+         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, new AbstractClassRep::WriteDataNotify(), MAX_STAGES, 
          "For backwards compatibility.\n@see normalMap\n"); 
       addProtectedField("envTex",         TypeImageFilename,   Offset(mEnvMapFilename, Material),
-         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, &defaultProtectedWriteFn, MAX_STAGES,
+         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, new AbstractClassRep::WriteDataNotify(), MAX_STAGES,
          "For backwards compatibility.\n@see envMap\n"); 
       addProtectedField("colorMultiply",  TypeColorF,          Offset(mDiffuse, Material),
-         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, &defaultProtectedWriteFn, MAX_STAGES,
+         defaultProtectedSetNotEmptyFn, emptyStringProtectedGetFn, new AbstractClassRep::WriteDataNotify(), MAX_STAGES,
          "For backwards compatibility.\n@see diffuseColor\n"); 
 
    endArray( "Stages" );

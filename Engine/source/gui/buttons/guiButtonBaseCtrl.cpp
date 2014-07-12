@@ -123,19 +123,19 @@ void GuiButtonBaseCtrl::initPersistFields()
    
       addField( "text", TypeCaseString, Offset(mButtonText, GuiButtonBaseCtrl),
          "Text label to display on button (if button class supports text labels)." );
-      addField( "textID", TypeString, Offset(mButtonTextID, GuiButtonBaseCtrl), &getDefaultValueWriteFn(textID),
+      addField( "textID", TypeString, Offset(mButtonTextID, GuiButtonBaseCtrl), getDefaultValueWriteFn(textID),
          "ID of string in string table to use for text label on button.\n\n"
          "@see setTextID\n"
          "@see GuiControl::langTableMod\n"
          "@see LangTable\n\n" );
-      addField( "groupNum", TypeS32, Offset(mRadioGroup, GuiButtonBaseCtrl), &getDefaultValueWriteFn(groupNum),
+      addField( "groupNum", TypeS32, Offset(mRadioGroup, GuiButtonBaseCtrl), getDefaultValueWriteFn(groupNum),
          "Radio button toggle group number.  All radio buttons that are assigned the same #groupNum and that "
          "are parented to the same control will synchronize their toggle state, i.e. if one radio button is toggled on "
          "all other radio buttons in its group will be toggled off.\n\n" 
          "The default group is -1." );
-      addField( "buttonType", TYPEID< ButtonType >(), Offset(mButtonType, GuiButtonBaseCtrl), &getDefaultValueWriteFn(buttonType),
+      addField( "buttonType", TYPEID< ButtonType >(), Offset(mButtonType, GuiButtonBaseCtrl), getDefaultValueWriteFn(buttonType),
          "Button behavior type.\n" );
-      addField( "useMouseEvents", TypeBool, Offset(mUseMouseEvents, GuiButtonBaseCtrl), &getMethodProtectedWriteFn(useMouseEvents),
+      addField( "useMouseEvents", TypeBool, Offset(mUseMouseEvents, GuiButtonBaseCtrl), getMethodProtectedWriteFn(useMouseEvents),
          "If true, mouse events will be passed on to script.  Default is false.\n" );
       
    endGroup( "Button" );

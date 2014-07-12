@@ -536,25 +536,26 @@ void SceneObject::setHidden( bool hidden )
 
 //-----------------------------------------------------------------------------
 
-defineMethodProtectedWriteFn( SceneObject, getPosition, Point3F::Zero, position );
-defineMethodProtectedWriteFn( SceneObject, getScale, Point3F::One, scale );
-defineMethodProtectedWriteFn( SceneObject, isRenderEnabled, true, isRenderEnabled );
-defineMethodProtectedWriteFn( SceneObject, isSelectionEnabled, true, isSelectionEnabled );
-defineMethodProtectedWriteFn( SceneObject, isMounted, false, isMounted );
-defineDefaultValueWriteFn( "1 0 0 0", rotation );
+struct MountedWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      return static_cast<SceneObject*>(obj)->isMounted() == false;
+   }
+};
 
 void SceneObject::initPersistFields()
 {
    addGroup( "Transform" );
    
       addProtectedField( "position", TypeMatrixPosition, Offset( mObjToWorld, SceneObject ),
-         &_setFieldPosition, &defaultProtectedGetFn, &getMethodProtectedWriteFn(position),
+         &_setFieldPosition, &defaultProtectedGetFn, new DefaultValueWriteFn("0 0 0"),
          "Object world position." );
       addProtectedField( "rotation", TypeMatrixRotation, Offset( mObjToWorld, SceneObject ),
-         &_setFieldRotation, &defaultProtectedGetFn, &getDefaultValueWriteFn(rotation),
+         &_setFieldRotation, &defaultProtectedGetFn, new DefaultValueWriteFn("1 0 0 0"),
          "Object world orientation." );
       addProtectedField( "scale", TypePoint3F, Offset( mObjScale, SceneObject ),
-         &_setFieldScale, &defaultProtectedGetFn, &getMethodProtectedWriteFn(scale),
+         &_setFieldScale, &defaultProtectedGetFn, new DefaultValueWriteFn("1 1 1"),
          "Object world scale." );
 
    endGroup( "Transform" );
@@ -562,12 +563,12 @@ void SceneObject::initPersistFields()
    addGroup( "Editing" );
 
       addProtectedField( "isRenderEnabled", TypeBool, Offset( mObjectFlags, SceneObject ),
-         &_setRenderEnabled, &_getRenderEnabled, &getMethodProtectedWriteFn(isRenderEnabled),
+         &_setRenderEnabled, &_getRenderEnabled, new DefaultBoolWriteFn(true),
          "Controls client-side rendering of the object.\n"
          "@see isRenderable()\n" );
 
       addProtectedField( "isSelectionEnabled", TypeBool, Offset( mObjectFlags, SceneObject ),
-         &_setSelectionEnabled, &_getSelectionEnabled, &getMethodProtectedWriteFn(isSelectionEnabled),
+         &_setSelectionEnabled, &_getSelectionEnabled, new DefaultBoolWriteFn(true),
          "Determines if the object may be selected from wihin the Tools.\n"
          "@see isSelectable()\n" );
 
@@ -575,13 +576,13 @@ void SceneObject::initPersistFields()
 
    addGroup( "Mounting" );
 
-      addProtectedField( "mountPID", TypePID, Offset( mMountPID, SceneObject ), &_setMountPID, &defaultProtectedGetFn, &getMethodProtectedWriteFn(isMounted),
+      addProtectedField( "mountPID", TypePID, Offset( mMountPID, SceneObject ), &_setMountPID, &defaultProtectedGetFn, new MountedWriteFn(),
          "@brief PersistentID of object we are mounted to.\n\n"
          "Unlike the SimObjectID that is determined at run time, the PersistentID of an object is saved with the level/mission and "
          "may be used to form a link between objects." );
-      addField( "mountNode", TypeS32, Offset( mMount.node, SceneObject ), &getMethodProtectedWriteFn(isMounted), "Node we are mounted to." );
-      addField( "mountPos", TypeMatrixPosition, Offset( mMount.xfm, SceneObject ), &getMethodProtectedWriteFn(isMounted), "Position we are mounted at ( object space of our mount object )." );
-      addField( "mountRot", TypeMatrixRotation, Offset( mMount.xfm, SceneObject ), &getMethodProtectedWriteFn(isMounted), "Rotation we are mounted at ( object space of our mount object )." );
+      addField( "mountNode", TypeS32, Offset( mMount.node, SceneObject ), new MountedWriteFn(), "Node we are mounted to." );
+      addField( "mountPos", TypeMatrixPosition, Offset( mMount.xfm, SceneObject ), new MountedWriteFn(), "Position we are mounted at ( object space of our mount object )." );
+      addField( "mountRot", TypeMatrixRotation, Offset( mMount.xfm, SceneObject ), new MountedWriteFn(), "Rotation we are mounted at ( object space of our mount object )." );
 
    endGroup( "Mounting" );
 

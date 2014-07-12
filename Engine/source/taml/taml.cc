@@ -652,7 +652,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
         // For now, we only deal with non-array fields.
         if ( elementCount == 1 &&
            pField->setDataFn != NULL &&
-            ( !getWriteDefaults() && pField->writeDataFn( pSimObject, fieldName ) == false) )
+            ( !getWriteDefaults() && pField->writeDataFn->fn( pSimObject, fieldName ) == false) )
             continue;
 
         // Iterate elements.
