@@ -73,13 +73,6 @@ GuiContainer::~GuiContainer()
 
 //-----------------------------------------------------------------------------
 
-defineMethodProtectedWriteFn( GuiContainer, getAnchorTop, true, anchorTop );
-defineMethodProtectedWriteFn( GuiContainer, getAnchorBottom, false, anchorBottom );
-defineMethodProtectedWriteFn( GuiContainer, getAnchorLeft, true, anchorLeft );
-defineMethodProtectedWriteFn( GuiContainer, getAnchorRight, false, anchorRight );
-defineDefaultValueWriteFn( "0 0 0 0", margin );
-defineDefaultValueWriteFn( "0 0 0 0", padding );
-
 void GuiContainer::initPersistFields()
 {
    Con::setIntVariable("$DOCKING_NONE",   Docking::dockNone);
@@ -92,12 +85,18 @@ void GuiContainer::initPersistFields()
    addGroup( "Layout" );
 
       addProtectedField("docking",  TYPEID< Docking::DockingType >(),   Offset(mSizingOptions.mDocking, GuiContainer), &setDockingField, &defaultProtectedGetFn, new AbstractClassRep::WriteDataNotify(), "" );
-      addField("margin",         TypeRectSpacingI, Offset(mSizingOptions.mPadding, GuiContainer), getDefaultValueWriteFn(margin));
-      addField("padding",        TypeRectSpacingI, Offset(mSizingOptions.mInternalPadding, GuiContainer), getDefaultValueWriteFn(padding));
-      addField("anchorTop",      TypeBool,          Offset(mSizingOptions.mAnchorTop, GuiContainer), getMethodProtectedWriteFn(anchorTop));
-      addField("anchorBottom",   TypeBool,          Offset(mSizingOptions.mAnchorBottom, GuiContainer), getMethodProtectedWriteFn(anchorBottom));
-      addField("anchorLeft",     TypeBool,          Offset(mSizingOptions.mAnchorLeft, GuiContainer), getMethodProtectedWriteFn(anchorLeft));
-      addField("anchorRight",    TypeBool,          Offset(mSizingOptions.mAnchorRight, GuiContainer), getMethodProtectedWriteFn(anchorRight));
+      addField("margin",         TypeRectSpacingI, Offset(mSizingOptions.mPadding, GuiContainer), 
+         new DefaultValueWriteFn("0 0 0 0"));
+      addField("padding",        TypeRectSpacingI, Offset(mSizingOptions.mInternalPadding, GuiContainer), 
+         new DefaultValueWriteFn("0 0 0 0"));
+      addField("anchorTop",      TypeBool,          Offset(mSizingOptions.mAnchorTop, GuiContainer), 
+         new DefaultBoolWriteFn(true));
+      addField("anchorBottom",   TypeBool,          Offset(mSizingOptions.mAnchorBottom, GuiContainer), 
+         new DefaultBoolWriteFn(false));
+      addField("anchorLeft",     TypeBool,          Offset(mSizingOptions.mAnchorLeft, GuiContainer), 
+         new DefaultBoolWriteFn(true));
+      addField("anchorRight",    TypeBool,          Offset(mSizingOptions.mAnchorRight, GuiContainer), 
+         new DefaultBoolWriteFn(false));
       
    endGroup( "Layout" );
 

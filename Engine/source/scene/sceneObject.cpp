@@ -540,7 +540,7 @@ struct MountedWriteFn : public AbstractClassRep::WriteDataNotify
 {
    bool fn(void* obj, StringTableEntry pFieldName) const
    {
-      return static_cast<SceneObject*>(obj)->isMounted() == false;
+      return static_cast<SceneObject*>(obj)->isMounted() != false;
    }
 };
 
@@ -549,13 +549,15 @@ void SceneObject::initPersistFields()
    addGroup( "Transform" );
    
       addProtectedField( "position", TypeMatrixPosition, Offset( mObjToWorld, SceneObject ),
-         &_setFieldPosition, &defaultProtectedGetFn, new DefaultValueWriteFn("0 0 0"),
+         &_setFieldPosition, &defaultProtectedGetFn, 
+         new PublicConstMethodWriteFn<SceneObject, Point3F>(Point3F::Zero, &SceneObject::getPosition),
          "Object world position." );
       addProtectedField( "rotation", TypeMatrixRotation, Offset( mObjToWorld, SceneObject ),
          &_setFieldRotation, &defaultProtectedGetFn, new DefaultValueWriteFn("1 0 0 0"),
          "Object world orientation." );
       addProtectedField( "scale", TypePoint3F, Offset( mObjScale, SceneObject ),
-         &_setFieldScale, &defaultProtectedGetFn, new DefaultValueWriteFn("1 1 1"),
+         &_setFieldRotation, &defaultProtectedGetFn, 
+         new PublicMemberWriteFn<SceneObject, VectorF>(VectorF::One, &SceneObject::mObjScale),
          "Object world scale." );
 
    endGroup( "Transform" );

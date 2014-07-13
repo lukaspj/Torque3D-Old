@@ -352,19 +352,12 @@ class SimObject: public ConsoleObject, public TamlCallbacks
          { static_cast<SimObject*>(object)->setClassNamespace(data); return false; };
       static bool setSuperClass(void *object, const char *index, const char *data)     
          { static_cast<SimObject*>(object)->setSuperClassNamespace(data); return false; };
-       static bool writeSuperclass( void* obj, StringTableEntry pFieldName )              { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->mSuperClassName != NULL && simObject->mSuperClassName != StringTable->EmptyString(); }
-       static bool writeClass( void* obj, StringTableEntry pFieldName )                   { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->mClassName != NULL && simObject->mClassName != StringTable->EmptyString(); }
-
-       static bool writePersistentId( void* obj, StringTableEntry pFieldName )            { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->mPersistentId != NULL; };
 
       // Group hierarchy protected set method 
       static bool setProtectedParent(void *object, const char *index, const char *data);
-      static bool writeParentGroup(void *obj, StringTableEntry fieldName)                 { return static_cast<SimObject*>(obj)->getGroup() != NULL; };
 
       // Object name protected set method
       static bool setProtectedName(void *obj, const char *index, const char *data);
-      static bool writeName(void *obj, StringTableEntry fieldName)                        { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->getName() != NULL && simObject->getName() != StringTable->EmptyString(); };
-      static bool writeInternalName(void *obj, StringTableEntry fieldName)                { SimObject* simObject = static_cast<SimObject*>(obj); return simObject->mInternalName != NULL && simObject->mInternalName != StringTable->EmptyString(); };
 
    public:
       inline void setProgenitorFile( const char* pFile ) { mProgenitorFile = StringTable->insert( pFile ); }
@@ -1040,6 +1033,39 @@ struct DefaultValueWriteFn : public AbstractClassRep::WriteDataNotify
    }
 };
 
+struct DefaultFloatWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   F32 defaultValue;
+   DefaultFloatWriteFn(F32 _val) : defaultValue(_val) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      return dAtof(value) != defaultValue;
+   }
+};
+
+struct DefaultIntWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   S32 defaultValue;
+   DefaultIntWriteFn(S32 _val) : defaultValue(_val) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      return dAtoi(value) != defaultValue;
+   }
+};
+
+struct DefaultUintWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   U32 defaultValue;
+   DefaultUintWriteFn(U32 _val) : defaultValue(_val) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      return dAtoui(value) != defaultValue;
+   }
+};
+
 struct DefaultBoolWriteFn : public AbstractClassRep::WriteDataNotify
 {
    bool defaultValue;
@@ -1048,6 +1074,56 @@ struct DefaultBoolWriteFn : public AbstractClassRep::WriteDataNotify
    {
       const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
       return dAtob(value) != defaultValue;
+   }
+};
+
+template<typename C, typename T >
+struct PublicMemberWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   T C::*pField;
+   T defaultValue;
+   PublicMemberWriteFn(T _val, T C::*_field ) : defaultValue(_val), pField(_field) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      C* instance = static_cast<C*>(obj);
+      return instance->*pField != defaultValue;
+   }
+};
+
+template<typename C, typename T >
+struct PublicMethodWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   T (C::*method)(void);
+   T defaultValue;
+   PublicMethodWriteFn(T _val, T (C::*_method)(void) ) : defaultValue(_val), method(_method) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      C* instance = static_cast<C*>(obj);
+      return (instance->*method)() != defaultValue;
+   }
+};
+
+template<typename C, typename T >
+struct PublicConstMethodWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   T (C::*method)(void) const;
+   T defaultValue;
+   PublicConstMethodWriteFn(T _val, T (C::*_method)(void) const ) : defaultValue(_val), method(_method) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      C* instance = static_cast<C*>(obj);
+      return (instance->*method)() != defaultValue;
+   }
+};
+
+template<typename C>
+struct PublicStringMemberWriteFn : public PublicMemberWriteFn<C, const char*>
+{
+   PublicStringMemberWriteFn(const char* _val, const char* C::*_field ) : PublicMemberWriteFn<C, const char*>(_val, _field) {}
+   bool fn(void* obj, StringTableEntry pFieldName) const
+   {
+      C* instance = static_cast<C*>(obj);
+      return instance->*pField != NULL && dStricmp(instance->*pField, defaultValue) != 0;
    }
 };
 

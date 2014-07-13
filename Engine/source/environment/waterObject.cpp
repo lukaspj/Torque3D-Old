@@ -263,65 +263,38 @@ WaterObject::~WaterObject()
    dFree_aligned(mMatrixSet);
 }
 
-defineMethodProtectedWriteFn( WaterObject, getDensity, 1.0f, density );
-defineMethodProtectedWriteFn( WaterObject, getViscosity, 1.0f, viscosity );
-defineMethodProtectedWriteFn( WaterObject, getLiquidType, StringTable->insert("Water"), liquidType );
-defineDefaultValueWriteFn( "45 108 171 255", baseColor );
-defineDefaultValueWriteFn( "0.3", fresnelBias );
-defineDefaultValueWriteFn( "6", fresnelPower );
-defineDefaultValueWriteFn( "48", specularPower );
-defineDefaultValueWriteFn( "1 1 1 1", specularColor );
-defineDefaultBoolWriteFn( false, emissive );
-
-defineDefaultValueWriteFn( "1", overallWaveMagnitude );
-defineDefaultValueWriteFn( "", rippleTex );
-
-defineDefaultValueWriteFn( "0.1", overallRippleMagnitude );
-
-defineDefaultValueWriteFn( "1", overallFoamOpacity );
-defineDefaultValueWriteFn( "2", foamMaxDepth );
-defineDefaultValueWriteFn( "0.5", foamAmbientLerp );
-defineDefaultValueWriteFn( "0.05", foamRippleInfluence );
-
-defineDefaultBoolWriteFn( true, fullReflect );
-defineDefaultValueWriteFn( "0.5", reflectivity );
-defineDefaultValueWriteFn( "1", reflectPriority );
-defineDefaultValueWriteFn( "15", reflectMaxRateMS );
-defineDefaultValueWriteFn( "1", reflectDetailAdjust );
-defineDefaultBoolWriteFn( true, reflectNormalUp );
-defineDefaultBoolWriteFn( true, useOcclusionQuery );
-defineDefaultValueWriteFn( "256", reflectTexSize );
-
-defineDefaultValueWriteFn( "0.1", waterFogDensity );
-defineDefaultValueWriteFn( "1", waterFogDensityOffset );
-defineDefaultValueWriteFn( "1.5", wetDepth );
-defineDefaultValueWriteFn( "0.2", wetDarkening );
-
-defineDefaultValueWriteFn( "50", depthGradientMax );
-
-defineDefaultValueWriteFn( "0.1", distortStartDist );
-defineDefaultValueWriteFn( "20", distortEndDist );
-defineDefaultValueWriteFn( "3.5", distortFullDepth );
-
-defineDefaultValueWriteFn( "0.5", clarity );
-defineDefaultValueWriteFn( "9 6 5 240", underwaterColor );
-
-defineDefaultValueWriteFn( "", soundAmbience );
-
 void WaterObject::initPersistFields()
 {
    addGroup( "WaterObject" );
 
-      addProtectedField( "density", TypeF32, Offset( mDensity, WaterObject ), &WaterObject::_checkDensity, &defaultProtectedGetFn, getMethodProtectedWriteFn(density), "Affects buoyancy of an object, thus affecting the Z velocity of a player (jumping, falling, etc.");
-      addField( "viscosity", TypeF32, Offset( mViscosity, WaterObject ), getMethodProtectedWriteFn(viscosity), "Affects drag force applied to an object submerged in this container." );
-      addField( "liquidType", TypeRealString, Offset( mLiquidType, WaterObject ), getMethodProtectedWriteFn(liquidType), "Liquid type of WaterBlock, such as water, ocean, lava"
+      addProtectedField( "density", TypeF32, Offset( mDensity, WaterObject ), &WaterObject::_checkDensity, &defaultProtectedGetFn, 
+         new DefaultFloatWriteFn(1.0f), 
+         "Affects buoyancy of an object, thus affecting the Z velocity of a player (jumping, falling, etc.");
+      addField( "viscosity", TypeF32, Offset( mViscosity, WaterObject ), 
+         new DefaultFloatWriteFn(1.0f), 
+         "Affects drag force applied to an object submerged in this container." );
+      addField( "liquidType", TypeRealString, Offset( mLiquidType, WaterObject ), 
+         new DefaultValueWriteFn("Water"), 
+         "Liquid type of WaterBlock, such as water, ocean, lava"
 		  " Currently only Water is defined and used.");
-      addField( "baseColor", TypeColorI,  Offset( mWaterFogData.color, WaterObject ), getDefaultValueWriteFn(baseColor), "Changes color of water fog." );
-      addField( "fresnelBias",  TypeF32,  Offset( mFresnelBias, WaterObject ), getDefaultValueWriteFn(fresnelBias), "Extent of fresnel affecting reflection fogging." );
-      addField( "fresnelPower",  TypeF32,  Offset( mFresnelPower, WaterObject ), getDefaultValueWriteFn(fresnelPower), "Measures intensity of affect on reflection based on fogging." );
-      addField( "specularPower", TypeF32, Offset( mSpecularPower, WaterObject ), getDefaultValueWriteFn(specularPower), "Power used for specularity on the water surface ( sun only )." );
-      addField( "specularColor", TypeColorF, Offset( mSpecularColor, WaterObject ), getDefaultValueWriteFn(specularColor), "Color used for specularity on the water surface ( sun only )." );
-      addField( "emissive", TypeBool, Offset( mEmissive, WaterObject ), getDefaultBoolWriteFn(emissive), "When true the water colors don't react to changes to environment lighting." );
+      addField( "baseColor", TypeColorI,  Offset( mWaterFogData.color, WaterObject ), 
+         new DefaultValueWriteFn("45 108 171 255"), 
+         "Changes color of water fog." );
+      addField( "fresnelBias",  TypeF32,  Offset( mFresnelBias, WaterObject ), 
+         new DefaultFloatWriteFn(0.3f), 
+         "Extent of fresnel affecting reflection fogging." );
+      addField( "fresnelPower",  TypeF32,  Offset( mFresnelPower, WaterObject ), 
+         new DefaultFloatWriteFn(6), 
+         "Measures intensity of affect on reflection based on fogging." );
+      addField( "specularPower", TypeF32, Offset( mSpecularPower, WaterObject ), 
+         new DefaultFloatWriteFn(48), 
+         "Power used for specularity on the water surface ( sun only )." );
+      addField( "specularColor", TypeColorF, Offset( mSpecularColor, WaterObject ), 
+         new DefaultValueWriteFn("1 1 1 1"), 
+         "Color used for specularity on the water surface ( sun only )." );
+      addField( "emissive", TypeBool, Offset( mEmissive, WaterObject ), 
+         new DefaultBoolWriteFn(false), 
+         "When true the water colors don't react to changes to environment lighting." );
 
       addArray( "Waves (vertex undulation)", MAX_WAVES );
 
@@ -331,10 +304,14 @@ void WaterObject::initPersistFields()
 
       endArray( "Waves (vertex undulation)" );
 
-      addField( "overallWaveMagnitude", TypeF32, Offset( mOverallWaveMagnitude, WaterObject ), getDefaultValueWriteFn(overallWaveMagnitude), "Master variable affecting entire body" 
+      addField( "overallWaveMagnitude", TypeF32, Offset( mOverallWaveMagnitude, WaterObject ), 
+         new DefaultFloatWriteFn(1), 
+         "Master variable affecting entire body" 
 		  " of water's undulation" );  
       
-      addField( "rippleTex", TypeImageFilename, Offset( mRippleTexName, WaterObject ), getDefaultValueWriteFn(rippleTex), "Normal map used to simulate small surface ripples" );
+      addField( "rippleTex", TypeImageFilename, Offset( mRippleTexName, WaterObject ), 
+         new DefaultValueWriteFn(""), 
+         "Normal map used to simulate small surface ripples" );
 
       addArray( "Ripples (texture animation)", MAX_WAVES );
 
@@ -346,7 +323,9 @@ void WaterObject::initPersistFields()
 
       endArray( "Ripples (texture animation)" );
 
-      addField( "overallRippleMagnitude", TypeF32, Offset( mOverallRippleMagnitude, WaterObject ), getDefaultValueWriteFn(overallRippleMagnitude), "Master variable affecting entire surface");
+      addField( "overallRippleMagnitude", TypeF32, Offset( mOverallRippleMagnitude, WaterObject ), 
+         new DefaultFloatWriteFn(0.1f), 
+         "Master variable affecting entire surface");
 
       addField( "foamTex", TypeImageFilename, Offset( mFoamTexName, WaterObject ), "Diffuse texture for foam in shallow water (advanced lighting only)" );
 
@@ -360,10 +339,14 @@ void WaterObject::initPersistFields()
 
       endArray( "Foam" );
       
-      addField( "overallFoamOpacity", TypeF32, Offset( mOverallFoamOpacity, WaterObject ), getDefaultValueWriteFn(overallFoamOpacity), "" );
-      addField( "foamMaxDepth", TypeF32, Offset( mFoamMaxDepth, WaterObject ), getDefaultValueWriteFn(foamMaxDepth), "" );
-      addField( "foamAmbientLerp", TypeF32, Offset( mFoamAmbientLerp, WaterObject ), getDefaultValueWriteFn(foamAmbientLerp), "" );     
-      addField( "foamRippleInfluence", TypeF32, Offset( mFoamRippleInfluence, WaterObject ), getDefaultValueWriteFn(foamRippleInfluence), "" );
+      addField( "overallFoamOpacity", TypeF32, Offset( mOverallFoamOpacity, WaterObject ), 
+         new DefaultFloatWriteFn(1.0f), "" );
+      addField( "foamMaxDepth", TypeF32, Offset( mFoamMaxDepth, WaterObject ), 
+         new DefaultFloatWriteFn(2.0f), "" );
+      addField( "foamAmbientLerp", TypeF32, Offset( mFoamAmbientLerp, WaterObject ), 
+         new DefaultFloatWriteFn(0.5f), "" );     
+      addField( "foamRippleInfluence", TypeF32, Offset( mFoamRippleInfluence, WaterObject ), 
+         new DefaultFloatWriteFn(0.05f), "" );
 
    endGroup( "WaterObject" );
 
@@ -374,60 +357,96 @@ void WaterObject::initPersistFields()
       addProtectedField( "fullReflect", TypeBool, Offset( mFullReflect, WaterObject ), 
          &WaterObject::_setFullReflect, 
          &defaultProtectedGetFn, 
-         getDefaultBoolWriteFn(fullReflect),
+         new DefaultBoolWriteFn(true),
          "Enables dynamic reflection rendering." );
 
-      addField( "reflectivity", TypeF32, Offset( mReflectivity, WaterObject ), getDefaultValueWriteFn(reflectivity), "Overall scalar to the reflectivity of the water surface." );
-      addField( "reflectPriority", TypeF32, Offset( mReflectorDesc.priority, WaterObject ), getDefaultValueWriteFn(reflectPriority), "Affects the sort order of reflected objects." );
-      addField( "reflectMaxRateMs", TypeS32, Offset( mReflectorDesc.maxRateMs, WaterObject ), getDefaultValueWriteFn(reflectMaxRateMS), "Affects the sort time of reflected objects." );
+      addField( "reflectivity", TypeF32, Offset( mReflectivity, WaterObject ), 
+         new DefaultFloatWriteFn(0.5f), 
+         "Overall scalar to the reflectivity of the water surface." );
+      addField( "reflectPriority", TypeF32, Offset( mReflectorDesc.priority, WaterObject ), 
+         new DefaultFloatWriteFn(1.0f), 
+         "Affects the sort order of reflected objects." );
+      addField( "reflectMaxRateMs", TypeS32, Offset( mReflectorDesc.maxRateMs, WaterObject ), 
+         new DefaultIntWriteFn(15),
+         "Affects the sort time of reflected objects." );
       //addField( "reflectMaxDist", TypeF32, Offset( mReflectMaxDist, WaterObject ), "vert distance at which only cubemap color is used" );
       //addField( "reflectMinDist", TypeF32, Offset( mReflectMinDist, WaterObject ), "vert distance at which only reflection color is used" );
-      addField( "reflectDetailAdjust", TypeF32, Offset( mReflectorDesc.detailAdjust, WaterObject ), getDefaultValueWriteFn(reflectDetailAdjust), "scale up or down the detail level for objects rendered in a reflection" );
-      addField( "reflectNormalUp", TypeBool, Offset( mReflectNormalUp, WaterObject ), getDefaultBoolWriteFn(reflectNormalUp), "always use z up as the reflection normal" );
-      addField( "useOcclusionQuery", TypeBool, Offset( mReflectorDesc.useOcclusionQuery, WaterObject ), getDefaultBoolWriteFn(useOcclusionQuery), "turn off reflection rendering when occluded (delayed)." );
-      addField( "reflectTexSize", TypeS32, Offset( mReflectorDesc.texSize, WaterObject ), getDefaultValueWriteFn(reflectTexSize), "The texture size used for reflections (square)" );
+      addField( "reflectDetailAdjust", TypeF32, Offset( mReflectorDesc.detailAdjust, WaterObject ), 
+         new DefaultFloatWriteFn(1.0f), 
+         "scale up or down the detail level for objects rendered in a reflection" );
+      addField( "reflectNormalUp", TypeBool, Offset( mReflectNormalUp, WaterObject ), 
+         new DefaultBoolWriteFn(true), 
+         "always use z up as the reflection normal" );
+      addField( "useOcclusionQuery", TypeBool, Offset( mReflectorDesc.useOcclusionQuery, WaterObject ), 
+         new DefaultBoolWriteFn(true), 
+         "turn off reflection rendering when occluded (delayed)." );
+      addField( "reflectTexSize", TypeS32, Offset( mReflectorDesc.texSize, WaterObject ), 
+         new DefaultUintWriteFn(256), 
+         "The texture size used for reflections (square)" );
 
    endGroup( "Reflect" );   
 
    addGroup( "Underwater Fogging" );
 
-      addField( "waterFogDensity", TypeF32, Offset( mWaterFogData.density, WaterObject ), getDefaultValueWriteFn(waterFogDensity), "Intensity of underwater fogging." );
-      addField( "waterFogDensityOffset", TypeF32, Offset( mWaterFogData.densityOffset, WaterObject ), getDefaultValueWriteFn(waterFogDensityOffset), "Delta, or limit, applied to waterFogDensity." );
-      addField( "wetDepth", TypeF32, Offset( mWaterFogData.wetDepth, WaterObject ), getDefaultValueWriteFn(wetDepth), "The depth in world units at which full darkening will be received,"
+      addField( "waterFogDensity", TypeF32, Offset( mWaterFogData.density, WaterObject ), 
+         new DefaultFloatWriteFn(0.1f), 
+         "Intensity of underwater fogging." );
+      addField( "waterFogDensityOffset", TypeF32, Offset( mWaterFogData.densityOffset, WaterObject ), 
+         new DefaultFloatWriteFn(1.0f), 
+         "Delta, or limit, applied to waterFogDensity." );
+      addField( "wetDepth", TypeF32, Offset( mWaterFogData.wetDepth, WaterObject ), 
+         new DefaultFloatWriteFn(1.5f), 
+         "The depth in world units at which full darkening will be received,"
 		  " giving a wet look to objects underwater." );
-      addField( "wetDarkening", TypeF32, Offset( mWaterFogData.wetDarkening, WaterObject ), getDefaultValueWriteFn(wetDarkening), "The refract color intensity scaled at wetDepth." );
+      addField( "wetDarkening", TypeF32, Offset( mWaterFogData.wetDarkening, WaterObject ), 
+         new DefaultFloatWriteFn(0.2f), 
+         "The refract color intensity scaled at wetDepth." );
 
    endGroup( "Underwater Fogging" );
 
    addGroup( "Misc" );
       
       addField( "depthGradientTex", TypeImageFilename, Offset( mDepthGradientTexName, WaterObject ), "1D texture defining the base water color by depth" );
-      addField( "depthGradientMax", TypeF32, Offset( mDepthGradientMax, WaterObject ), getDefaultValueWriteFn(depthGradientMax), "Depth in world units, the max range of the color gradient texture." );      
+      addField( "depthGradientMax", TypeF32, Offset( mDepthGradientMax, WaterObject ), 
+         new DefaultFloatWriteFn(50.0f), 
+         "Depth in world units, the max range of the color gradient texture." );      
 
    endGroup( "Misc" );
 
    addGroup( "Distortion" );
 
-      addField( "distortStartDist", TypeF32, Offset( mDistortStartDist, WaterObject ), getDefaultValueWriteFn(distortStartDist), "Determines start of distortion effect where water"
+      addField( "distortStartDist", TypeF32, Offset( mDistortStartDist, WaterObject ), 
+         new DefaultFloatWriteFn(0.1f), 
+         "Determines start of distortion effect where water"
 		  " surface intersects the camera near plane.");
-      addField( "distortEndDist", TypeF32, Offset( mDistortEndDist, WaterObject ), getDefaultValueWriteFn(distortEndDist), "Max distance that distortion algorithm is performed. "
+      addField( "distortEndDist", TypeF32, Offset( mDistortEndDist, WaterObject ), 
+         new DefaultFloatWriteFn(20.0f), 
+         "Max distance that distortion algorithm is performed. "
 		  "The lower, the more distorted the effect.");
-      addField( "distortFullDepth", TypeF32, Offset( mDistortFullDepth, WaterObject ), getDefaultValueWriteFn(distortFullDepth), "Determines the scaling down of distortion "
+      addField( "distortFullDepth", TypeF32, Offset( mDistortFullDepth, WaterObject ), 
+         new DefaultFloatWriteFn(3.5f), 
+         "Determines the scaling down of distortion "
 		  "in shallow water.");
 
    endGroup( "Distortion" ); 
 
    addGroup( "Basic Lighting" );
 
-      addField( "clarity", TypeF32, Offset( mClarity, WaterObject ), getDefaultValueWriteFn(clarity), "Relative opacity or transparency of the water surface." );
-      addField( "underwaterColor", TypeColorI, Offset( mUnderwaterColor, WaterObject ), getDefaultValueWriteFn(underwaterColor), "Changes the color shading of objects beneath"
+      addField( "clarity", TypeF32, Offset( mClarity, WaterObject ), 
+         new DefaultFloatWriteFn(0.5f), 
+         "Relative opacity or transparency of the water surface." );
+      addField( "underwaterColor", TypeColorI, Offset( mUnderwaterColor, WaterObject ), 
+         new DefaultValueWriteFn("9 6 5 240"), 
+         "Changes the color shading of objects beneath"
 		  " the water surface.");
 
    endGroup( "Basic Lighting" );
 
    addGroup( "Sound" );
    
-      addField( "soundAmbience", TypeSFXAmbienceName, Offset( mSoundAmbience, WaterObject ), getDefaultValueWriteFn(soundAmbience), "Ambient sound environment when listener is submerged." );
+      addField( "soundAmbience", TypeSFXAmbienceName, Offset( mSoundAmbience, WaterObject ), 
+         new DefaultValueWriteFn(""), 
+         "Ambient sound environment when listener is submerged." );
          
    endGroup( "Sound" );
 

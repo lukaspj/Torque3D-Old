@@ -1269,41 +1269,6 @@ inline const char *emptyStringProtectedGetFn( void *obj, const char *data )
 
 //-----------------------------------------------------------------------------
 
-inline bool defaultProtectedWriteFn( void* obj, StringTableEntry pFieldName )
-{
-    return true;
-}
-
-#define defineDefaultValueWriteFn( DEFAULT, name ) \
-   bool name##ValueWriteFn( void* obj, StringTableEntry pFieldName ) \
-{ \
-   return strcmp(DEFAULT, static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL)) != 0; \
-}
-
-#define defineDefaultNonEmptyValueWriteFn( DEFAULT, name ) \
-   bool name##NonEmptyValueWriteFn( void* obj, StringTableEntry pFieldName ) \
-{ \
-   const char* val = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL); \
-   return strcmp(val, "") != 0 && strcmp(DEFAULT, val) != 0; \
-}
-
-#define defineDefaultBoolWriteFn( DEFAULT, name ) \
-   bool name##BoolWriteFn( void* obj, StringTableEntry pFieldName ) \
-{ \
-   return dAtob(static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL)) != DEFAULT; \
-}
-
-#define defineMethodProtectedWriteFn( className, METHOD, DEFAULT, name ) \
-   bool name##MethodProtectedWriteFn( void* obj, StringTableEntry pFieldName ) \
-{ \
-   return static_cast<className*>(obj)->##METHOD##() != DEFAULT; \
-}
-
-#define getDefaultValueWriteFn(name) new AbstractClassRep::WriteDataNotify()
-#define getDefaultNonEmptyValueWriteFn(name) new AbstractClassRep::WriteDataNotify()
-#define getMethodProtectedWriteFn(name) new AbstractClassRep::WriteDataNotify()
-#define getDefaultBoolWriteFn(name) new AbstractClassRep::WriteDataNotify()
-
 /// @}
 
 #endif //_CONSOLEOBJECT_H_
