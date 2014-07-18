@@ -651,10 +651,22 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
            arrayDepth++;
            continue;
         }
+
         if( pField->type == AbstractClassRep::EndArrayFieldType )
         {
            arrayDepth--;
            continue;
+        }
+
+        if(arrayDepth == 0 && pField->elementCount > 1)
+        {
+           TamlCustomNodes& pCustomNodes = pTamlWriteNode->mCustomNodes;
+           char* niceFieldName = const_cast<char *>(pField->pFieldname);
+           niceFieldName[0] = dToupper(niceFieldName[0]);
+           String str_niceFieldName = String(niceFieldName);
+           currentArrayNode = pCustomNodes.addNode(str_niceFieldName + "s");
+           for(U16 idx = 0; idx < pField->elementCount; idx++)
+              currentArrayNode->addNode(str_niceFieldName);
         }
 
         // Fetch fieldname.
@@ -705,7 +717,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
             }
 
             // Save field/value.
-            if(arrayDepth > 0)
+            if(arrayDepth > 0 || pField->elementCount > 1)
                currentArrayNode->getChildren()[elementIndex]->addField(fieldName, pFieldValue);
             else
             {

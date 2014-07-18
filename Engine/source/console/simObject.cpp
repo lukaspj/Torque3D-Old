@@ -463,10 +463,19 @@ void SimObject::onTamlCustomRead(TamlCustomNodes const& customNodes)
       const AbstractClassRep::Field* pField = &fieldList[index];
 
       // Ignore if field not appropriate.
-      if( pField->type == AbstractClassRep::StartArrayFieldType )
+      if( pField->type == AbstractClassRep::StartArrayFieldType || pField->elementCount > 1 )
       {
          // Find cell custom node.
-         const TamlCustomNode* pCustomCellNodes = customNodes.findNode( pField->pGroupname );
+         const TamlCustomNode* pCustomCellNodes = NULL;
+         if( pField->pGroupname != NULL )
+            pCustomCellNodes = customNodes.findNode( pField->pGroupname );
+         if(!pCustomCellNodes)
+         {
+           char* niceFieldName = const_cast<char *>(pField->pFieldname);
+           niceFieldName[0] = dToupper(niceFieldName[0]);
+           String str_niceFieldName = String(niceFieldName);
+           pCustomCellNodes = customNodes.findNode(str_niceFieldName + "s");
+         }
 
          // Continue if we have explicit cells.
          if ( pCustomCellNodes != NULL )
@@ -491,7 +500,7 @@ void SimObject::onTamlCustomRead(TamlCustomNodes const& customNodes)
                if ( nodeName != pField->pFieldname )
                {
                   // No, so warn.
-                  Con::warnf( "SFXPlayList::onTamlCustomRead() - Encountered an unknown custom name of '%s'.  Only '%s' is valid.", nodeName, pField->pFieldname );
+                  Con::warnf( "SimObject::onTamlCustomRead() - Encountered an unknown custom name of '%s'.  Only '%s' is valid.", nodeName, pField->pFieldname );
                   continue;
                }
 
