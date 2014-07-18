@@ -1022,6 +1022,15 @@ class SimObjectPtr : public WeakRefPtr< T >
       }
 };
 
+struct DefaultNonEmptyStringWriteFn : public AbstractClassRep::WriteDataNotify
+{
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
+   {
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, idx);
+      return value != NULL && dStricmp(value, "") != 0;
+   }
+};
+
 struct DefaultValueWriteFn : public AbstractClassRep::WriteDataNotify
 {
    const char* defaultValue;
