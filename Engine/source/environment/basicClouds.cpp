@@ -33,6 +33,7 @@
 #include "renderInstance/renderPassManager.h"
 #include "materials/shaderData.h"
 #include "math/mathIO.h"
+#include "taml/tamlCustom.h"
 
 
 ConsoleDocClass( BasicClouds,
@@ -407,4 +408,159 @@ void BasicClouds::_initBuffers()
 
       mVB[i].unlock();
    } 
+}
+
+static StringTableEntry layersCustomNodeName = StringTable->insert("Layers");
+static StringTableEntry layerNodeName = StringTable->insert("Layer");
+static StringTableEntry layerEnabledName = StringTable->insert("Enabled");
+static StringTableEntry layerName = StringTable->insert("Texture");
+static StringTableEntry layerScaleName = StringTable->insert("Scale");
+static StringTableEntry layerDirName = StringTable->insert("Direction");
+static StringTableEntry layerSpeedName = StringTable->insert("Speed");
+static StringTableEntry layerOffsetName = StringTable->insert("Offset");
+static StringTableEntry layerHeightName = StringTable->insert("Height");
+
+void BasicClouds::onTamlCustomWrite( TamlCustomNodes& customNodes )
+{
+   // Debug Profiling.
+   PROFILE_SCOPE(BasicClouds_OnTamlCustomWrite);
+
+   // Call parent.
+   Parent::onTamlCustomWrite( customNodes );
+
+   if (TEX_COUNT > 0)
+   {
+      // Add cell custom node.
+      TamlCustomNode* pCustomCellNodes = customNodes.addNode( layersCustomNodeName );
+
+      // Iterate explicit frames.
+      for( U8 i = 0; i < TEX_COUNT; i++ )
+      {
+         bool texEnabled = mLayerEnabled[i];
+         String texName = mTexName[i];
+         F32 texScale = mTexScale[i];
+         Point2F texDir = mTexDirection[i];
+         F32 texSpeed = mTexSpeed[i];
+         Point2F texOffset = mTexOffset[i];
+         F32 height = mHeight[i];
+
+         const AbstractClassRep::Field* enabledField = findField(StringTable->insert("layerEnabled"));
+         const AbstractClassRep::Field* nameField = findField(StringTable->insert("texture"));
+         const AbstractClassRep::Field* scaleField = findField(StringTable->insert("texScale"));
+         const AbstractClassRep::Field* dirField = findField(StringTable->insert("texDirection"));
+         const AbstractClassRep::Field* speedField = findField(StringTable->insert("texSpeed"));
+         const AbstractClassRep::Field* offsetField = findField(StringTable->insert("texOffset"));
+         const AbstractClassRep::Field* heightField = findField(StringTable->insert("height"));
+
+         // Add cell alias.
+         TamlCustomNode* pNode = pCustomCellNodes->addNode( layerNodeName );
+
+         char buf[2];
+         dSprintf(buf,2,"%d",i);
+         // Add cell properties.
+         if(enabledField->writeDataFn->fn(this, enabledField->pFieldname, buf))
+            pNode->addField( layerEnabledName, texEnabled );
+         if(nameField->writeDataFn->fn(this, nameField->pFieldname, buf))
+            pNode->addField( layerName, texName.c_str() );
+         if(scaleField->writeDataFn->fn(this, scaleField->pFieldname, buf))
+            pNode->addField( layerScaleName, texScale );
+         if(dirField->writeDataFn->fn(this, dirField->pFieldname, buf))
+            pNode->addField( layerDirName, texDir );
+         if(speedField->writeDataFn->fn(this, speedField->pFieldname, buf))
+            pNode->addField( layerSpeedName, texSpeed );
+         if(offsetField->writeDataFn->fn(this, offsetField->pFieldname, buf))
+            pNode->addField( layerOffsetName, texOffset );
+         if(heightField->writeDataFn->fn(this, heightField->pFieldname, buf))
+            pNode->addField( layerHeightName, height );
+      }
+   }
+}
+
+void BasicClouds::onTamlCustomRead( const TamlCustomNodes& customNodes )
+{
+   // Debug Profiling.
+   PROFILE_SCOPE(BasicClouds_OnTamlCustomRead);
+
+   // Call parent.
+   Parent::onTamlCustomRead( customNodes );
+
+   // Find cell custom node.
+   const TamlCustomNode* pCustomCellNodes = customNodes.findNode( layersCustomNodeName );
+
+   // Continue if we have explicit cells.
+   if ( pCustomCellNodes != NULL )
+   {
+      // Fetch children cell nodes.
+      const TamlCustomNodeVector& cellNodes = pCustomCellNodes->getChildren();
+
+      U8 idx = 0;
+
+      // Iterate cells.
+      for( TamlCustomNodeVector::const_iterator cellNodeItr = cellNodes.begin(); cellNodeItr != cellNodes.end(); ++cellNodeItr )
+      {
+         // Fetch cell node.
+         TamlCustomNode* pCellNode = *cellNodeItr;
+
+         // Fetch node name.
+         StringTableEntry nodeName = pCellNode->getNodeName();
+
+         // Is this a valid alias?
+         if ( nodeName != layerNodeName )
+         {
+            // No, so warn.
+            Con::warnf( "BasicClouds::onTamlCustomRead() - Encountered an unknown custom name of '%s'.  Only '%s' is valid.", nodeName, layerNodeName );
+            continue;
+         }
+
+         // Fetch fields.
+         const TamlCustomFieldVector& fields = pCellNode->getFields();
+
+         // Iterate property fields.
+         for ( TamlCustomFieldVector::const_iterator fieldItr = fields.begin(); fieldItr != fields.end(); ++fieldItr )
+         {
+            // Fetch field.
+            const TamlCustomField* pField = *fieldItr;
+
+            // Fetch field name.
+            StringTableEntry fieldName = pField->getFieldName();
+
+            // Check common fields.
+            if ( fieldName == layerEnabledName )
+            {
+               pField->getFieldValue( mLayerEnabled[idx] );
+            }
+            else if ( fieldName == layerName )
+            {
+               mTexName[idx] = String(pField->getFieldValue());
+            }
+            else if ( fieldName == layerScaleName )
+            {
+               pField->getFieldValue( mTexScale[idx] );
+            }
+            else if ( fieldName == layerDirName )
+            {
+               pField->getFieldValue( mTexDirection[idx] );
+            }
+            else if ( fieldName == layerSpeedName )
+            {
+               pField->getFieldValue( mTexSpeed[idx] );
+            }
+            else if ( fieldName == layerOffsetName )
+            {
+               pField->getFieldValue( mTexOffset[idx] );
+            }
+            else if ( fieldName == layerHeightName )
+            {
+               pField->getFieldValue( mHeight[idx] );
+            }
+            else
+            {
+               // Unknown name so warn.
+               Con::warnf( "BasicClouds::onTamlCustomRead() - Encountered an unknown custom field name of '%s'.", fieldName );
+               continue;
+            }
+         }
+         idx++;
+      }
+   }
 }
