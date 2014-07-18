@@ -456,60 +456,6 @@ void WaterObject::initPersistFields()
 	   "@ingroup Water\n");
 }
 
-bool WaterObject::writeField(StringTableEntry fieldname, const char* value)
-{
-   if(!Parent::writeField(fieldname, value))
-      return false;
-   
-   // Don't write wave fields
-   static StringTableEntry sWaveDir = StringTable->insert( "waveDir" );
-   if( fieldname == sWaveDir )
-      return false;
-
-   static StringTableEntry sWaveSpeed = StringTable->insert( "waveSpeed" );
-   if( fieldname == sWaveSpeed )
-      return false;
-
-   static StringTableEntry sWaveMagnitude = StringTable->insert( "waveMagnitude" );
-   if( fieldname == sWaveMagnitude )
-      return false;
-
-   
-   // Don't write ripple fields
-   static StringTableEntry sRippleDir = StringTable->insert( "rippleDir" );
-   if( fieldname == sRippleDir )
-      return false;
-
-   static StringTableEntry sRippleSpeed = StringTable->insert( "rippleSpeed" );
-   if( fieldname == sRippleSpeed )
-      return false;
-
-   static StringTableEntry sRippleTexScale = StringTable->insert( "rippleTexScale" );
-   if( fieldname == sRippleTexScale )
-      return false;
-
-   static StringTableEntry sRippleMagnitude = StringTable->insert( "rippleMagnitude" );
-   if( fieldname == sRippleMagnitude )
-      return false;
-
-   // Don't write foam fields
-   static StringTableEntry sFoamDir = StringTable->insert( "foamDir" );
-   if( fieldname == sFoamDir )
-      return false;
-
-   static StringTableEntry sFoamSpeed = StringTable->insert( "foamSpeed" );
-   if( fieldname == sFoamSpeed )
-      return false;
-
-   static StringTableEntry sFoamTexScale = StringTable->insert( "foamTexScale" );
-   if( fieldname == sFoamTexScale )
-      return false;
-
-   static StringTableEntry sFoamOpacity = StringTable->insert( "foamOpacity" );
-   if( fieldname == sFoamOpacity )
-      return false;
-}
-
 void WaterObject::consoleInit()
 {
    Parent::consoleInit();

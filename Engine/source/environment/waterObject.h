@@ -157,8 +157,6 @@ public:
    virtual void onRemove();
    virtual void inspectPostApply();
    virtual bool processArguments(S32 argc, const char **argv);
-   
-   virtual bool writeField(StringTableEntry fieldname, const char* value);
 
    // NetObject
    virtual U32  packUpdate( NetConnection * conn, U32 mask, BitStream *stream );
