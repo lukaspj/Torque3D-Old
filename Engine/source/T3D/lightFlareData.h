@@ -93,6 +93,12 @@ public:
    /// Submits render instances for corona and flare effects.
    void prepRender( SceneRenderState *state, LightFlareState *flareState );
 
+   /// Called during the writing of the object to allow custom properties to be written.
+   virtual void onTamlCustomWrite( TamlCustomNodes& customNodes );
+
+   /// Called during the reading of the object to allow custom properties to be read.
+   virtual void onTamlCustomRead( const TamlCustomNodes& customNodes );
+
 protected:
 
    bool _testVisibility(   const SceneRenderState *state, LightFlareState *flareState, 
