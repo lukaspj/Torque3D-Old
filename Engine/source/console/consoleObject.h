@@ -438,7 +438,7 @@ public:
    struct WriteDataNotify
    {
       WriteDataNotify() {};
-      virtual bool fn(void* obj, StringTableEntry pFieldName) const { return true; }
+      virtual bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const { return true; }
    };
 
    /// These are special field type values used to mark

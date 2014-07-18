@@ -1026,9 +1026,9 @@ struct DefaultValueWriteFn : public AbstractClassRep::WriteDataNotify
 {
    const char* defaultValue;
    DefaultValueWriteFn(const char* _val) : defaultValue(_val) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
-      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, idx);
       return dStricmp(value, defaultValue) != 0;
    }
 };
@@ -1037,9 +1037,9 @@ struct DefaultFloatWriteFn : public AbstractClassRep::WriteDataNotify
 {
    F32 defaultValue;
    DefaultFloatWriteFn(F32 _val) : defaultValue(_val) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
-      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, idx);
       return dAtof(value) != defaultValue;
    }
 };
@@ -1048,9 +1048,9 @@ struct DefaultIntWriteFn : public AbstractClassRep::WriteDataNotify
 {
    S32 defaultValue;
    DefaultIntWriteFn(S32 _val) : defaultValue(_val) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
-      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, idx);
       return dAtoi(value) != defaultValue;
    }
 };
@@ -1059,9 +1059,9 @@ struct DefaultUintWriteFn : public AbstractClassRep::WriteDataNotify
 {
    U32 defaultValue;
    DefaultUintWriteFn(U32 _val) : defaultValue(_val) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
-      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, idx);
       return dAtoui(value) != defaultValue;
    }
 };
@@ -1070,9 +1070,9 @@ struct DefaultBoolWriteFn : public AbstractClassRep::WriteDataNotify
 {
    bool defaultValue;
    DefaultBoolWriteFn(bool _val) : defaultValue(_val) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
-      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, NULL);
+      const char* value = static_cast<SimObject*>(obj)->getDataField(pFieldName, idx);
       return dAtob(value) != defaultValue;
    }
 };
@@ -1083,7 +1083,7 @@ struct PublicMemberWriteFn : public AbstractClassRep::WriteDataNotify
    T C::*pField;
    T defaultValue;
    PublicMemberWriteFn(T _val, T C::*_field ) : defaultValue(_val), pField(_field) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
       C* instance = static_cast<C*>(obj);
       return instance->*pField != defaultValue;
@@ -1096,7 +1096,7 @@ struct PublicMethodWriteFn : public AbstractClassRep::WriteDataNotify
    T (C::*method)(void);
    T defaultValue;
    PublicMethodWriteFn(T _val, T (C::*_method)(void) ) : defaultValue(_val), method(_method) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
       C* instance = static_cast<C*>(obj);
       return (instance->*method)() != defaultValue;
@@ -1109,7 +1109,7 @@ struct PublicConstMethodWriteFn : public AbstractClassRep::WriteDataNotify
    T (C::*method)(void) const;
    T defaultValue;
    PublicConstMethodWriteFn(T _val, T (C::*_method)(void) const ) : defaultValue(_val), method(_method) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
       C* instance = static_cast<C*>(obj);
       return (instance->*method)() != defaultValue;
@@ -1120,7 +1120,7 @@ template<typename C>
 struct PublicStringMemberWriteFn : public PublicMemberWriteFn<C, const char*>
 {
    PublicStringMemberWriteFn(const char* _val, const char* C::*_field ) : PublicMemberWriteFn<C, const char*>(_val, _field) {}
-   bool fn(void* obj, StringTableEntry pFieldName) const
+   bool fn(void* obj, StringTableEntry pFieldName, const char* idx = NULL) const
    {
       C* instance = static_cast<C*>(obj);
       return instance->*pField != NULL && dStricmp(instance->*pField, defaultValue) != 0;
