@@ -629,6 +629,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
     const U32 fieldCount = fieldList.size();
 
     // Iterate fields.
+    U8 arrayDepth = 0;
     for( U32 index = 0; index < fieldCount; ++index )
     {
         // Fetch field.
@@ -637,10 +638,17 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
         // Ignore if field not appropriate.
         if( pField->type == AbstractClassRep::DeprecatedFieldType ||
             pField->type == AbstractClassRep::StartGroupFieldType ||
-            pField->type == AbstractClassRep::EndGroupFieldType ||
-            pField->type == AbstractClassRep::StartArrayFieldType ||
-            pField->type == AbstractClassRep::EndArrayFieldType)
+            pField->type == AbstractClassRep::EndGroupFieldType )
             continue;
+
+        if( pField->type == AbstractClassRep::StartArrayFieldType )
+           arrayDepth++;
+
+        if( pField->type == AbstractClassRep::EndArrayFieldType )
+           arrayDepth--;
+
+        if( arrayDepth > 0 )
+           continue;
 
         // Fetch fieldname.
         StringTableEntry fieldName = StringTable->insert( pField->pFieldname );
