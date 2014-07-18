@@ -630,6 +630,7 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
 
     // Iterate fields.
     U8 arrayDepth = 0;
+    TamlCustomNode* currentArrayNode;
     for( U32 index = 0; index < fieldCount; ++index )
     {
         // Fetch field.
@@ -642,13 +643,19 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
             continue;
 
         if( pField->type == AbstractClassRep::StartArrayFieldType )
+        {
+           TamlCustomNodes& pCustomNodes = pTamlWriteNode->mCustomNodes;
+           currentArrayNode = pCustomNodes.addNode(pField->pGroupname);
+           for(U16 idx = 0; idx < pField->elementCount; idx++)
+              currentArrayNode->addNode(pField->pFieldname);
            arrayDepth++;
-
-        if( pField->type == AbstractClassRep::EndArrayFieldType )
-           arrayDepth--;
-
-        if( arrayDepth > 0 )
            continue;
+        }
+        if( pField->type == AbstractClassRep::EndArrayFieldType )
+        {
+           arrayDepth--;
+           continue;
+        }
 
         // Fetch fieldname.
         StringTableEntry fieldName = StringTable->insert( pField->pFieldname );
@@ -698,8 +705,13 @@ void Taml::compileStaticFields( TamlWriteNode* pTamlWriteNode )
             }
 
             // Save field/value.
-            TamlWriteNode::FieldValuePair* pFieldValuePair = new TamlWriteNode::FieldValuePair( fieldName, pFieldValue );
-            pTamlWriteNode->mFields.push_back( pFieldValuePair );
+            if(arrayDepth > 0)
+               currentArrayNode->getChildren()[elementIndex]->addField(fieldName, pFieldValue);
+            else
+            {
+               TamlWriteNode::FieldValuePair* pFieldValuePair = new TamlWriteNode::FieldValuePair( fieldName, pFieldValue );
+               pTamlWriteNode->mFields.push_back( pFieldValuePair );
+            }
         }
     }    
 }

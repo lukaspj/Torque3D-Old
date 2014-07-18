@@ -135,12 +135,6 @@ public:
 
    // Rendering
    void prepRenderImage( SceneRenderState *state );
-
-   /// Called during the writing of the object to allow custom properties to be written.
-   virtual void onTamlCustomWrite( TamlCustomNodes& customNodes );
-
-   /// Called during the reading of the object to allow custom properties to be read.
-   virtual void onTamlCustomRead( const TamlCustomNodes& customNodes );
    
    // Editor
    void onTerrainUpdated( U32 flags, TerrainBlock *tblock, const Point2I& min, const Point2I& max );

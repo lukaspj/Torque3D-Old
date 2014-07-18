@@ -400,14 +400,14 @@ void ConsoleObject::endGroup(const char*  in_pGroupname)
    sg_tempFieldList.push_back(f);
 }
 
-void ConsoleObject::addArray( const char *arrayName, S32 count )
+void ConsoleObject::addArray( const char *arrayName, const char* itemName, S32 count )
 {
-   char *nameBuff = suppressSpaces(arrayName);
-   dStrcat(nameBuff, "_beginarray");
+   //char *nameBuff = suppressSpaces(arrayName);
+   //dStrcat(nameBuff, "_beginarray");
 
    // Create Field.
    AbstractClassRep::Field f;
-   f.pFieldname   = StringTable->insert(nameBuff);
+   f.pFieldname   = StringTable->insert(itemName);
    f.pGroupname   = arrayName;
 
    f.type         = AbstractClassRep::StartArrayFieldType;

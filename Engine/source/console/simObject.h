@@ -371,7 +371,7 @@ class SimObject: public ConsoleObject, public TamlCallbacks
       virtual void onTamlPostRead( const TamlCustomNodes& customNodes ) {}
       virtual void onTamlAddParent( SimObject* pParentObject ) {}
       virtual void onTamlCustomWrite( TamlCustomNodes& customNodes ) {}
-      virtual void onTamlCustomRead( const TamlCustomNodes& customNodes ) {}
+      virtual void onTamlCustomRead( const TamlCustomNodes& customNodes );
 
    protected:
    

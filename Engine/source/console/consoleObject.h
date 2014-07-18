@@ -805,7 +805,7 @@ public:
 
    /// Marks the start of a fixed size array of fields.
    /// @see console_autodoc   
-   static void addArray( const char *arrayName, S32 count );
+   static void addArray( const char *arrayName, const char* ItemName, S32 count );
 
    /// Marks the end of an array of fields.
    /// @see console_autodoc      
