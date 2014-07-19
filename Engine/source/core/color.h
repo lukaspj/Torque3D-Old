@@ -61,11 +61,6 @@ class ColorF
    static const ColorF& StockColor( const char* pStockColorName );
    StringTableEntry StockColor( void );
 
-   void set( const char* pStockColorName );
-
-   static const ColorF& StockColor( const char* pStockColorName );
-   StringTableEntry StockColor( void );
-
    ColorF& operator*=(const ColorF& in_mul);       // Can be useful for lighting
    ColorF  operator*(const ColorF& in_mul) const;
    ColorF& operator+=(const ColorF& in_rAdd);
@@ -137,8 +132,6 @@ class ColorI
    
    ColorI( const char* pStockColorName );
 
-   ColorI( const char* pStockColorName );
-
    void set(const U8 in_r,
             const U8 in_g,
             const U8 in_b,
@@ -146,11 +139,6 @@ class ColorI
 
    void set(const ColorI& in_rCopy,
             const U8 in_a);
-   
-   void set( const char* pStockColorName );
-
-   static const ColorI& StockColor( const char* pStockColorName );
-   StringTableEntry StockColor( void );
 
    void set( const char* pStockColorName );
 
