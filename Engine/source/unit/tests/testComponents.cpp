@@ -20,7 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "unit/test.h"
+/*#include "unit/test.h"
 #include "unit/memoryTester.h"
 #include "component/simComponent.h"
 
@@ -151,4 +151,4 @@ CreateUnitTest(TestComponentInterfacing, "Components/Composition")
 
       test( m.check(), "Component composition test leaked memory." );
    }
-};
+};*/

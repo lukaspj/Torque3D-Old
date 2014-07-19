@@ -54,6 +54,10 @@ Win32WindowManager::Win32WindowManager()
 
    mOffscreenRender = false;
 
+	//-JR
+	mDisplayWindow = false;
+	//-JR
+
    buildMonitorsList();
 }
 
@@ -263,11 +267,20 @@ PlatformWindow *Win32WindowManager::createWindow(GFXDevice *device, const GFXVid
 
    // If we're not rendering offscreen, make sure our window is shown and drawn to.
 
-   if (!mOffscreenRender)
+	//-JR
+	w32w->setDisplayWindow(mDisplayWindow);
+	//-JR
+
+	//-JR
+	//if (!mOffscreenRender)
+   if (!mOffscreenRender && mDisplayWindow)
+	//-JR
       ShowWindow( w32w->mWindowHandle, SW_SHOWDEFAULT );
 
    // Close any splash screen we created
-   CloseSplashWindow(winState.appInstance);
+   //-JR
+	//CloseSplashWindow(winState.appInstance);
+	//-JR
 
    // Bind the window to the specified device.
    if(device)

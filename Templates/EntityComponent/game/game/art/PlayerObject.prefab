@@ -1,0 +1,53 @@
+//--- OBJECT WRITE BEGIN ---
+$ThisPrefab = new SimGroup() {
+   canSave = "1";
+   canSaveDynamicFields = "1";
+
+   new Entity() {
+      position = "0 0 0";
+      rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      eulerRotation = "0 0 -0";
+
+      new BoxColliderBehaviorInstance() {
+         template = "BoxCollider";
+         colliderSize = "1 1 1";
+      };
+      new SimplePhysicsBehaviorInstance() {
+         template = "SimplePhysics";
+         isStatic = "0 0 0";
+         gravity = "0 0 0";
+      };
+      new RenderShapeBehaviorInstance() {
+         template = "RenderShape";
+         shapeName = "game/art/meshes/male_mannequin.dae";
+      };
+      new BehaviorInstance() {
+         template = "ControlObjectBehavior";
+      };
+      new BehaviorInstance() {
+         template = "PlayerController";
+         Camera = "PlayerCam";
+      };
+      new StateMachineBehaviorInstance() {
+         template = "AnimationController";
+      };
+
+      new Entity(PlayerCam) {
+         position = "-0.10455 0.0174904 1.68914";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+         eulerRotation = "0 -0 -0";
+
+         new CameraBehaviorInstance() {
+            template = "CameraBehav";
+         };
+
+      };
+   };
+};
+//--- OBJECT WRITE END ---

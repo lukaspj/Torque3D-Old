@@ -561,6 +561,12 @@ class SimObject: public ConsoleObject
       
       /// Called when the object's name is changed.
       virtual void onNameChange(const char *name);
+
+		//-JR
+		/// Called when the adding of the object to the sim is complete, all sub-objects have been processed as well
+		// This is a special-case function that only really gets used with Entities/BehaviorObjects.
+		virtual void onPostAdd() {}
+		//-JR
       
       ///
       ///  Specifically, these are called by setDataField

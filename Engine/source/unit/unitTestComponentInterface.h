@@ -20,7 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _UNITTESTCOMPONENTINTERFACE_H_
+/*#ifndef _UNITTESTCOMPONENTINTERFACE_H_
 #define _UNITTESTCOMPONENTINTERFACE_H_
 
 #include "unit/test.h"
@@ -88,4 +88,4 @@ public:
 #  define CACHE_UNITTEST_INTERFACE(x) registerCachedInterface( "unittest", #x, this, &_##x##UnitTestInterface )
 #endif
 
-#endif
+#endif*/

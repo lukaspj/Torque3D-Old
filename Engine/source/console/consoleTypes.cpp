@@ -710,6 +710,32 @@ ConsoleSetType( TypeColorI )
       Con::printf("Color must be set as { r, g, b [,a] }, { r g b [b] }  or { stockColorName }");
 }
 
+//-JR
+//////////////////////////////////////////////////////////////////////////
+// TypeSimObjectPtr
+//////////////////////////////////////////////////////////////////////////
+ConsoleType( SimObject, TypeSimObjectPtr, SimObject* )
+
+ConsoleSetType( TypeSimObjectPtr )
+{
+   if(argc == 1)
+   {
+      SimObject **obj = (SimObject **)dptr;
+      *obj = Sim::findObject(argv[0]);
+   }
+   else
+      Con::printf("(TypeSimObjectPtr) Cannot set multiple args to a single S32.");
+}
+
+ConsoleGetType( TypeSimObjectPtr )
+{
+   SimObject **obj = (SimObject**)dptr;
+   char* returnBuffer = Con::getReturnBuffer(256);
+   dSprintf(returnBuffer, 256, "%s", *obj ? (*obj)->getName() ? (*obj)->getName() : (*obj)->getIdString() : "");
+   return returnBuffer;
+}
+//-JR
+
 //-----------------------------------------------------------------------------
 // TypeSimObjectName
 //-----------------------------------------------------------------------------

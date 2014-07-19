@@ -1,0 +1,105 @@
+new GuiControl(StateMachineEditor) {
+   position = "0 0";
+   extent = "800 600";
+   minExtent = "8 2";
+   horizSizing = "width";
+   vertSizing = "height";
+   profile = "GuiDefaultProfile";
+   isContainer = "1";
+   behavior = %this.behavior;
+
+   new GuiWindowCtrl() {
+      text = "State Machine editor";
+      resizeWidth = "1";
+      resizeHeight = "1";
+      canMove = "1";
+      canClose = "1";
+      canMinimize = "0";
+      canMaximize = "0";
+      canCollapse = "0";
+      closeCommand = "Canvas.popDialog(StateMachineEditor);";
+      position = "72 68";
+      extent = "300 450";
+      minExtent = "8 8";
+      horizSizing = "center";
+      vertSizing = "center";
+      profile = "GuiWindowProfile";
+      //command = "PlayerStateEditor.delete();";
+      accelerator = "escape";
+	
+	  new guiVisualNodeCtrl(stateMachineNodeTree)
+	  {
+		 position = "1 18";
+		 extent = "299 450";
+		 nodeProfile = visualNodeProfile;
+	  }; 
+
+      /*new GuiScrollCtrl() {
+         willFirstRespond = "0";
+         vScrollBar = "dynamic";
+         hScrollBar = "alwaysOff";
+         lockHorizScroll = "1";
+         lockVertScroll = "0";
+         childMargin = "1 1";
+         mouseWheelScrollSpeed = "-1";
+         anchorTop = "1";
+         anchorBottom = "0";
+         anchorLeft = "1";
+         anchorRight = "0";
+         position = "4 20";
+         extent = "292 396";
+         minExtent = "8 2";
+         horizSizing = "width";
+         vertSizing = "height";
+         isContainer = "1";
+         internalName = "stateStackScroll";
+         
+         new GuiSimpleStackCtrl(StateMachineStack)
+         {
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            Position = "0 25";
+            Extent = "292 4";
+            padding = 4;
+            internalName = "Stack";
+         };
+      };*/
+      new GuiButtonCtrl() {
+         buttonMargin = "4 4";
+         text = "Add New State";
+         buttonType = "PushButton";
+         position = "4 425";
+         extent = "80 20";
+         horizSizing = "left";
+         vertSizing = "top";
+         command = "StateMachineEditor.addState();";
+      };
+      
+      new GuiIconButtonCtrl() {
+         buttonMargin = "4 4";
+         iconBitmap = "tools/gui/images/iconCancel.png";
+         iconLocation = "Left";
+         textLocation = "Center";
+         textMargin = "4";
+         text = "Close";
+         position = "132 425";
+         extent = "80 20";
+         horizSizing = "left";
+         vertSizing = "top";
+         closeCommand = "Canvas.popDialog(StateMachineEditor);";
+      };
+      new GuiIconButtonCtrl() {
+         buttonMargin = "4 4";
+         iconBitmap = "tools/gui/images/iconAccept.png";
+         iconLocation = "Left";
+         textLocation = "Center";
+         textMargin = "4";
+         text = "Save";
+         position = "216 425";
+         extent = "80 20";
+         horizSizing = "left";
+         vertSizing = "top";
+         command = "ScriptEditorGui.save();";
+      };
+   };
+};
