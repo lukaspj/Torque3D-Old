@@ -66,6 +66,7 @@ public:
    virtual void onEditorEnable();
    virtual void onEditorDisable();
    virtual void inspectPostApply();
+	virtual bool save(const char *pcFileName, bool bOnlySelected, const char *preappend);
 
    // NetObject
    U32 packUpdate( NetConnection *conn, U32 mask, BitStream *stream );
@@ -74,6 +75,10 @@ public:
    // SceneObject
    virtual void setTransform( const MatrixF &mat );
    virtual void setScale(const VectorF & scale);
+
+	// Heirarchy stuff
+	virtual void addObject(SimObject* object);
+	virtual void removeObject(SimObject* object);
 
    // Prefab
 
@@ -91,10 +96,21 @@ public:
 
    ///
    void setFile( String file );
+	const char* getFile() { return mFilename; }
+	void reloadFromFile();
+
+   //-JR
+   SimGroup* getChildGroup() { return mChildGroup; }
+   //-JR
+
+	void childTransformUpdated(SceneObject* child, MatrixF newTransform);
 
    /// Removes all children from this Prefab and puts them into a SimGroup
    /// which is added to the MissionGroup and returned to the caller.
    SimGroup* explode();
+
+	void setDirty(bool set=true) { mDirty = set; }
+	bool isDirty() { return mDirty; }
 
 protected:
 
@@ -104,7 +120,13 @@ protected:
    void _updateChildren();
    void _onFileChanged( const Torque::Path &path );
 
+	void _parseFile( bool addFileNotify );
+
+	bool checkDirty();
+
    static bool protectedSetFile( void *object, const char *index, const char *data );
+
+	virtual void write( Stream &stream, U32 tabStop, U32 flags = 0  );
 
    /// @name Callbacks
    /// @{
@@ -120,6 +142,8 @@ protected:
 
    /// Group which holds all children objects.
    SimObjectPtr<SimGroup> mChildGroup;
+
+	bool mDirty;
 
    /// Structure to keep track of child object initial transform and scale
    struct Transform

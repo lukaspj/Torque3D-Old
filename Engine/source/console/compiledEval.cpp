@@ -970,6 +970,11 @@ breakContinue:
 
          case OP_FINISH_OBJECT:
          {
+				//-JR
+				if(currentNewObject)
+					currentNewObject->onPostAdd();
+				//-JR
+
             //Assert( objectCreationStackIndex >= 0 );
             // Restore the object info from the stack [7/9/2007 Black]
             currentNewObject = objectCreationStack[ --objectCreationStackIndex ].newObject;

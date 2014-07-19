@@ -121,6 +121,15 @@ void CloseSplashWindow(HINSTANCE hinst)
 	
 }
 
+//-JR
+bool Platform::closeSplashWindow()
+{
+	CloseSplashWindow(GetModuleHandle(NULL));
+
+	return true;
+}
+//-JR
+
 bool Platform::displaySplashWindow( String path )
 {
    if(path.isEmpty())

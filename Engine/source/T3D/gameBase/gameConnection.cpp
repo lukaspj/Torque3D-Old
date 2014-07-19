@@ -217,7 +217,10 @@ GameConnection::GameConnection()
    mFadeToBlack = false;
 
    // first person
-   mFirstPerson = true;
+   //-JR
+   //mFirstPerson = true;
+   mFirstPerson = false;
+   //-JR
    mUpdateFirstPerson = false;
 
    // Control scheme
@@ -525,7 +528,11 @@ void GameConnection::setControlObject(GameBase *obj)
       obj->setControllingClient(this);
 
       // Update the camera's FOV to match the new control object
-      setControlCameraFov( obj->getCameraFov() );
+      //-JR
+	   //but only if we don't have a specific camera object
+	   if(!mCameraObject)
+		  setControlCameraFov( obj->getCameraFov() );
+	   //-JR
    }
 
    // Okay, set our control object.
@@ -1095,10 +1102,22 @@ void GameConnection::readPacket(BitStream *bstream)
 
       if (bstream->readFlag())
       {
+			//-JR
+			bool callScript = false;
+			if(mCameraObject.isNull())
+				callScript = true;
+			//-JR
+
          S32 gIndex = bstream->readInt(NetConnection::GhostIdBitSize);
          GameBase* obj = dynamic_cast<GameBase*>(resolveGhost(gIndex));
          setCameraObject(obj);
          obj->readPacketData(this, bstream);
+
+			//-JR
+			//do this better.
+			if(callScript)
+				initialControlSet_callback();
+			//-JR
       }
       else
          setCameraObject(0);
@@ -1675,6 +1694,14 @@ DefineEngineMethod( GameConnection, transmitDataBlocks, void, (S32 sequence),,
             // Ensure that the client knows that the datablock send is done...
             object->sendConnectionMessage(GameConnection::DataBlocksDone, object->getDataBlockSequence());
         }
+		  //-JR
+		  if(iCount == 0)
+		  {
+			  //if we have no datablocks to send, we still need to be able to complete the level load process
+			  //so fire off our callback anyways
+            object->sendConnectionMessage(GameConnection::DataBlocksDone, object->getDataBlockSequence());
+		  }
+		  //-JR
     } 
     else
     {

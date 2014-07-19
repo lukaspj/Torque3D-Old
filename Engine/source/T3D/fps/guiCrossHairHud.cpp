@@ -117,7 +117,10 @@ void GuiCrossHairHud::onRender(Point2I offset, const RectI &updateRect)
    GameConnection* conn = GameConnection::getConnectionToServer();
    if (!conn)
       return;
-   ShapeBase* control = dynamic_cast<ShapeBase*>(conn->getControlObject());
+   //-JR
+   //ShapeBase* control = dynamic_cast<ShapeBase*>(conn->getControlObject());
+   GameBase* control = dynamic_cast<GameBase*>(conn->getControlObject());
+   //-JR
    if (!control || !(control->getTypeMask() & ObjectMask) || !conn->isFirstPerson())
       return;
 

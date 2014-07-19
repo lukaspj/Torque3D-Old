@@ -1075,7 +1075,7 @@ void MeshRoad::unpackUpdate(NetConnection * con, BitStream * stream)
          stream->read( &mMaterialName[i] );
         
          if ( !Sim::findObject( mMaterialName[i], pMat ) )
-            Con::printf( "DecalRoad::unpackUpdate, failed to find Material of name &s!", mMaterialName[i].c_str() );
+            Con::printf( "DecalRoad::unpackUpdate, failed to find Material of name %s", mMaterialName[i].c_str() );
          else         
             mMaterial[i] = pMat;         
       }

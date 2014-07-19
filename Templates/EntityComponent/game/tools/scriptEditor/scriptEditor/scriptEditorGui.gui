@@ -1,0 +1,326 @@
+//--- OBJECT WRITE BEGIN ---
+%guiContent = new GuiControl(EWScriptTreeWindowCtrl) {
+   canSaveDynamicFields = "0";
+   Enabled = "1";
+   isContainer = "1";
+   Profile = "GuiDefaultProfile";
+   HorizSizing = "right";
+   VertSizing = "bottom";
+   Position = "0 0";
+   Extent = "800 600";
+   MinExtent = "8 2";
+   canSave = "1";
+   Visible = "1";
+   hovertime = "1000";
+
+   new GuiWindowCollapseCtrl(EWScriptTreeWindow) {
+      canSaveDynamicFields = "0";
+      internalName = "ScriptTreeWindow";
+      Enabled = "1";
+      isContainer = "1";
+      Profile = "GuiWindowProfile";
+      Position = firstWord($pref::Video::mode) - 209
+         SPC getWord(EditorGuiToolbar.extent, 1) -1;
+      Extent = "210 324";
+      MinExtent = "210 140";
+      HorizSizing = "windowRelative";
+      VertSizing = "windowRelative";
+      canSave = "1";
+      Visible = "1";
+      hovertime = "1000";
+      Margin = "8 8 8 8";
+      Padding = "0 0 0 0";
+      AnchorTop = "1";
+      AnchorBottom = "0";
+      AnchorLeft = "1";
+      AnchorRight = "0";
+      resizeWidth = "1";
+      resizeHeight = "1";
+      canMove = "1";
+      canClose = "0";
+      canMinimize = "0";
+      canMaximize = "0";
+      minSize = "50 50";
+      closeCommand = "EWTreeWindow.setVisible(false);";
+      EdgeSnap = "1";
+      text = "Script Tree";
+      
+      new GuiTabBookCtrl() {
+         canSaveDynamicFields = "0";
+         isContainer = "1";
+         internalName = "EditorTree";
+         Profile = "GuiTabBookProfile";
+         HorizSizing = "width";
+         VertSizing = "height";
+         position = "6 27";
+         Extent = "197 289";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         hovertime = "1000";
+         Margin = "3 2 3 3";
+         Docking = "client";
+         Padding = "0 0 0 0";
+         AnchorTop = "1";
+         AnchorBottom = "0";
+         AnchorLeft = "1";
+         AnchorRight = "0";
+         TabPosition = "Top";
+         TabMargin = "0";
+         MinTabWidth = "64";
+         
+         
+         new GuiTabPageCtrl(EWBrowserWindow) {
+            canSaveDynamicFields = "0";
+            internalName = "CreatorWindow";
+            Enabled = "1";
+            isContainer = "1";
+            Profile = "EditorTabPage";
+            HorizSizing = "width";
+            VertSizing = "height";
+            position = "0 19";
+            Extent = "208 274";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            hovertime = "1000";
+            Margin = "0 0 0 0";
+            Padding = "0 0 0 0";
+            AnchorTop = "1";
+            AnchorBottom = "0";
+            AnchorLeft = "1";
+            AnchorRight = "0";
+            text = "Browse";
+            maxLength = "1024";
+            
+            new GuiControl() {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiInspectorProfile";
+            HorizSizing = "width";
+            VertSizing = "bottom";
+            position = "0 0";
+            Extent = "198 271";
+            MinExtent = "8 2";
+            canSave = "0";
+            Visible = "1";
+         };
+         new GuiBitmapBorderCtrl() {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiTabBorderProfile";
+            HorizSizing = "width";
+            VertSizing = "bottom";
+            position = "0 0";
+            Extent = "198 271";
+            MinExtent = "8 2";
+            canSave = "0";
+            Visible = "1";
+            hovertime = "1000";
+         };
+         new GuiBitmapBorderCtrl() {
+            canSaveDynamicFields = "0";
+            Enabled = "1";
+            isContainer = "0";
+            Profile = "GuiTabBorderProfile";
+            HorizSizing = "width";
+            VertSizing = "bottom";
+            position = "0 25";
+            Extent = "198 246";
+            MinExtent = "8 2";
+            canSave = "0";
+            Visible = "1";
+            hovertime = "1000";
+         };
+            new GuiContainer() {
+               canSaveDynamicFields = "0";
+               Enabled = "1";
+               isContainer = "0";
+               Profile = "GuiTransparentProfile";
+               HorizSizing = "width";
+               VertSizing = "height";
+               Position = "-4 47";
+               Extent = "206 228";
+               MinExtent = "8 2";
+               canSave = "1";
+               Visible = "1";
+               tooltipprofile = "GuiToolTipProfile";
+               hovertime = "1000";
+               Margin = "0 0 0 0";
+               Padding = "4 4 4 4";
+               AnchorTop = "1";
+               AnchorBottom = "0";
+               AnchorLeft = "1";
+               AnchorRight = "0";
+
+               new GuiScrollCtrl() {
+                  canSaveDynamicFields = "0";
+                  Enabled = "1";
+                  isContainer = "1";
+                  Profile = "EditorLightScrollProfile";
+                  HorizSizing = "width";
+                  VertSizing = "bottom";
+                  Position = "4 4";
+                  Extent = "198 220";
+                  MinExtent = "8 2";
+                  canSave = "1";
+                  Visible = "1";
+                  tooltipprofile = "GuiToolTipProfile";
+                  hovertime = "1000";
+                  Docking = "Client";
+                  Margin = "0 0 0 0";
+                  Padding = "0 0 0 0";
+                  AnchorTop = "1";
+                  AnchorBottom = "0";
+                  AnchorLeft = "1";
+                  AnchorRight = "0";
+                  willFirstRespond = "1";
+                  hScrollBar = "alwaysOff";
+                  vScrollBar = "dynamic";
+                  lockHorizScroll = "true";
+                  lockVertScroll = "false";
+                  constantThumbHeight = "0";
+                  childMargin = "0 0";
+
+                  new GuiDynamicCtrlArrayControl(ScriptIconArray) {
+                     canSaveDynamicFields = "0";
+                     Enabled = "1";
+                     isContainer = "1";
+                     Profile = "GuiTransparentProfile";
+                     HorizSizing = "width";
+                     VertSizing = "height";
+                     Position = "1 1";
+                     Extent = "197 218";
+                     MinExtent = "8 2";
+                     canSave = "1";
+                     Visible = "1";
+                     tooltipprofile = "GuiToolTipProfile";
+                     hovertime = "1000";
+                     colCount = "20";
+                     colSize = "64";
+                     rowCount = "0";
+                     RowSize = "32";
+                     rowSpacing = "4";
+                     colSpacing = "4";
+                     frozen = "0";
+                     autoCellSize = "1";
+                     fillRowFirst = "0";
+                     dynamicSize = "1";
+                  };
+               };
+            };
+            new GuiControl() {
+               canSaveDynamicFields = "0";
+               Enabled = "1";
+               isContainer = "1";
+               Profile = "GuiDefaultProfile";
+               HorizSizing = "width";
+               VertSizing = "bottom";
+               Position = "-3 2";
+               Extent = "202 55";
+               MinExtent = "8 2";
+               canSave = "1";
+               Visible = "1";
+               tooltipprofile = "GuiToolTipProfile";
+               hovertime = "1000";
+
+               new GuiBitmapButtonCtrl() {
+                  canSaveDynamicFields = "0";
+                  Enabled = "1";
+                  isContainer = "0";
+                  Profile = "GuiButtonProfile";
+                  HorizSizing = "right";
+                  VertSizing = "bottom";
+                  Position = "9 28";
+                  Extent = "20 19";
+                  MinExtent = "8 2";
+                  canSave = "1";
+                  Visible = "1";
+                  Command = "EWBrowserWindow.navigateUp();";
+                  tooltipprofile = "GuiToolTipProfile";
+                  hovertime = "1000";
+                  groupNum = "0";
+                  buttonType = "PushButton";
+                  
+                  Bitmap = "tools/gui/images/folderUp";
+                  autoSize = "0";
+               };
+            };
+         };
+      };
+      /*new GuiBitmapButtonCtrl() {
+         canSaveDynamicFields = "0";
+         internalName = "LockSelection";
+         Enabled = "1";
+         isContainer = "0";
+         Profile = "GuiButtonProfile";
+         HorizSizing = "left";
+         VertSizing = "bottom";
+         Position = "157 26";
+         Extent = "16 16";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         Command = "EWorldEditor.lockSelection(true); EditorTree.toggleLock();";
+         tooltipprofile = "GuiToolTipProfile";
+         ToolTip = "Lock Selection";
+         hovertime = "1000";
+         bitmap = "tools/gui/images/lock";
+         buttonType = "ToggleButton";
+         groupNum = "-1";
+         text = "";
+         useMouseEvents = "0";
+      };*/
+      
+      /*new GuiBitmapButtonCtrl(EWAddSimGroupButton) {
+         canSaveDynamicFields = "0";
+         internalName = "AddSimGroup";
+         Enabled = "1";
+         isContainer = "0";
+         Profile = "GuiButtonProfile";
+         HorizSizing = "left";
+         VertSizing = "bottom";
+         Position = "173 26";
+         Extent = "16 16";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         tooltipprofile = "GuiToolTipProfile";
+         ToolTip = "Add Sim Group";
+         hovertime = "1000";
+         bitmap = "tools/gui/images/add-simgroup-btn";
+         buttonType = "PushButton";
+         groupNum = "-1";
+         text = "";
+         useMouseEvents = "0";
+         useModifiers = "1";
+      };*/
+      
+      /*new GuiBitmapButtonCtrl() {
+         canSaveDynamicFields = "0";
+         internalName = "DeleteSelection";
+         Enabled = "1";
+         isContainer = "0";
+         Profile = "GuiButtonProfile";
+         HorizSizing = "left";
+         VertSizing = "bottom";
+         Position = "189 26";
+         Extent = "16 16";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         Command = "EditorMenuEditDelete();";
+         tooltipprofile = "GuiToolTipProfile";
+         ToolTip = "Delete Selection";
+         hovertime = "1000";
+         bitmap = "tools/gui/images/delete";
+         buttonType = "PushButton";
+         groupNum = "-1";
+         text = "";
+         useMouseEvents = "0";
+      };*/
+   };
+};
+//--- OBJECT WRITE END ---

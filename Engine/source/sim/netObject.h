@@ -29,7 +29,11 @@
 #ifndef _MMATH_H_
 #include "math/mMath.h"
 #endif
-
+//-JR
+#ifndef _SIMSET_H_
+#include "console/simSet.h"
+#endif
+//-JR
 
 //-----------------------------------------------------------------------------
 class NetConnection;
@@ -217,7 +221,10 @@ struct GhostInfo;
 /// the documentation on AbstractClassRep for more details.
 ///
 /// @nosubgrouping
-class NetObject: public SimObject
+//-JR
+//class NetObject: public SimObject
+class NetObject: public SimGroup
+//-JR
 {
    // The Ghost Manager needs read/write access
    friend class  NetConnection;
@@ -228,7 +235,10 @@ class NetObject: public SimObject
    friend class GhostAlwaysObjectEvent;
 
 private:
-   typedef SimObject Parent;
+   //-JR
+	//typedef SimObject Parent;
+	typedef SimGroup Parent;
+	//-JR
 
    /// Mask indicating which states are dirty and need to be retransmitted on this
    /// object.

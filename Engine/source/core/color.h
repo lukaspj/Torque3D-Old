@@ -61,6 +61,11 @@ class ColorF
    static const ColorF& StockColor( const char* pStockColorName );
    StringTableEntry StockColor( void );
 
+   void set( const char* pStockColorName );
+
+   static const ColorF& StockColor( const char* pStockColorName );
+   StringTableEntry StockColor( void );
+
    ColorF& operator*=(const ColorF& in_mul);       // Can be useful for lighting
    ColorF  operator*(const ColorF& in_mul) const;
    ColorF& operator+=(const ColorF& in_rAdd);
@@ -132,6 +137,8 @@ class ColorI
    
    ColorI( const char* pStockColorName );
 
+   ColorI( const char* pStockColorName );
+
    void set(const U8 in_r,
             const U8 in_g,
             const U8 in_b,
@@ -140,6 +147,11 @@ class ColorI
    void set(const ColorI& in_rCopy,
             const U8 in_a);
    
+   void set( const char* pStockColorName );
+
+   static const ColorI& StockColor( const char* pStockColorName );
+   StringTableEntry StockColor( void );
+
    void set( const char* pStockColorName );
 
    static const ColorI& StockColor( const char* pStockColorName );
@@ -194,28 +206,28 @@ class ColorI
 class StockColorItem
 {
 private:
-    StockColorItem() {}
+   StockColorItem() {}
 
 public:
-    StockColorItem( const char* pName, const U8 red, const U8 green, const U8 blue, const U8 alpha = 255 )
-    {
-        // Sanity!
-        AssertFatal( pName != NULL, "Stock color name cannot be NULL." );
+   StockColorItem( const char* pName, const U8 red, const U8 green, const U8 blue, const U8 alpha = 255 )
+   {
+      // Sanity!
+      AssertFatal( pName != NULL, "Stock color name cannot be NULL." );
 
-        // Set stock color.
-        // NOTE:-   We'll use the char pointer here.  We can yet use the string-table unfortunately.
-        mColorName = pName;
-        mColorI.set( red, green, blue, alpha );
-        mColorF = mColorI;
-    }
+      // Set stock color.
+      // NOTE:-   We'll use the char pointer here.  We can yet use the string-table unfortunately.
+      mColorName = pName;
+      mColorI.set( red, green, blue, alpha );
+      mColorF = mColorI;
+   }
 
-    inline const char*      getColorName( void ) const { return mColorName; }
-    inline const ColorF&    getColorF( void ) const { return mColorF; }
-    inline const ColorI&    getColorI( void ) const { return mColorI; }
+   inline const char*      getColorName( void ) const { return mColorName; }
+   inline const ColorF&    getColorF( void ) const { return mColorF; }
+   inline const ColorI&    getColorI( void ) const { return mColorI; }
 
-    const char*         mColorName;
-    ColorF              mColorF;
-    ColorI              mColorI;
+   const char*         mColorName;
+   ColorF              mColorF;
+   ColorI              mColorI;
 };
 
 //-----------------------------------------------------------------------------
@@ -223,17 +235,17 @@ public:
 class StockColor
 {
 public:
-    static bool isColor( const char* pStockColorName );
-    static const ColorF& colorF( const char* pStockColorName );
-    static const ColorI& colorI( const char* pStockColorName );
-    static StringTableEntry name( const ColorF& color );
-    static StringTableEntry name( const ColorI& color );
+   static bool isColor( const char* pStockColorName );
+   static const ColorF& colorF( const char* pStockColorName );
+   static const ColorI& colorI( const char* pStockColorName );
+   static StringTableEntry name( const ColorF& color );
+   static StringTableEntry name( const ColorI& color );
 
-    static S32 getCount( void );
-    static const StockColorItem* getColorItem( const S32 index );
+   static S32 getCount( void );
+   static const StockColorItem* getColorItem( const S32 index );
 
-    static void create( void );
-    static void destroy( void );
+   static void create( void );
+   static void destroy( void );
 };
 
 //------------------------------------------------------------------------------

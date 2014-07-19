@@ -42,9 +42,14 @@ using namespace Torque;
 
 S32 GFXTextureManager::smTextureReductionLevel = 0;
 
-String GFXTextureManager::smMissingTexturePath("core/art/missingTexture");
+//-JR
+/*String GFXTextureManager::smMissingTexturePath("core/art/missingTexture");
 String GFXTextureManager::smUnavailableTexturePath("core/art/unavailable");
-String GFXTextureManager::smWarningTexturePath("core/art/warnmat");
+String GFXTextureManager::smWarningTexturePath("core/art/warnmat");*/
+String GFXTextureManager::smMissingTexturePath(Con::getVariable("$Core::MissingTexturePath"));
+String GFXTextureManager::smUnavailableTexturePath(Con::getVariable("$Core::UnAvailableTexturePath"));
+String GFXTextureManager::smWarningTexturePath(Con::getVariable("$Core::WarningTexturePath"));
+//-JR
 
 GFXTextureManager::EventSignal GFXTextureManager::smEventSignal;
 
@@ -1031,9 +1036,9 @@ void GFXTextureManager::_validateTexParams( const U32 width, const U32 height,
    // If the format is non-compressed, and the profile requests a compressed format
    // than change the format.
    GFXFormat testingFormat = inOutFormat;
-   if( profile->getCompression() != GFXTextureProfile::None )
+   if( profile->getCompression() != GFXTextureProfile::NONE )
    {
-      const int offset = profile->getCompression() - GFXTextureProfile::DXT1;
+      const S32 offset = profile->getCompression() - GFXTextureProfile::DXT1;
       testingFormat = GFXFormat( GFXFormatDXT1 + offset );
 
       // No auto-gen mips on compressed textures

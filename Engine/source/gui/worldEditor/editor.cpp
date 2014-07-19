@@ -121,9 +121,15 @@ void EditManager::editorDisabled()
 static GameBase * getControlObj()
 {
    GameConnection * connection = GameConnection::getLocalClientConnection();
-   ShapeBase* control = 0;
+   //-JR
+   //ShapeBase* control = 0;
+   GameBase* control = 0;
+   //-JR
    if(connection)
-      control = dynamic_cast<ShapeBase*>(connection->getControlObject());
+      //-JR
+	  //control = dynamic_cast<ShapeBase*>(connection->getControlObject());
+	  control = dynamic_cast<GameBase*>(connection->getControlObject());
+     //-JR
    return(control);
 }
 

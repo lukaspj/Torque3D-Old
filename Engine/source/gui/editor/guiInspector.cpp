@@ -28,6 +28,11 @@
 #include "gui/containers/guiScrollCtrl.h"
 #include "gui/editor/inspector/customField.h"
 
+//-JR
+#include "gui/editor/inspector/behaviorGroup.h"
+#include "gui/editor/inspector/prefabGroup.h"
+#include "gui/editor/inspector/mountingGroup.h"
+//-JR
 
 IMPLEMENT_CONOBJECT(GuiInspector);
 
@@ -588,6 +593,41 @@ void GuiInspector::refresh()
       mGroups.push_back( general );
       addObject( general );
    }
+
+	//-JR
+   //Behavior inspector group
+   if(mTargets.first()->getClassRep()->isSubclassOf("Entity"))
+   {
+	   GuiInspectorGroup *behaviors = new GuiInspectorBehaviorGroup( "Behaviors", this );
+	   if( behaviors != NULL )
+	   {
+		  behaviors->registerObject();
+		  mGroups.push_back( behaviors );
+		  addObject( behaviors );
+	   }
+
+		//Mounting group override
+	   GuiInspectorGroup *mounting = new GuiInspectorMountingGroup( "Mounting", this );
+	   if( mounting != NULL )
+	   {
+		  mounting->registerObject();
+		  mGroups.push_back( mounting );
+		  addObject( mounting );
+	   }
+   }
+
+	//Prefab
+	if(mTargets.first()->getClassRep()->isSubclassOf("Prefab"))
+   {
+	   GuiInspectorGroup *prefabs = new GuiInspectorPrefabGroup( "Prefab", this );
+	   if( prefabs != NULL )
+	   {
+		  prefabs->registerObject();
+		  mGroups.push_back( prefabs );
+		  addObject( prefabs );
+	   }
+   }
+   //-JR
 
    // Create the inspector groups for static fields.
 

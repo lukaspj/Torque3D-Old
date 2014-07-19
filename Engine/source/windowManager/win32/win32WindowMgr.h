@@ -56,6 +56,12 @@ class Win32WindowManager : public PlatformWindowManager
    // is intended for offscreen rendering
    bool mOffscreenRender;
 
+	//-JR
+	/// This is set as part of the canvas being shown, and flags that the windows should render as normal from now on.
+	// Basically a flag that lets the window manager know that we've handled the splash screen, and to operate as normal.
+	bool mDisplayWindow;
+	//-JR
+
    /// Internal structure used when enumerating monitors
    struct MonitorInfo {
       HMONITOR monitorHandle;
@@ -84,6 +90,8 @@ class Win32WindowManager : public PlatformWindowManager
 
    /// If a curtain window is present, then its HWND will be stored here.
    HWND mCurtainWindow;
+
+   SignalSlot<void()> mOnProcessSignalSlot;
 
 public:
    Win32WindowManager();
@@ -115,6 +123,10 @@ public:
 
    virtual void lowerCurtain();
    virtual void raiseCurtain();
+
+	//-JR
+	virtual void setDisplayWindow(bool set) { mDisplayWindow = set; }
+	//-JR
 };
 
 #endif

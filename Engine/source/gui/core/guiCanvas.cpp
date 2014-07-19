@@ -1561,7 +1561,7 @@ void GuiCanvas::setupFences()
       mFences = new GFXFence*[mNumFences];
 
       // Allocate the new fences
-      for( int i = 0; i < mNumFences; i++ )
+      for( S32 i = 0; i < mNumFences; i++ )
          mFences[i] = GFX->createFence();
    }
 
@@ -2683,3 +2683,23 @@ ConsoleMethod( GuiCanvas, setVideoMode, void, 5, 8,
    // Store the new mode into a pref.
    Con::setVariable( "$pref::Video::mode", vm.toString() );
 }
+
+//-JR
+ConsoleMethod( GuiCanvas, showWindow, void, 2, 2, "" )
+{
+   if (!object->getPlatformWindow())
+      return;
+
+	object->getPlatformWindow()->show();
+	WindowManager->setDisplayWindow(true);
+	object->getPlatformWindow()->setDisplayWindow(true);
+}
+
+ConsoleMethod( GuiCanvas, hideWindow, void, 2, 2, "" )
+{
+   if (!object->getPlatformWindow())
+      return;
+
+	object->getPlatformWindow()->hide();
+}
+//-JR
