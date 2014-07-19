@@ -67,7 +67,7 @@ void BehaviorTemplate::initPersistFields()
 	  addField("behaviorType", TypeCaseString, Offset(mBehaviorType, BehaviorTemplate), "The type of behavior.");
 	  addField("networkType", TypeCaseString, Offset(mNetworkType, BehaviorTemplate), "The type of behavior.");
       addField("friendlyName", TypeCaseString, Offset(mFriendlyName, BehaviorTemplate), "Human friendly name of this behavior");
-      addProtectedField("description", TypeCaseString, Offset(mDescription, BehaviorTemplate), &setDescription, &getDescription, 
+      addProtectedField("description", TypeCaseString, Offset(mDescription, BehaviorTemplate), &setDescription, &getDescription, new DefaultNonEmptyStringWriteFn(),
          "The description of this behavior which can be set to a \"string\" or a fileName\n");
 
 	  addField("networked", TypeBool, Offset(mNetworked, BehaviorTemplate), "Is this behavior ghosted to clients?");

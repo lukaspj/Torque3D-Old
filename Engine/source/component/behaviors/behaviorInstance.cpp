@@ -59,7 +59,7 @@ void BehaviorInstance::initPersistFields()
    addGroup("Behavior");
       addField("template", TypeSimObjectName, Offset(mTemplate, BehaviorInstance), "Template this instance was created from");
       // Read-only field, set always returns false
-      addProtectedField( "Owner", TypeSimObjectPtr, Offset(mBehaviorOwner, BehaviorInstance), &setOwner, &defaultProtectedGetFn, "" );
+      addProtectedField( "Owner", TypeSimObjectPtr, Offset(mBehaviorOwner, BehaviorInstance), &setOwner, &defaultProtectedGetFn, new DefaultNonEmptyStringWriteFn(), "" );
 	  addField("hidden", TypeBool, Offset(mHidden, BehaviorInstance), "Flags if this behavior is shown in the editor or not");
 	  addField("enabled", TypeBool, Offset(mEnabled, BehaviorInstance), "Flags if this behavior is active or not");
    endGroup("Behavior");

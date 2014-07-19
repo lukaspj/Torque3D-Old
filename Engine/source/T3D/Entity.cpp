@@ -110,7 +110,7 @@ void Entity::initPersistFields()
 
    addGroup( "Transform" );
    addProtectedField( "eulerRotation", TypePoint3F, Offset( mRot, Entity ),
-         &_setEulerRotation, &defaultProtectedGetFn,
+         &_setEulerRotation, &defaultProtectedGetFn, new DefaultValueWriteFn("0 0 0"),
          "Object world orientation." );
    endGroup( "Transform" );
 }

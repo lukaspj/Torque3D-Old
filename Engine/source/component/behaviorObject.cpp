@@ -270,6 +270,23 @@ const char* BehaviorObject::callMethodArgList( U32 argc, const char *argv[], boo
    return _callBehaviorMethod( argc, argv, callThis );
 }
 
+U32 BehaviorObject::getTamlChildCount() const
+{
+   return Parent::getTamlChildCount() + mBehaviors.size();
+}
+
+SimObject* BehaviorObject::getTamlChild(U32 const childIndex) const
+{
+   if(childIndex < Parent::getTamlChildCount())
+      return Parent::getTamlChild(childIndex);
+   return mBehaviors.at(childIndex - Parent::getTamlChildCount());
+}
+
+void BehaviorObject::addTamlChild(SimObject* pSimObject)
+{
+   addObject(pSimObject);
+}
+
 const char *BehaviorObject::_callMethod( U32 argc, const char *argv[], bool callThis )
 {
 	SimObject *pThis = dynamic_cast<SimObject *>( this );

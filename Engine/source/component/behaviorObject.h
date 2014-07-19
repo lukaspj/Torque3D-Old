@@ -94,6 +94,11 @@ public:
 
 class BehaviorObject : public GameBase, public ICallMethod
 {
+public:
+   virtual U32 getTamlChildCount() const;
+   virtual SimObject* getTamlChild(U32 const childIndex) const;
+   virtual void addTamlChild(SimObject* pSimObject);
+private:
    typedef GameBase Parent;
    friend class BehaviorInterface;
    friend class BehaviorListInterface;
