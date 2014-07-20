@@ -12,4 +12,13 @@ public:
 	virtual VectorF getVelocity()=0;
 };
 
+class ParticlePhysicsInterface : public BehaviorInterface
+{
+public:
+
+   Point3F getDragCoefficient();
+   F32 getWindCoefficient();
+   Point3F getGravityCoefficient();
+};
+
 #endif
