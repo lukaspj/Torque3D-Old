@@ -32,7 +32,7 @@
 #include "core/stream/bitStream.h"
 #include "math/mathIO.h"
 #include "T3D/fx/explosion.h"
-#include "T3D/fx/particle.h"
+#include "T3D/fx/pe_particle.h"
 #include "T3D/fx/particleEmitter.h"
 #include "T3D/fx/particleEmitterNode.h"
 #include "T3D/gameBase/gameProcess.h"

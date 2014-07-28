@@ -19,7 +19,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#include "particle.h"
+#include "pe_particle.h"
 #include "console/consoleTypes.h"
 #include "console/typeValidators.h"
 #include "core/stream/bitStream.h"
@@ -591,7 +591,7 @@ bool ParticleData::preload(bool server, String &errorStr)
 //-----------------------------------------------------------------------------
 // Initialize particle
 //-----------------------------------------------------------------------------
-void ParticleData::initializeParticle(Particle* init, const Point3F& inheritVelocity)
+void ParticleData::initializeParticle(PE_Particle* init, const Point3F& inheritVelocity)
 {
    init->dataBlock = this;
 

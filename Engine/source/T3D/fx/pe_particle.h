@@ -20,8 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _PARTICLE_H_
-#define _PARTICLE_H_
+#ifndef _PE_PARTICLE_H_
+#define _PE_PARTICLE_H_
 
 #ifndef _GAMEBASE_H_
 #include "T3D/gameBase/gameBase.h"
@@ -31,8 +31,9 @@
 #endif
 
 #define MaxParticleSize 50.0
+#include <component/behaviors/Particle/particle.h>
 
-struct Particle;
+struct PE_Particle;
 
 //*****************************************************************************
 // Particle Data
@@ -87,7 +88,7 @@ class ParticleData : public SimDataBlock
    ~ParticleData();
 
    // move this procedure to Particle
-   void initializeParticle(Particle*, const Point3F&);
+   void initializeParticle(PE_Particle*, const Point3F&);
 
    void packData(BitStream* stream);
    void unpackData(BitStream* stream);
@@ -104,26 +105,16 @@ class ParticleData : public SimDataBlock
 // 
 // This structure should be as small as possible.
 //*****************************************************************************
-struct Particle
-{
-   Point3F  pos;     // current instantaneous position
-   Point3F  vel;     //   "         "         velocity
-   Point3F  acc;     // Constant acceleration
-   Point3F  orientDir;  // direction particle should go if using oriented particles
 
-   U32           totalLifetime;   // Total ms that this instance should be "live"
+struct PE_Particle : Particle
+{
    ParticleData* dataBlock;       // datablock that contains global parameters for
                                   //  this instance
-   U32       currentAge;
-
 
    // are these necessary to store here? - they are interpolated in real time
    ColorF           color;
    F32              size;
-
-   F32              spinSpeed;
-   Particle *       next;
 };
 
 
-#endif // _PARTICLE_H_
+#endif // _PE_PARTICLE_H_

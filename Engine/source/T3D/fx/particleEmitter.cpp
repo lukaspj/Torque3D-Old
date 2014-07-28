@@ -815,7 +815,7 @@ bool ParticleEmitter::onNewDataBlock( GameBaseData *dptr, bool reload )
       }
       part_store.clear();
       n_part_capacity = mDataBlock->partListInitSize;
-      Particle* store_block = new Particle[n_part_capacity];
+      PE_Particle* store_block = new PE_Particle[n_part_capacity];
       part_store.push_back(store_block);
       part_freelist = store_block;
       Particle* last_part = part_freelist;
@@ -842,7 +842,7 @@ ColorF ParticleEmitter::getCollectiveColor()
 	ColorF color = ColorF(0.0f, 0.0f, 0.0f);
 
    count = n_parts;
-   for( Particle* part = part_list_head.next; part != NULL; part = part->next )
+   for( PE_Particle* part = ((PE_Particle*)part_list_head.next); part != NULL; part = ((PE_Particle*)part->next) )
    {
       color += part->color;
    }
@@ -913,7 +913,7 @@ void ParticleEmitter::prepRenderImage(SceneRenderState* state)
    if (mDataBlock->textureHandle)
      ri->diffuseTex = &*(mDataBlock->textureHandle);
    else
-     ri->diffuseTex = &*(part_list_head.next->dataBlock->textureHandle);
+     ri->diffuseTex = &*(((PE_Particle*)part_list_head.next)->dataBlock->textureHandle);
 
    ri->softnessDistance = mDataBlock->softnessDistance; 
 
@@ -1103,7 +1103,7 @@ void ParticleEmitter::emitParticles(const Point3F& start,
       U32 advanceMS = numMilliseconds - currTime;
       if (mDataBlock->overrideAdvance == false && advanceMS != 0) 
       {
-         Particle* last_part = part_list_head.next;
+         PE_Particle* last_part = ((PE_Particle*)part_list_head.next);
          if (advanceMS > last_part->totalLifetime) 
          {
            part_list_head.next = last_part->next;
@@ -1223,7 +1223,7 @@ void ParticleEmitter::updateBBox()
    Point3F minPt(1e10,   1e10,  1e10);
    Point3F maxPt(-1e10, -1e10, -1e10);
 
-   for (Particle* part = part_list_head.next; part != NULL; part = part->next)
+   for (PE_Particle* part = ((PE_Particle*)part_list_head.next); part != NULL; part = ((PE_Particle*)part->next))
    {
       Point3F particleSize(part->size * 0.5f, 0.0f, part->size * 0.5f);
       minPt.setMin( part->pos - particleSize );
@@ -1255,7 +1255,7 @@ void ParticleEmitter::addParticle(const Point3F& pos,
    {
       // In an emergency we allocate additional particles in blocks of 16.
       // This should happen rarely.
-      Particle* store_block = new Particle[16];
+      PE_Particle* store_block = new PE_Particle[16];
       part_store.push_back(store_block);
       n_part_capacity += 16;
       for (S32 i = 0; i < 16; i++)
@@ -1265,8 +1265,8 @@ void ParticleEmitter::addParticle(const Point3F& pos,
       }
       mDataBlock->allocPrimBuffer(n_part_capacity); // allocate larger primitive buffer or will crash 
    }
-   Particle* pNew = part_freelist;
-   part_freelist = pNew->next;
+   PE_Particle* pNew = part_freelist;
+   part_freelist = ((PE_Particle*)pNew->next);
    pNew->next = part_list_head.next;
    part_list_head.next = pNew;
 
@@ -1339,8 +1339,8 @@ void ParticleEmitter::advanceTime(F32 dt)
    // TODO: Prefetch
 
    // remove dead particles
-   Particle* last_part = &part_list_head;
-   for (Particle* part = part_list_head.next; part != NULL; part = part->next)
+   PE_Particle* last_part = &part_list_head;
+   for (PE_Particle* part = ((PE_Particle*)part_list_head.next); part != NULL; part = ((PE_Particle*)part->next))
    {
      part->currentAge += numMSToUpdate;
      if (part->currentAge > part->totalLifetime)
@@ -1374,7 +1374,7 @@ void ParticleEmitter::advanceTime(F32 dt)
 //-----------------------------------------------------------------------------
 // Update key related particle data
 //-----------------------------------------------------------------------------
-void ParticleEmitter::updateKeyData( Particle *part )
+void ParticleEmitter::updateKeyData( PE_Particle *part )
 {
 	//Ensure that our lifetime is never below 0
 	if( part->totalLifetime < 1 )
@@ -1427,7 +1427,7 @@ void ParticleEmitter::update( U32 ms )
 {
    // TODO: Prefetch
 
-   for (Particle* part = part_list_head.next; part != NULL; part = part->next)
+   for (PE_Particle* part = ((PE_Particle*)part_list_head.next); part != NULL; part = ((PE_Particle*)part->next))
    {
       F32 t = F32(ms) / 1000.0;
 
@@ -1525,13 +1525,13 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
         {
           SortParticle* partPtr = orderedVector.address();
           for (U32 i = 0; i < n_parts; i++, partPtr++, buffPtr-=4 )
-             setupOriented(partPtr->p, camPos, ambientColor, buffPtr);
+             setupOriented((PE_Particle*)partPtr->p, camPos, ambientColor, buffPtr);
         }
         // do unsorted-oriented particles
         else
         {
           for (Particle* partPtr = part_list_head.next; partPtr != NULL; partPtr = partPtr->next, buffPtr-=4)
-             setupOriented(partPtr, camPos, ambientColor, buffPtr);
+             setupOriented((PE_Particle*)partPtr, camPos, ambientColor, buffPtr);
         }
       }
       else
@@ -1541,13 +1541,13 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
         {
           SortParticle* partPtr = orderedVector.address();
           for (U32 i = 0; i < n_parts; i++, partPtr++, buffPtr+=4 )
-             setupOriented(partPtr->p, camPos, ambientColor, buffPtr);
+             setupOriented((PE_Particle*)partPtr->p, camPos, ambientColor, buffPtr);
         }
         // do unsorted-oriented particles
         else
         {
           for (Particle* partPtr = part_list_head.next; partPtr != NULL; partPtr = partPtr->next, buffPtr+=4)
-             setupOriented(partPtr, camPos, ambientColor, buffPtr);
+             setupOriented((PE_Particle*)partPtr, camPos, ambientColor, buffPtr);
         }
       }
 	  PROFILE_END();
@@ -1565,14 +1565,14 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
          {
             SortParticle* partPtr = orderedVector.address();
             for (U32 i = 0; i < n_parts; i++, partPtr++, buffPtr-=4 )
-               setupAligned(partPtr->p, ambientColor, buffPtr);
+               setupAligned((PE_Particle*)partPtr->p, ambientColor, buffPtr);
          }
          // do unsorted-oriented particles
          else
          {
             Particle *partPtr = part_list_head.next;
             for (; partPtr != NULL; partPtr = partPtr->next, buffPtr-=4)
-               setupAligned(partPtr, ambientColor, buffPtr);
+               setupAligned((PE_Particle*)partPtr, ambientColor, buffPtr);
          }
       }
       else
@@ -1582,14 +1582,14 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
          {
             SortParticle* partPtr = orderedVector.address();
             for (U32 i = 0; i < n_parts; i++, partPtr++, buffPtr+=4 )
-               setupAligned(partPtr->p, ambientColor, buffPtr);
+               setupAligned((PE_Particle*)partPtr->p, ambientColor, buffPtr);
          }
          // do unsorted-oriented particles
          else
          {
             Particle *partPtr = part_list_head.next;
             for (; partPtr != NULL; partPtr = partPtr->next, buffPtr+=4)
-               setupAligned(partPtr, ambientColor, buffPtr);
+               setupAligned((PE_Particle*)partPtr, ambientColor, buffPtr);
          }
       }
 	  PROFILE_END();
@@ -1616,13 +1616,13 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
         {
           SortParticle *partPtr = orderedVector.address();
           for( U32 i=0; i<n_parts; i++, partPtr++, buffPtr-=4 )
-             setupBillboard( partPtr->p, basePoints, camView, ambientColor, buffPtr );
+             setupBillboard( (PE_Particle*)partPtr->p, basePoints, camView, ambientColor, buffPtr );
         }
         // do unsorted-billboard particles
         else
         {
           for (Particle* partPtr = part_list_head.next; partPtr != NULL; partPtr = partPtr->next, buffPtr-=4)
-             setupBillboard( partPtr, basePoints, camView, ambientColor, buffPtr );
+             setupBillboard( (PE_Particle*)partPtr, basePoints, camView, ambientColor, buffPtr );
         }
       }
       else
@@ -1632,13 +1632,13 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
         {
           SortParticle *partPtr = orderedVector.address();
           for( U32 i=0; i<n_parts; i++, partPtr++, buffPtr+=4 )
-             setupBillboard( partPtr->p, basePoints, camView, ambientColor, buffPtr );
+             setupBillboard( (PE_Particle*)partPtr->p, basePoints, camView, ambientColor, buffPtr );
         }
         // do unsorted-billboard particles
         else
         {
           for (Particle* partPtr = part_list_head.next; partPtr != NULL; partPtr = partPtr->next, buffPtr+=4)
-             setupBillboard( partPtr, basePoints, camView, ambientColor, buffPtr );
+             setupBillboard( (PE_Particle*)partPtr, basePoints, camView, ambientColor, buffPtr );
         }
       }
 
@@ -1668,7 +1668,7 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
 //-----------------------------------------------------------------------------
 // Set up particle for billboard style render
 //-----------------------------------------------------------------------------
-void ParticleEmitter::setupBillboard( Particle *part,
+void ParticleEmitter::setupBillboard( PE_Particle *part,
                                       Point3F *basePts,
                                       const MatrixF &camView,
                                       const ColorF &ambientColor,
@@ -1753,7 +1753,7 @@ void ParticleEmitter::setupBillboard( Particle *part,
 //-----------------------------------------------------------------------------
 // Set up oriented particle
 //-----------------------------------------------------------------------------
-void ParticleEmitter::setupOriented( Particle *part,
+void ParticleEmitter::setupOriented( PE_Particle *part,
                                      const Point3F &camPos,
                                      const ColorF &ambientColor,
                                      ParticleVertexType *lVerts )
@@ -1844,7 +1844,7 @@ void ParticleEmitter::setupOriented( Particle *part,
    ++lVerts;
 }
 
-void ParticleEmitter::setupAligned( const Particle *part, 
+void ParticleEmitter::setupAligned( const PE_Particle *part, 
                                     const ColorF &ambientColor,
                                     ParticleVertexType *lVerts )
 {

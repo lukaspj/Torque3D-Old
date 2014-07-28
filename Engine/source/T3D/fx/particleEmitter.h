@@ -35,8 +35,8 @@
 #ifndef _GFXVERTEXBUFFER_H_
 #include "gfx/gfxVertexBuffer.h"
 #endif
-#ifndef _PARTICLE_H_
-#include "T3D/fx/particle.h"
+#ifndef _PE_PARTICLE_H_
+#include "pe_particle.h"
 #endif
 
 #if defined(TORQUE_OS_XENON)
@@ -200,18 +200,18 @@ class ParticleEmitter : public GameBase
    void addParticle(const Point3F &pos, const Point3F &axis, const Point3F &vel, const Point3F &axisx);
 
 
-   inline void setupBillboard( Particle *part,
+   inline void setupBillboard( PE_Particle *part,
                                Point3F *basePts,
                                const MatrixF &camView,
                                const ColorF &ambientColor,
                                ParticleVertexType *lVerts );
 
-   inline void setupOriented( Particle *part,
+   inline void setupOriented( PE_Particle *part,
                               const Point3F &camPos,
                               const ColorF &ambientColor,
                               ParticleVertexType *lVerts );
 
-   inline void setupAligned(  const Particle *part, 
+   inline void setupAligned(  const PE_Particle *part, 
                               const ColorF &ambientColor,
                               ParticleVertexType *lVerts );
 
@@ -235,14 +235,15 @@ class ParticleEmitter : public GameBase
   private:
 
    void update( U32 ms );
-   inline void updateKeyData( Particle *part );
+   inline void updateKeyData( PE_Particle *part );
  
-
-  private:
+   public:
 
    /// Constant used to calculate particle 
    /// rotation from spin and age.
    static const F32 AgedSpinToRadians;
+   
+  private:
 
    ParticleEmitterData* mDataBlock;
 
@@ -274,9 +275,9 @@ class ParticleEmitter : public GameBase
    //   chained in a link-list. Usually the first part_store block is large
    //   enough to contain all the particles but it can be expanded in emergency
    //   circumstances.
-   Vector <Particle*> part_store;
-   Particle*  part_freelist;
-   Particle   part_list_head;
+   Vector <PE_Particle*> part_store;
+   PE_Particle*  part_freelist;
+   PE_Particle   part_list_head;
    S32        n_part_capacity;
    S32        n_parts;
    S32       mCurBuffSize;
