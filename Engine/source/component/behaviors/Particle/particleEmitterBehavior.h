@@ -8,7 +8,8 @@
 #ifndef _BEHAVIORTEMPLATE_H_
 	#include "component/behaviors/behaviorTemplate.h"
 #endif
-#include "particle.h"
+#include "component/behaviors/Particle/particle.h"
+#include <component/behaviors/Particle/particleInterfaces.h>
 
 //////////////////////////////////////////////////////////////////////////
 /// 
@@ -34,9 +35,40 @@ public:
    virtual BehaviorInstance *createInstance();
 };
 
-class ParticleEmitterBehaviorInstance : public BehaviorInstance, public UpdateInterface
+class ParticleEmitterBehaviorInstance : public BehaviorInstance
 {
    typedef BehaviorInstance Parent;
+
+   class particleSimulationInterface : public ParticleSimulationInterface
+   {
+   public:
+      virtual ParticlePool getPool()
+      {
+			ParticleEmitterBehaviorInstance *bI = reinterpret_cast<ParticleEmitterBehaviorInstance*>(getOwner());
+			if(bI && bI->isEnabled())
+				return bI->getPool();
+         return ParticlePool();
+      };
+      virtual Point3F getLastPosition()
+      {
+			ParticleEmitterBehaviorInstance *bI = reinterpret_cast<ParticleEmitterBehaviorInstance*>(getOwner());
+			if(bI && bI->isEnabled())
+				return bI->getLastPosition();
+         return Point3F::One;
+      };
+   };
+
+   particleSimulationInterface mParticleSimulationInterface;
+
+   ParticlePool getPool()
+   {
+      return mParticlePool;
+   };
+
+   Point3F getLastPosition()
+   {
+      return mLastPosition;
+   };
 
 public:
    ParticleEmitterBehaviorInstance(BehaviorTemplate *btemplate = NULL);
@@ -49,6 +81,9 @@ public:
 
    virtual void onBehaviorAdd();
    virtual void onBehaviorRemove();
+
+   void registerInterfaces();
+   void unregisterInterfaces();
 
    virtual U32 packUpdate(NetConnection *con, U32 mask, BitStream *stream);
    virtual void unpackUpdate(NetConnection *con, BitStream *stream);
@@ -68,31 +103,24 @@ private:
    U32 mEjectionPeriodMS;
    U32 mPeriodVarianceMS;
    bool mOverrideAdvance;
-   static Point3F mWindVelocity;
    S32 mPartListInitSize;
    U32 mPartLifetimeMS;
    U32 mPartLifetimeVarianceMS;
+   F32 mSpinSpeed;
+   F32 mSpinRandomMin;
+   F32 mSpinRandomMax;
+   F32 mConstantAcceleration;
+   F32 mInheritedVelFactor;
 
    void updateBBox() {};
    void emitParticles(const Point3F& point,
                         const Point3F& axis,
                         const Point3F& velocity,
                         const U32      numMilliseconds);
-   void allocPrimBuffer(S32 n_part_capacity);
    void addParticle(Point3F const& pos, Point3F const& axis, Point3F const& vel, Point3F const& axisx);
    void simulate(U32 ms);
 
-   //   These members are for implementing a link-list of the active emitter 
-   //   particles. Member part_store contains blocks of particles that can be
-   //   chained in a link-list. Usually the first part_store block is large
-   //   enough to contain all the particles but it can be expanded in emergency
-   //   circumstances.
-   Vector <Particle*> part_store;
-   Particle*  part_freelist;
-   Particle   part_list_head;
-   S32        n_part_capacity;
-   S32        n_parts;
-   S32       mCurBuffSize;
+   ParticlePool mParticlePool;
 };
 
 #endif // _PARTICLE_EMITTER_BEHAVIOR_H_

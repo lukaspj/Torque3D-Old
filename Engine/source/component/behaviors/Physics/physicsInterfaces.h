@@ -9,16 +9,16 @@
 class VelocityInterface : public BehaviorInterface
 {
 public:
-	virtual VectorF getVelocity()=0;
+	virtual VectorF getVelocity() = 0;
 };
 
 class ParticlePhysicsInterface : public BehaviorInterface
 {
 public:
 
-   Point3F getDragCoefficient();
-   F32 getWindCoefficient();
-   Point3F getGravityCoefficient();
+   virtual Point3F getDragCoefficient() = 0;
+   virtual F32 getWindCoefficient() = 0;
+   virtual Point3F getGravityCoefficient() = 0;
 };
 
 #endif

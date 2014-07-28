@@ -10,9 +10,9 @@
 #include "core/stream/bitStream.h"
 #include "console/engineAPI.h"
 #include "sim/netConnection.h"
-#include <T3D/fx/particle.h>
 #include <T3D/gameBase/gameProcess.h>
 #include <component/behaviors/Physics/physicsInterfaces.h>
+#include <T3D/fx/particleEmitter.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
@@ -21,6 +21,15 @@
 ParticleEmitterBehavior::ParticleEmitterBehavior()
 {
 	mNetFlags.set(Ghostable | ScopeAlways);
+   
+	mFriendlyName = "Particle Emission";
+   mBehaviorType = "Particle";
+
+	mDescription = getDescriptionText("Causes the object to emit particles.");
+
+	mNetworked = true;
+
+   setScopeAlways();
 }
 
 ParticleEmitterBehavior::~ParticleEmitterBehavior()
@@ -80,10 +89,40 @@ void ParticleEmitterBehavior::unpackUpdate(NetConnection *con, BitStream *stream
 
 //==========================================================================================
 //==========================================================================================
+
+static const F32 sgDefaultConstantAcceleration = 0.f;
+static const F32 sgDefaultSpinSpeed = 1.f;
+static const F32 sgDefaultSpinRandomMin = 0.f;
+static const F32 sgDefaultSpinRandomMax = 0.f;
+
 ParticleEmitterBehaviorInstance::ParticleEmitterBehaviorInstance( BehaviorTemplate *btemplate ) 
 {
    mTemplate = btemplate;
    mBehaviorOwner = NULL;
+   
+   mDead = false;
+
+   mLifetimeMS = 0;
+   mElapsedTimeMS = 0;
+   mNextParticleTime = 0;
+   mInternalClock = 0;
+   mLastPosition.set(0, 0, 0);
+   mHasLastPosition = false;
+   mEjectionPeriodMS = 100;
+   mPeriodVarianceMS = 0;
+   mOverrideAdvance = false;
+   mPartLifetimeMS = 1000;
+   mPartLifetimeVarianceMS = 0;
+   mInheritedVelFactor   = 0.0f;
+   mConstantAcceleration = sgDefaultConstantAcceleration;
+   mSpinSpeed            = sgDefaultSpinSpeed;
+   mSpinRandomMin        = sgDefaultSpinRandomMin;
+   mSpinRandomMax        = sgDefaultSpinRandomMax;
+
+   // Max lifetime divided by minimum time between each emitted particle.
+   U32 partListInitSize = (mPartLifetimeMS + mPartLifetimeVarianceMS) / (mEjectionPeriodMS - mPeriodVarianceMS);
+   partListInitSize += 8; // add 8 as "fudge factor" to make sure it doesn't realloc if it goes over by 1
+   mParticlePool = ParticlePool(partListInitSize);
 
    mNetFlags.set(Ghostable);
 }
@@ -115,6 +154,18 @@ void ParticleEmitterBehaviorInstance::onBehaviorAdd()
 void ParticleEmitterBehaviorInstance::onBehaviorRemove()
 {
    Parent::onBehaviorRemove();
+}
+
+void ParticleEmitterBehaviorInstance::registerInterfaces()
+{
+   Parent::registerInterfaces();
+	mBehaviorOwner->registerCachedInterface( "particle", "simulation", this, &mParticleSimulationInterface );
+}
+
+void ParticleEmitterBehaviorInstance::unregisterInterfaces()
+{
+   Parent::unregisterInterfaces();
+	mBehaviorOwner->removeCachedInterface( "particle", "simulation", this );
 }
 
 void ParticleEmitterBehaviorInstance::initPersistFields()
@@ -159,26 +210,20 @@ void ParticleEmitterBehaviorInstance::advanceTime(F32 dt)
 
    // TODO: Prefetch
 
-   // remove dead particles
-   Particle* last_part = &part_list_head;
-   for (Particle* part = part_list_head.next; part != NULL; part = part->next)
-   {
-     part->currentAge += numMSToUpdate;
-     if (part->currentAge > part->totalLifetime)
-     {
-       n_parts--;
-       last_part->next = part->next;
-       part->next = part_freelist;
-       part_freelist = part;
-       part = last_part;
-     }
-     else
-     {
-       last_part = part;
-     }
-   }
+   mParticlePool.AdvanceTime(numMSToUpdate);
 
-   AssertFatal( n_parts >= 0, "ParticleEmitter: negative part count!" );
+//   if(!mActive)
+//      return;
+
+   Point3F emitPoint, emitVelocity;
+   Point3F emitAxis(0, 0, 1);
+   getBehaviorOwner()->getTransform().mulV(emitAxis);
+   getBehaviorOwner()->getTransform().getColumn(3, &emitPoint);
+   emitVelocity = emitAxis * getBehaviorOwner()->getVelocity();
+
+   emitParticles(emitPoint,
+                  emitAxis,
+                  emitVelocity, (U32)(dt * 1000.0f));
 
    /*if (n_parts < 1 && mDeleteWhenEmpty)
    {
@@ -186,7 +231,7 @@ void ParticleEmitterBehaviorInstance::advanceTime(F32 dt)
       return;
    }*/
 
-   if( numMSToUpdate != 0 && n_parts > 0 )
+   if( numMSToUpdate != 0 && mParticlePool.getCount() > 0 )
    {
       simulate( numMSToUpdate );
    }
@@ -282,13 +327,10 @@ void ParticleEmitterBehaviorInstance::emitParticles(const Point3F& point,
       U32 advanceMS = numMilliseconds - currTime;
       if (mOverrideAdvance == false && advanceMS != 0) 
       {
-         Particle* last_part = part_list_head.next;
+         Particle* last_part = mParticlePool.GetParticleHead()->next;
          if (advanceMS > last_part->totalLifetime) 
          {
-           part_list_head.next = last_part->next;
-           n_parts--;
-           last_part->next = part_freelist;
-           part_freelist = last_part;
+            mParticlePool.RemoveParticle(mParticlePool.GetParticleHead());
          } 
          else 
          {
@@ -300,7 +342,9 @@ void ParticleEmitterBehaviorInstance::emitParticles(const Point3F& point,
                  F32 t = F32(advanceMS) / 1000.0;
                  Point3F a = last_part->acc;
                  a -= last_part->vel * physics->getDragCoefficient();
-                 a -= mWindVelocity * physics->getWindCoefficient();
+                 // For some reason the WindManager sets the wind velocity here...
+                 //  - Precipitation also gets the wind velocity this way.
+                 a -= ParticleEmitter::mWindVelocity * physics->getWindCoefficient();
                  a += Point3F(0.0f, 0.0f, -9.81f) * physics->getGravityCoefficient();
 
                  last_part->vel += a * t;
@@ -327,25 +371,10 @@ void ParticleEmitterBehaviorInstance::addParticle(const Point3F& pos,
                                                     const Point3F& vel,
                                                     const Point3F& axisx)
 {
-   n_parts++;
-   if (n_parts > n_part_capacity || n_parts > mPartListInitSize)
-   {
-      // In an emergency we allocate additional particles in blocks of 16.
-      // This should happen rarely.
-      Particle* store_block = new Particle[16];
-      part_store.push_back(store_block);
-      n_part_capacity += 16;
-      for (S32 i = 0; i < 16; i++)
-      {
-        store_block[i].next = part_freelist;
-        part_freelist = &store_block[i];
-      }
-      allocPrimBuffer(n_part_capacity); // allocate larger primitive buffer or will crash 
-   }
-   Particle* pNew = part_freelist;
-   part_freelist = pNew->next;
-   pNew->next = part_list_head.next;
-   part_list_head.next = pNew;
+   Particle* pNew;
+   mParticlePool.AddParticle(pNew);
+   //if(mParticlePool.AddParticle(pNew))
+      //allocPrimBuffer(mParticlePool.getCapacity()); // allocate larger primitive buffer or will crash 
 
    pNew->pos = pos;
    pNew->vel = Point3F(0,0,0);
@@ -353,17 +382,23 @@ void ParticleEmitterBehaviorInstance::addParticle(const Point3F& pos,
    pNew->acc.set(0, 0, 0);
    pNew->currentAge = 0;
 
+   // Calculate the constant accleration...
+   pNew->vel += vel * mInheritedVelFactor;
+   pNew->acc  = pNew->vel * mConstantAcceleration;
+
    // Calculate this instance's lifetime...
    pNew->totalLifetime = mPartLifetimeMS;
    if (mPartLifetimeVarianceMS != 0)
       pNew->totalLifetime += S32(gRandGen.randI() % (2 * mPartLifetimeVarianceMS + 1)) - S32(mPartLifetimeVarianceMS);
+   // assign spin amount
+   pNew->spinSpeed = mSpinSpeed * gRandGen.randF( mSpinRandomMin, mSpinRandomMax );
 }
 
 void ParticleEmitterBehaviorInstance::simulate(U32 ms)
 {
    // TODO: Prefetch
 
-   for (Particle* part = part_list_head.next; part != NULL; part = part->next)
+   for (Particle* part = mParticlePool.GetParticleHead()->next; part != NULL; part = part->next)
    {
       F32 t = F32(ms) / 1000.0;
 
