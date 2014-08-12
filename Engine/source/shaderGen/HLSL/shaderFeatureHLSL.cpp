@@ -2425,7 +2425,7 @@ void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList,
          color1->setName( getOutputTargetVarName(OutputTarget::RenderTarget1) );
          color1->setStructName( "OUT" );
       }
-      meta->addStatement( new GenOp( "   @.rgb *= @.a;\r\n", color0, color0 ) );
+      //meta->addStatement( new GenOp( "   @.rgb *= @.a;\r\n", color0, color0 ) );
       
       Var *weight = new Var;
       weight->setType( "float" );
@@ -2433,12 +2433,16 @@ void OITFeatureHLSL::processPix(   Vector<ShaderComponent*> &componentList,
       // Insert your favorite weighting function here. The color-based factor
       // avoids color pollution from the edges of wispy clouds. The z-based
       // factor gives precedence to nearer surfaces.
-      meta->addStatement( new GenOp( "   @ = pow(min(1.0, max(max(@.r, @.g), max(@.b, @.a)) * 40.0 + 0.01),2) *"
-            "clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);\r\n", new DecOp(weight), color0, color0, color0, color0, depthOut ) );
+      meta->addStatement( new GenOp( "   @ = @.a *"
+         "clamp(0.03 / (1e-5 + pow(@ / 200, 5.0)), 1e-2, 3e3);\r\n", new DecOp(weight), color0, depthOut ) );
+
+      //meta->addStatement( new GenOp( "   @ = max(min(1.0, max(max(@.r, @.g), @.b) * @.a), @.a) *"
+      //   "clamp(0.03 / (1e-5 + pow(@ / 200, 4.0)), 1e-2, 3e3);\r\n", new DecOp(weight), color0, color0, color0, color0, color0, depthOut ) );
       
       meta->addStatement( new GenOp( "   @ = @.a - @.a;\r\n", color1, color0, alphaTexCol ) );
 
-      meta->addStatement( new GenOp( "   @ *= @;\r\n", color0, weight ) );
+      meta->addStatement( new GenOp( "   @ = @ * @;\r\n", color0, color0, weight ) );
+      //meta->addStatement( new GenOp( "   @ = float4(@.rgb * @.a, @.a) * @;\r\n", color0, color0, color0, color0, weight ) );
    }
 }
 
