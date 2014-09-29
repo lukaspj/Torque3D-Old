@@ -150,10 +150,10 @@ void ParticleSystemData::initPersistFields()
 
    addGroup("Level of detail");
 
-   addField("SimulationLODBegin", TypeS32, Offset(mSimulationLODBegin, ParticleSystemData),
+   addField("SimulationLODBegin", TypeF32, Offset(mSimulationLODBegin, ParticleSystemData),
       "@brief How far the node must be from the camera before the emitter begins reducing the amount of update ticks per second it runs. ");
 
-   addField("SimulationLODEnd", TypeS32, Offset(mSimulationLODEnd, ParticleSystemData),
+   addField("SimulationLODEnd", TypeF32, Offset(mSimulationLODEnd, ParticleSystemData),
       "@brief How far the node must be from the camera before the emitter stops updating the particles. ");
 
    endGroup("Level of detail");
