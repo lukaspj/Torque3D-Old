@@ -109,8 +109,8 @@ void GFXGLTextureManager::innerCreateTexture( GFXGLTextureObject *retTex,
    glBindTexture(retTex->getBinding(), retTex->getHandle());
    
    // Create it
-   // TODO: Reenable mipmaps on render targets when Apple fixes their drivers
-   if(forceMips && !retTex->mIsNPoT2)
+   // @todo OPENGL - Creating mipmaps for compressed formats. Not supported on OpenGL ES and bugged on AMD. We use mipmaps present on file.
+   if( forceMips && !retTex->mIsNPoT2 && !isCompressedFormat(format) )
    {
       retTex->mMipLevels = numMipLevels > 1 ? numMipLevels : 0;
    }
