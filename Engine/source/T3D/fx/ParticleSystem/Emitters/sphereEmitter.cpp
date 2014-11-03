@@ -36,10 +36,6 @@ SphereEmitterData::SphereEmitterData()
    mThetaMin = 90.0f;
    mPhiReferenceVel = sgDefaultPhiReferenceVel; // All directions
    mPhiVariance = sgDefaultPhiVariance;
-   mEjectionVelocity = 2.0f;
-   mVelocityVariance = 1.0f;
-   mEjectionOffset = sgDefaultEjectionOffset;
-   mEjectionOffsetVariance = 0.0f;
 }
 
 ParticleEmitter* SphereEmitterData::CreateEmitter(ParticleSystem* system)
@@ -65,18 +61,6 @@ void SphereEmitterData::initPersistFields()
    addField("PhiVariance", TypeF32, Offset(mPhiVariance, SphereEmitterData),
       "Variance from the reference angle, from 0 - 360.");
 
-   addField("EjectionVelocity", TypeF32, Offset(mEjectionVelocity, SphereEmitterData),
-      "Particle ejection velocity.");
-
-   addField("VelocityVariance", TypeF32, Offset(mVelocityVariance, SphereEmitterData),
-      "Variance for ejection velocity, from 0 - ejectionVelocity.");
-
-   addField("EjectionOffset", TypeF32, Offset(mEjectionOffset, SphereEmitterData),
-      "Distance along ejection Z axis from which to eject particles.");
-
-   addField("EjectionOffsetVariance", TypeF32, Offset(mEjectionOffsetVariance, SphereEmitterData),
-      "Distance Padding along ejection Z axis from which to eject particles.");
-
    endGroup("SphereEmitterData");
 
    Parent::initPersistFields();
@@ -86,12 +70,6 @@ void SphereEmitterData::packData(BitStream* stream)
 {
    Parent::packData(stream);
 
-   stream->writeInt((S32)(mEjectionVelocity * 100), 16);
-   stream->writeInt((S32)(mVelocityVariance * 100), 14);
-   if (stream->writeFlag(mEjectionOffset != sgDefaultEjectionOffset))
-      stream->writeInt((S32)(mEjectionOffset * 100), 16);
-   if (stream->writeFlag(mEjectionOffsetVariance != 0.0f))
-      stream->writeInt((S32)(mEjectionOffsetVariance * 100), 16);
    stream->writeRangedU32((U32)mThetaMin, 0, 180);
    stream->writeRangedU32((U32)mThetaMax, 0, 180);
    if (stream->writeFlag(mPhiReferenceVel != sgDefaultPhiReferenceVel))
@@ -104,16 +82,6 @@ void SphereEmitterData::unpackData(BitStream* stream)
 {
    Parent::unpackData(stream);
 
-   mEjectionVelocity = stream->readInt(16) / 100.0f;
-   mVelocityVariance = stream->readInt(14) / 100.0f;
-   if (stream->readFlag())
-      mEjectionOffset = stream->readInt(16) / 100.0f;
-   else
-      mEjectionOffset = sgDefaultEjectionOffset;
-   if (stream->readFlag())
-      mEjectionOffsetVariance = stream->readInt(16) / 100.0f;
-   else
-      mEjectionOffsetVariance = 0.0f;
    mThetaMin = (F32)stream->readRangedU32(0, 180);
    mThetaMax = (F32)stream->readRangedU32(0, 180);
    if (stream->readFlag())

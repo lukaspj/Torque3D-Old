@@ -46,14 +46,37 @@ class ParticleEmitterData : public GameBaseData
    typedef GameBaseData Parent;
 
 public:
-   ParticleEmitterData()
-   {
-   }
+   ParticleEmitterData();
 
    /// Creates an instance of the ParticleEmitter class associated with
    /// this datablock.
    /// @returns The new ParticleEmitter
    virtual ParticleEmitter* CreateEmitter(ParticleSystem* system) = 0;
+
+   // Script interface
+   static void  initPersistFields();
+
+   // Networking
+   void packData(BitStream* stream);
+   void unpackData(BitStream* stream);
+
+   /// @name Getters and setters
+   /// @{
+   F32 getEjectionVelocity() { return mEjectionVelocity; };
+   F32 getVelocityVariance() { return mVelocityVariance; };
+   F32 getEjectionOffset() { return mEjectionOffset; };
+   F32 getEjectionOffsetVariance() { return mEjectionOffsetVariance; };
+   /// @}
+
+private:
+   /// @name Emission Fields
+   /// @{
+   F32 mEjectionVelocity; //!< Particle ejection velocity.
+   F32 mVelocityVariance; //!< Variance for ejection velocity, from 0 - ejectionVelocity.
+   F32 mEjectionOffset; //!< Distance along ejection Z axis from which to eject particles.
+   // TODO: Implement OffsetVariance
+   F32 mEjectionOffsetVariance; //!< Distance Padding along ejection Z axis from which to eject particles.
+   /// @}
 
    DECLARE_ABSTRACT_CLASS(ParticleEmitterData, GameBaseData);
 };

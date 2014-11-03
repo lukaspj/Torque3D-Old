@@ -54,29 +54,12 @@ public:
    virtual void packData(BitStream* stream);
    virtual void unpackData(BitStream* stream);
 
-   /// @name Getters and setters
-   /// @{
-   F32 getEjectionVelocity() { return mEjectionVelocity; };
-   F32 getVelocityVariance() { return mVelocityVariance; };
-   F32 getEjectionOffset() { return mEjectionOffset; };
-   F32 getEjectionOffsetVariance() { return mEjectionOffsetVariance; };
-   /// @}
-
 public:
    /// @name Mesh Fields
    /// @{
    StringTableEntry		mEmitMesh;				///< Id of the object that has a mesh that we want to emit particles on
    bool					mEvenEmission;			///< Even the emission
    bool					mEmitOnFaces;			///< If true, emits particles on faces rather than vertices
-   /// @}
-
-   /// @name Emission Fields
-   /// @{
-   F32 mEjectionVelocity; //!< Particle ejection velocity.
-   F32 mVelocityVariance; //!< Variance for ejection velocity, from 0 - ejectionVelocity.
-   F32 mEjectionOffset; //!< Distance along ejection Z axis from which to eject particles.
-   // TODO: Implement OffsetVariance
-   F32 mEjectionOffsetVariance; //!< Distance Padding along ejection Z axis from which to eject particles.
    /// @}
 
    DECLARE_CONOBJECT(MeshEmitterData);

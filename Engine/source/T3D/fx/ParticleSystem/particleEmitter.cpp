@@ -21,7 +21,70 @@
 //-----------------------------------------------------------------------------
 
 #include "particleEmitter.h"
+#include "console/consoleTypes.h"
+#include "core/stream/bitStream.h"
 
 IMPLEMENT_NONINSTANTIABLE_CLASS(ParticleEmitterData,
    "")
    END_IMPLEMENT_CLASS;
+
+static const float sgDefaultEjectionOffset = 0.f;
+static const float sgDefaultPhiReferenceVel = 0.f;
+static const float sgDefaultPhiVariance = 360.f;
+
+ParticleEmitterData::ParticleEmitterData()
+{
+   mEjectionVelocity = 2.0f;
+   mVelocityVariance = 1.0f;
+   mEjectionOffset = sgDefaultEjectionOffset;
+   mEjectionOffsetVariance = 0.0f;
+}
+
+void ParticleEmitterData::initPersistFields()
+{
+   addGroup("ParticleEmitterData");
+
+   addField("EjectionVelocity", TypeF32, Offset(mEjectionVelocity, ParticleEmitterData),
+      "Particle ejection velocity.");
+
+   addField("VelocityVariance", TypeF32, Offset(mVelocityVariance, ParticleEmitterData),
+      "Variance for ejection velocity, from 0 - ejectionVelocity.");
+
+   addField("EjectionOffset", TypeF32, Offset(mEjectionOffset, ParticleEmitterData),
+      "Distance along ejection Z axis from which to eject particles.");
+
+   addField("EjectionOffsetVariance", TypeF32, Offset(mEjectionOffsetVariance, ParticleEmitterData),
+      "Distance Padding along ejection Z axis from which to eject particles.");
+
+   endGroup("ParticleEmitterData");
+
+   Parent::initPersistFields();
+}
+
+void ParticleEmitterData::packData(BitStream* stream)
+{
+   Parent::packData(stream);
+
+   stream->writeInt((S32)(mEjectionVelocity * 100), 16);
+   stream->writeInt((S32)(mVelocityVariance * 100), 14);
+   if (stream->writeFlag(mEjectionOffset != sgDefaultEjectionOffset))
+      stream->writeInt((S32)(mEjectionOffset * 100), 16);
+   if (stream->writeFlag(mEjectionOffsetVariance != 0.0f))
+      stream->writeInt((S32)(mEjectionOffsetVariance * 100), 16);
+}
+
+void ParticleEmitterData::unpackData(BitStream* stream)
+{
+   Parent::unpackData(stream);
+
+   mEjectionVelocity = stream->readInt(16) / 100.0f;
+   mVelocityVariance = stream->readInt(14) / 100.0f;
+   if (stream->readFlag())
+      mEjectionOffset = stream->readInt(16) / 100.0f;
+   else
+      mEjectionOffset = sgDefaultEjectionOffset;
+   if (stream->readFlag())
+      mEjectionOffsetVariance = stream->readInt(16) / 100.0f;
+   else
+      mEjectionOffsetVariance = 0.0f;
+}

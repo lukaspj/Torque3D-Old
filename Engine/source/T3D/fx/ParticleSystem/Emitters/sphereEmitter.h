@@ -55,10 +55,6 @@ public:
    F32 getThetaMin() { return mThetaMin; };
    F32 getPhiReferenceVel() { return mPhiReferenceVel; };
    F32 getPhiVariance() { return mPhiVariance; };
-   F32 getEjectionVelocity() { return mEjectionVelocity; };
-   F32 getVelocityVariance() { return mVelocityVariance; };
-   F32 getEjectionOffset() { return mEjectionOffset; };
-   F32 getEjectionOffsetVariance() { return mEjectionOffsetVariance; };
 
 private:
    // Fields
@@ -66,10 +62,6 @@ private:
    F32 mThetaMin; //!< Minimum angle, from the horizontal plane, to eject from.
    F32 mPhiReferenceVel; //!< Reference angle, from the vertical plane, to eject particles from.
    F32 mPhiVariance; //!< Variance from the reference angle, from 0 - 360.
-   F32 mEjectionVelocity; //!< Particle ejection velocity.
-   F32 mVelocityVariance; //!< Variance for ejection velocity, from 0 - ejectionVelocity.
-   F32 mEjectionOffset; //!< Distance along ejection Z axis from which to eject particles.
-   F32 mEjectionOffsetVariance; //!< Distance Padding along ejection Z axis from which to eject particles.
 
    DECLARE_CONOBJECT(SphereEmitterData);
 };

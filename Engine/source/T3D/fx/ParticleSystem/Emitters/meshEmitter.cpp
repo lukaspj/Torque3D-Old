@@ -34,10 +34,6 @@ static const float sgDefaultEjectionOffset = 0.f;
 MeshEmitterData::MeshEmitterData()
 {
    mEmitMesh = NULL;
-   mEjectionVelocity = 2.0f;
-   mVelocityVariance = 1.0f;
-   mEjectionOffset = sgDefaultEjectionOffset;
-   mEjectionOffsetVariance = 0.0f;
 }
 
 ParticleEmitter* MeshEmitterData::CreateEmitter(ParticleSystem* system)
@@ -61,18 +57,6 @@ void MeshEmitterData::initPersistFields()
       "If true, particles will be emitted along the faces of the mesh. "
       "If false, particles will be emitted along the vertices of mesh. ");
 
-   addField("EjectionVelocity", TypeF32, Offset(mEjectionVelocity, MeshEmitterData),
-      "Particle ejection velocity.");
-
-   addField("VelocityVariance", TypeF32, Offset(mVelocityVariance, MeshEmitterData),
-      "Variance for ejection velocity, from 0 - ejectionVelocity.");
-
-   addField("EjectionOffset", TypeF32, Offset(mEjectionOffset, MeshEmitterData),
-      "Distance along ejection Z axis from which to eject particles.");
-
-   addField("EjectionOffsetVariance", TypeF32, Offset(mEjectionOffsetVariance, MeshEmitterData),
-      "Distance Padding along ejection Z axis from which to eject particles.");
-
    Parent::initPersistFields();
 }
 
@@ -83,13 +67,6 @@ void MeshEmitterData::packData(BitStream* stream)
    stream->writeString(mEmitMesh);
    stream->writeFlag(mEvenEmission);
    stream->writeFlag(mEmitOnFaces);
-
-   stream->writeInt((S32)(mEjectionVelocity * 100), 16);
-   stream->writeInt((S32)(mVelocityVariance * 100), 14);
-   if (stream->writeFlag(mEjectionOffset != sgDefaultEjectionOffset))
-      stream->writeInt((S32)(mEjectionOffset * 100), 16);
-   if (stream->writeFlag(mEjectionOffsetVariance != 0.0f))
-      stream->writeInt((S32)(mEjectionOffsetVariance * 100), 16);
 }
 
 void MeshEmitterData::unpackData(BitStream* stream)
@@ -102,17 +79,6 @@ void MeshEmitterData::unpackData(BitStream* stream)
 
    mEvenEmission = stream->readFlag();
    mEmitOnFaces = stream->readFlag();
-
-   mEjectionVelocity = stream->readInt(16) / 100.0f;
-   mVelocityVariance = stream->readInt(14) / 100.0f;
-   if (stream->readFlag())
-      mEjectionOffset = stream->readInt(16) / 100.0f;
-   else
-      mEjectionOffset = sgDefaultEjectionOffset;
-   if (stream->readFlag())
-      mEjectionOffsetVariance = stream->readInt(16) / 100.0f;
-   else
-      mEjectionOffsetVariance = 0.0f;
 }
 
 MeshEmitter::MeshEmitter(ParticleSystem* system) : ParticleEmitter(system)
@@ -266,7 +232,7 @@ bool MeshEmitter::getPointOnVertex(SimObject *SB, psMeshInterface *psMesh, Parti
       psMesh->transformVertex(vertPos);
 
       // Set the relative position for later use.
-      pNew->relPos = vertPos + (vertNorm * DataBlock->mEjectionOffset);
+      pNew->relPos = vertPos + (vertNorm * DataBlock->getEjectionOffset());
 
       pNew->pos = psMesh->getShapePosition() + pNew->relPos;
       // Velocity is based on the normal of the vertex
@@ -284,8 +250,8 @@ bool MeshEmitter::getPointOnFace(SimObject *SB, psMeshInterface *psMesh, Particl
    PROFILE_SCOPE(meshEmitFace);
    MeshEmitterData* DataBlock = getDataBlock();
 
-   F32 initialVel = DataBlock->mEjectionVelocity;
-   initialVel += (DataBlock->mVelocityVariance * 2.0f * gRandGen.randF()) - DataBlock->mVelocityVariance;
+   F32 initialVel = DataBlock->getEjectionVelocity();
+   initialVel += (DataBlock->getVelocityVariance() * 2.0f * gRandGen.randF()) - DataBlock->getVelocityVariance();
    // Set our count value to mainTime.
    U32 co = mainTime;
    // If evenEmission is on, set the co to a random number for the per vertex emission.
@@ -418,7 +384,7 @@ bool MeshEmitter::getPointOnFace(SimObject *SB, psMeshInterface *psMesh, Particl
       // Rotate our point by the rotation matrix
       psMesh->transformVertex(vertPos);
 
-      pNew->relPos = vertPos + (normalV * DataBlock->mEjectionOffset);
+      pNew->relPos = vertPos + (normalV * DataBlock->getEjectionOffset());
       pNew->pos = psMesh->getShapePosition() + pNew->relPos;
 
       pNew->vel = normalV * initialVel;
