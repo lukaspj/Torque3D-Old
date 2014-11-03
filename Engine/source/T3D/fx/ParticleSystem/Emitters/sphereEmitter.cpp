@@ -26,7 +26,6 @@
 
 IMPLEMENT_CO_DATABLOCK_V1(SphereEmitterData);
 
-static const float sgDefaultEjectionOffset = 0.f;
 static const float sgDefaultPhiReferenceVel = 0.f;
 static const float sgDefaultPhiVariance = 360.f;
 

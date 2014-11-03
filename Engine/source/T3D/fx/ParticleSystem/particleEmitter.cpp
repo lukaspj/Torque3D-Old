@@ -29,8 +29,6 @@ IMPLEMENT_NONINSTANTIABLE_CLASS(ParticleEmitterData,
    END_IMPLEMENT_CLASS;
 
 static const float sgDefaultEjectionOffset = 0.f;
-static const float sgDefaultPhiReferenceVel = 0.f;
-static const float sgDefaultPhiVariance = 360.f;
 
 ParticleEmitterData::ParticleEmitterData()
 {
