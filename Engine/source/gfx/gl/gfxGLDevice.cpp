@@ -84,7 +84,7 @@ void loadGLExtensions(void *context)
 void STDCALL glDebugCallback(GLenum source, GLenum type, GLuint id,
    GLenum severity, GLsizei length, const GLchar* message, void* userParam)
 {
-#if defined(TORQUE_DEBUG) && defined(TORQUE_DEBUG_GFX)
+#if defined(TORQUE_DEBUG) && !defined(TORQUE_DEBUG_GFX)
 	if( type == GL_DEBUG_TYPE_OTHER_ARB ) 
 		return;
 #endif
