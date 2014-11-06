@@ -123,6 +123,8 @@ void GFXGLTextureManager::innerCreateTexture( GFXGLTextureObject *retTex,
       retTex->mMipLevels = numMipLevels;
    }
 
+   // @todo OPENGL - OpenGL ES2 not support mipmaps on NPOT textures
+#if 0
    if(!retTex->mIsNPoT2)
    {
       if(!isPow2(width))
@@ -132,6 +134,7 @@ void GFXGLTextureManager::innerCreateTexture( GFXGLTextureObject *retTex,
       if(depth && !isPow2(depth))
          depth = getNextPow2(depth);
    }
+#endif
    
    AssertFatal(GFXGLTextureInternalFormat[format] != GL_ZERO, "GFXGLTextureManager::innerCreateTexture - invalid internal format");
    AssertFatal(GFXGLTextureFormat[format] != GL_ZERO, "GFXGLTextureManager::innerCreateTexture - invalid format");
