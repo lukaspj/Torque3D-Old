@@ -27,8 +27,8 @@
 #include "T3D/gameBase/gameBase.h"
 #endif
 
-class ParticleSystemData;
-class ParticleSystem;
+class IParticleSystemData;
+class IParticleSystem;
 
 //-----------------------------------------------
 //! The datablock class for ParticleSystem's.
@@ -81,19 +81,19 @@ protected:
    bool onNewDataBlock(GameBaseData *dptr, bool reload);
    void inspectPostApply();
 
-   ParticleSystemData*  mSystemDatablock;
+   IParticleSystemData*  mSystemDatablock;
    S32                  mSystemDatablockId;
 
    bool                 mActive; //!< If true, this node is currently emitting particles.
 
-   SimObjectPtr<ParticleSystem> mSystem; //!< The ParticleSystem.
+   SimObjectPtr<IParticleSystem> mSystem; //!< The ParticleSystem.
    F32                  mVelocity; //!< The velocity to use when emitting particles.
 
 public:
    ParticleSystemNode();
    ~ParticleSystemNode();
 
-   ParticleSystem *getParticleSystem() { return mSystem; }
+   IParticleSystem *getParticleSystem() { return mSystem; }
 
    // Time/Move Management
 public:
@@ -109,7 +109,7 @@ public:
    inline bool getActive(void)        { return mActive; };
    inline void setActive(bool active) { mActive = active; setMaskBits(StateMask); };
 
-   void setSystemDataBlock(ParticleSystemData* data);
+   void setSystemDataBlock(IParticleSystemData* data);
 };
 
 #endif // _PARTICLESYSTEMDUMMY_H_

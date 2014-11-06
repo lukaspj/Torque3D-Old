@@ -279,19 +279,19 @@ public:
    ///  spatial distribution.
    /// @{
 
-   void emitParticles(const Point3F& start,
+   virtual void emitParticles(const Point3F& start,
       const Point3F& end,
       const Point3F& axis,
       const Point3F& velocity,
       const U32      numMilliseconds);
 
-   void emitParticles(const Point3F& point,
+   virtual void emitParticles(const Point3F& point,
       const bool     useLastPosition,
       const Point3F& axis,
       const Point3F& velocity,
       const U32      numMilliseconds);
 
-   void emitParticles(const Point3F& rCenter,
+   virtual void emitParticles(const Point3F& rCenter,
       const Point3F& rNormal,
       const F32      radius,
       const Point3F& velocity,
@@ -314,7 +314,7 @@ public:
    /// Deletes the ParticleSystem when all particles are dead.
    /// Stops emitting particles, and deletes the particle system
    /// when all the particles are dead.
-   void deleteWhenEmpty();
+   virtual void deleteWhenEmpty();
 
    /// @name Getters and setters
    /// @{

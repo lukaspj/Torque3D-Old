@@ -362,7 +362,7 @@ void ParticleSystemNode::unpackUpdate(NetConnection* con, BitStream* stream)
    }
 }
 
-void ParticleSystemNode::setSystemDataBlock(ParticleSystemData* data)
+void ParticleSystemNode::setSystemDataBlock(IParticleSystemData* data)
 {
    if (isServerObject())
    {
@@ -370,11 +370,11 @@ void ParticleSystemNode::setSystemDataBlock(ParticleSystemData* data)
    }
    else
    {
-      ParticleSystem* pSystem = NULL;
+      IParticleSystem* pSystem = NULL;
       if (data)
       {
          // Create System with new datablock
-         pSystem = new ParticleSystem;
+         pSystem = data->createParticleSystem();
          pSystem->onNewDataBlock(data, false);
          if (pSystem->registerObject() == false)
          {

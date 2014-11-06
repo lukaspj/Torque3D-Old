@@ -862,7 +862,7 @@ void ParticleSystem::deleteWhenEmpty()
    if (okToDelete)
    {
       mDeleteWhenEmpty = true;
-      if (!mParticlePool->getCount())
+      if (!mParticlePool || !mParticlePool->getCount())
       {
          // We're already empty, so delete us now.
 
@@ -887,8 +887,8 @@ bool ParticleSystem::onNewDataBlock(GameBaseData* dptr, bool reload)
    {
       mEmitter = mDataBlock->mEmitterData->CreateEmitter(this);
       // Max lifetime divided by minimum time between each emitted particle.
-      U32 partListInitSize = (mDataBlock->mPartLifetimeMS + mDataBlock->mPartLifetimeVarianceMS)
-         * (1000 / (mDataBlock->mParticlesPerSecond + mDataBlock->mParticlesPerSecondVariance));
+      U32 partListInitSize = ((mDataBlock->mParticlesPerSecond + mDataBlock->mParticlesPerSecondVariance) * 1000)
+         / (mDataBlock->mPartLifetimeMS + mDataBlock->mPartLifetimeVarianceMS);
       partListInitSize += 8; // add 8 as "fudge factor" to make sure it doesn't realloc if it goes over by 1
       mParticlePool = new ParticlePool(partListInitSize);
       mRenderer = mDataBlock->mRendererData->CreateRenderer(this);
