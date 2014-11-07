@@ -92,7 +92,7 @@ ConsoleDocClass( RigidShapeData,
    "@see RigidShape\n"
    "@see ShapeBase\n\n"
 
-   "@ingroup Platform\n"
+   "@ingroup Physics\n"
 );
 
 
@@ -149,7 +149,7 @@ ConsoleDocClass( RigidShape,
    "@see RigidShapeData\n"
    "@see ShapeBase\n\n"
    
-   "@ingroup Platform\n"
+   "@ingroup Physics\n"
 );
 
 
@@ -1141,11 +1141,11 @@ void RigidShape::updatePos(F32 dt)
 
 void RigidShape::updateForces(F32 /*dt*/)
 {
+   if (mDisableMove) return;
    Point3F gravForce(0, 0, sRigidShapeGravity * mRigid.mass * mGravityMod);
 
    MatrixF currTransform;
    mRigid.getTransform(&currTransform);
-   mRigid.atRest = false;
 
    Point3F torque(0, 0, 0);
    Point3F force(0, 0, 0);

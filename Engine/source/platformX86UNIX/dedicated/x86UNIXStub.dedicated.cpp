@@ -93,8 +93,7 @@ void Platform::openFile(const char *path) { }
 
 // window
 bool Platform::displaySplashWindow(String path) { return false; }
-void Platform::closeSplashWindow() { }
-
+bool Platform::closeSplashWindow() { return false; }
 
 // font
 PlatformFont *createPlatformFont(const char *name, U32 size, U32 charset) { return NULL; }

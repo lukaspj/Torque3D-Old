@@ -84,7 +84,7 @@ singleton PostEffect( EdgeDetectPostEffect )
    texture[0] = "#prepass";
    target = "#edge";
    
-   isEnabled = false;
+   isEnabled = true;
 };
 
 singleton PostEffect( EdgeAAPostEffect )

@@ -215,7 +215,7 @@ namespace Platform
    bool excludeOtherInstances(const char *string);
    bool checkOtherInstances(const char *string);
    void restartInstance();
-   void postQuitMessage(const U32 in_quitVal);
+   void postQuitMessage(const S32 in_quitVal);
    void forceShutdown(S32 returnValue);
 
    // Debug
@@ -349,7 +349,9 @@ namespace Platform
 
    // display Splash Window
    bool displaySplashWindow( String path );
-   void closeSplashWindow();
+
+   // close Splash Window
+   bool closeSplashWindow();
 
    void openFolder( const char* path );
 

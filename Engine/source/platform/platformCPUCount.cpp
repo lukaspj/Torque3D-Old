@@ -30,6 +30,8 @@
 #include "platform/platform.h"
 #include "platform/platformCPUCount.h"
 
+#if defined(TORQUE_OS_LINUX) || defined(TORQUE_OS_OSX) || defined(TORQUE_OS_XENON) || defined(TORQUE_OS_PS3)
+
 // Consoles don't need this
 #if defined(TORQUE_OS_XENON) || defined(TORQUE_OS_PS3)
 namespace CPUInfo
@@ -59,7 +61,7 @@ EConfig CPUCount(U32& TotAvailLogical, U32& TotAvailCore, U32& PhysicalNum)
 #include <string.h>
 #include <sched.h>
 #define DWORD unsigned long
-#elif defined( TORQUE_OS_WIN )
+#elif defined( TORQUE_OS_WIN32 )
 #include <windows.h>
 #elif defined( TORQUE_OS_MAC )
 #  include <sys/types.h>
@@ -86,13 +88,13 @@ namespace CPUInfo {
 
 
       #ifndef TORQUE_OS_MAC
-      static U32  CpuIDSupported(void);      
-      static U32  find_maskwidth(unsigned int);
-      static U32  HWD_MTSupported(void);
-      static U32  MaxLogicalProcPerPhysicalProc(void);
-      static U32  MaxCorePerPhysicalProc(void);
-      static U8 GetAPIC_ID(void);
-      static U8 GetNzbSubID(U8, U8, U8);
+      static unsigned int  CpuIDSupported(void);
+      static unsigned int  find_maskwidth(unsigned int);
+      static unsigned int  HWD_MTSupported(void);
+      static unsigned int  MaxLogicalProcPerPhysicalProc(void);
+      static unsigned int  MaxCorePerPhysicalProc(void);
+      static unsigned char GetAPIC_ID(void);
+      static unsigned char GetNzbSubID(unsigned char, unsigned char, unsigned char);
       #endif
 
       static char g_s3Levels[2048];
@@ -103,13 +105,14 @@ namespace CPUInfo {
       // CpuIDSupported will return 0 if CPUID instruction is unavailable. Otherwise, it will return
       // the maximum supported standard function.
       //
-      static U32 CpuIDSupported(void)
+      static unsigned int CpuIDSupported(void)
       {
-         U32 maxInputValue = 0;
+         unsigned int MaxInputValue;
          // If CPUID instruction is supported
 #ifdef TORQUE_COMPILER_GCC
-         try    
-         {		
+         try
+         {
+            MaxInputValue = 0;
             // call cpuid with eax = 0
             asm
             (
@@ -117,8 +120,8 @@ namespace CPUInfo {
                 "xorl %%eax,%%eax\n\t"
                 "cpuid\n\t"
                "popl %%ebx\n\t"
-               : "=a" (maxInputValue)
-               : 
+                : "=a" (MaxInputValue)
+                :
                : "%ecx", "%edx"
             );
          }
@@ -129,23 +132,25 @@ namespace CPUInfo {
 #elif defined( TORQUE_COMPILER_VISUALC )
          try
          {
+            MaxInputValue = 0;
             // call cpuid with eax = 0
             __asm
             {
                xor eax, eax
                   cpuid
-                  mov maxInputValue, eax
+                  mov MaxInputValue, eax
             }
          }
          catch (...)
          {
-            // cpuid instruction is unavailable
+            return(0);                   // cpuid instruction is unavailable
          }
 #else
 #  error Not implemented.
 #endif
 
-         return maxInputValue;
+         return MaxInputValue;
+
       }
 
 
@@ -156,12 +161,12 @@ namespace CPUInfo {
       // maximum value.
       //
 
-      static U32 MaxCorePerPhysicalProc(void)
+      static unsigned int MaxCorePerPhysicalProc(void)
       {
 
-         U32 Regeax        = 0;
+         unsigned int Regeax        = 0;
 
-         if (!HWD_MTSupported()) return (U32) 1;  // Single core
+         if (!HWD_MTSupported()) return (unsigned int) 1;  // Single core
 #ifdef TORQUE_COMPILER_GCC
          {
             asm
@@ -212,7 +217,7 @@ multi_core:
 #else
 #  error Not implemented.
 #endif
-         return (U32)((Regeax & NUM_CORE_BITS) >> 26)+1;
+         return (unsigned int)((Regeax & NUM_CORE_BITS) >> 26)+1;
 
       }
 
@@ -221,11 +226,11 @@ multi_core:
       //
       // The function returns 0 when the hardware multi-threaded bit is not set.
       //
-      static U32 HWD_MTSupported(void)
+      static unsigned int HWD_MTSupported(void)
       {
 
 
-         U32 Regedx      = 0;
+         unsigned int Regedx      = 0;
 
 
          if ((CpuIDSupported() >= 1))
@@ -265,12 +270,12 @@ multi_core:
       // AVAILABLE logical processors per physical to be used by an application might be less than this
       // maximum value.
       //
-      static U32 MaxLogicalProcPerPhysicalProc(void)
+      static unsigned int MaxLogicalProcPerPhysicalProc(void)
       {
 
-         U32 Regebx = 0;
+         unsigned int Regebx = 0;
 
-         if (!HWD_MTSupported()) return (U32) 1;
+         if (!HWD_MTSupported()) return (unsigned int) 1;
 #ifdef TORQUE_COMPILER_GCC
          asm
 		(
@@ -295,10 +300,10 @@ multi_core:
       }
 
 
-      static U8 GetAPIC_ID(void)
+      static unsigned char GetAPIC_ID(void)
       {
 
-         U32 Regebx = 0;
+         unsigned int Regebx = 0;
 #ifdef TORQUE_COMPILER_GCC
          asm
         (
@@ -327,9 +332,9 @@ multi_core:
       //
       // Determine the width of the bit field that can represent the value count_item.
       //
-      U32 find_maskwidth(U32 CountItem)
+      unsigned int find_maskwidth(unsigned int CountItem)
       {
-         U32 MaskWidth,
+         unsigned int MaskWidth,
             count = CountItem;
 #ifdef TORQUE_COMPILER_GCC
          asm
@@ -395,16 +400,16 @@ next:
       //
       // Extract the subset of bit field from the 8-bit value FullID.  It returns the 8-bit sub ID value
       //
-      static U8 GetNzbSubID(U8 FullID,
-         U8 MaxSubIDValue,
-         U8 ShiftCount)
+      static unsigned char GetNzbSubID(unsigned char FullID,
+         unsigned char MaxSubIDValue,
+         unsigned char ShiftCount)
       {
-         U32 MaskWidth;
-         U8 MaskBits;
+         unsigned int MaskWidth;
+         unsigned char MaskBits;
 
-         MaskWidth = find_maskwidth((U32) MaxSubIDValue);
-         MaskBits  = (0xff << ShiftCount) ^ 
-            ((U8) (0xff << (ShiftCount + MaskWidth)));
+         MaskWidth = find_maskwidth((unsigned int) MaxSubIDValue);
+         MaskBits  = (0xff << ShiftCount) ^
+            ((unsigned char) (0xff << (ShiftCount + MaskWidth)));
 
          return (FullID & MaskBits);
       }
@@ -422,9 +427,9 @@ next:
          g_s3Levels[0] = 0;
          TotAvailCore = 1;
          PhysicalNum  = 1;
-         
-         U32 numLPEnabled = 0;
-         S32 MaxLPPerCore = 1;
+
+         unsigned int numLPEnabled = 0;
+         int MaxLPPerCore = 1;
 
 #ifdef TORQUE_OS_MAC
 
@@ -433,8 +438,8 @@ next:
          //  like there isn't a way to do this that's working across all OSX incarnations
          //  and machine configurations anyway.
 
-         S32 numCPUs;
-         S32 numPackages;
+         int numCPUs;
+         int numPackages;
 
          // Get the number of CPUs.
 
@@ -453,9 +458,9 @@ next:
 #else
 
          U32 dwAffinityMask;
-         S32 j = 0;
-         U8 apicID, PackageIDMask;
-         U8 tblPkgID[256], tblCoreID[256], tblSMTID[256];
+         int j = 0;
+         unsigned char apicID, PackageIDMask;
+         unsigned char tblPkgID[256], tblCoreID[256], tblSMTID[256];
          char	tmp[256];
 
 #ifdef TORQUE_OS_LINUX
@@ -467,19 +472,19 @@ next:
          // Linux doesn't easily allow us to look at the Affinity Bitmask directly,
          // but it does provide an API to test affinity maskbits of the current process
          // against each logical processor visible under OS.
-         S32 sysNumProcs = sysconf(_SC_NPROCESSORS_CONF); //This will tell us how many 
+         int sysNumProcs = sysconf(_SC_NPROCESSORS_CONF); //This will tell us how many
          //CPUs are currently enabled.
 
          //this will tell us which processors this process can run on.
          cpu_set_t allowedCPUs;
          sched_getaffinity(0, sizeof(allowedCPUs), &allowedCPUs);
 
-         for (S32 i = 0; i < sysNumProcs; i++ )
+         for (int i = 0; i < sysNumProcs; i++ )
          {
             if ( CPU_ISSET(i, &allowedCPUs) == 0 )
                return CONFIG_UserConfigIssue;
          }
-#elif defined( TORQUE_OS_WIN )
+#elif defined( TORQUE_OS_WIN32 )
          DWORD dwProcessAffinity, dwSystemAffinity;
          GetProcessAffinityMask(GetCurrentProcess(),
             &dwProcessAffinity,
@@ -507,7 +512,7 @@ next:
             if ( sched_setaffinity (0, sizeof(currentCPU), &currentCPU) == 0 )
             {
                sleep(0);  // Ensure system to switch to the right CPU
-#elif defined( TORQUE_OS_WIN )
+#elif defined( TORQUE_OS_WIN32 )
          while (dwAffinityMask && dwAffinityMask <= dwSystemAffinity)
          {
             if (SetThreadAffinityMask(GetCurrentThread(), dwAffinityMask))
@@ -525,8 +530,8 @@ next:
                // processors per core
 
                tblSMTID[j]  = GetNzbSubID(apicID, MaxLPPerCore, 0);
-               U8 maxCorePPP = MaxCorePerPhysicalProc();
-               U8 maskWidth = find_maskwidth(MaxLPPerCore);
+               unsigned char maxCorePPP = MaxCorePerPhysicalProc();
+               unsigned char maskWidth = find_maskwidth(MaxLPPerCore);
                tblCoreID[j] = GetNzbSubID(apicID, maxCorePPP, maskWidth);
 
                // Extract package ID, assume single cluster.
@@ -552,7 +557,7 @@ next:
 #ifdef TORQUE_OS_LINUX
          sched_setaffinity (0, sizeof(allowedCPUs), &allowedCPUs);
          sleep(0);
-#elif defined( TORQUE_OS_WIN )
+#elif defined( TORQUE_OS_WIN32 )
          SetThreadAffinityMask(GetCurrentThread(), dwProcessAffinity);
          Sleep(0);
 #else
@@ -563,9 +568,9 @@ next:
          //
          // Count available cores (TotAvailCore) in the system
          //
-         U8 CoreIDBucket[256];
+         unsigned char CoreIDBucket[256];
          DWORD ProcessorMask, pCoreMask[256];
-         U32 i, ProcessorNum;
+         unsigned int i, ProcessorNum;
 
          CoreIDBucket[0] = tblPkgID[0] | tblCoreID[0];
          ProcessorMask = 1;
@@ -601,7 +606,7 @@ next:
          //
          // Count physical processor (PhysicalNum) in the system
          //
-         U8 PackageIDBucket[256];
+         unsigned char PackageIDBucket[256];
          DWORD pPackageMask[256];
 
          PackageIDBucket[0] = tblPkgID[0];
@@ -667,6 +672,8 @@ next:
       }
 
 } // namespace CPUInfo
+#endif
+
 #endif
 
 #endif

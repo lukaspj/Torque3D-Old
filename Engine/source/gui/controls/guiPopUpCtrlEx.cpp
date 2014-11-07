@@ -579,8 +579,9 @@ ConsoleMethod( GuiPopUpMenuCtrlEx, getColorById, const char*, 3, 3,
    ColorI color;
    object->getColoredBox(color, dAtoi(argv[2]));
 
-   char *strBuffer = Con::getReturnBuffer(512);
-   dSprintf(strBuffer, 512, "%d %d %d %d", color.red, color.green, color.blue, color.alpha);
+   static const U32 bufSize = 512;
+   char *strBuffer = Con::getReturnBuffer(bufSize);
+   dSprintf(strBuffer, bufSize, "%d %d %d %d", color.red, color.green, color.blue, color.alpha);
    return strBuffer;
 }
 
@@ -604,7 +605,7 @@ ConsoleMethod( GuiPopUpMenuCtrlEx, setEnumContent, void, 4, 4,
    // get it?
    if(!classRep)
    {
-      Con::warnf(ConsoleLogEntry::General, "failed to locate class rep for '%s'", argv[2]);
+      Con::warnf(ConsoleLogEntry::General, "failed to locate class rep for '%s'", (const char*)argv[2]);
       return;
    }
 
@@ -617,7 +618,7 @@ ConsoleMethod( GuiPopUpMenuCtrlEx, setEnumContent, void, 4, 4,
    // found it?   
    if(i == classRep->mFieldList.size())
    {   
-      Con::warnf(ConsoleLogEntry::General, "failed to locate field '%s' for class '%s'", argv[3], argv[2]);
+      Con::warnf(ConsoleLogEntry::General, "failed to locate field '%s' for class '%s'", (const char*)argv[3], (const char*)argv[2]);
       return;
    }
 
@@ -627,7 +628,7 @@ ConsoleMethod( GuiPopUpMenuCtrlEx, setEnumContent, void, 4, 4,
    // check the type
    if( !conType->getEnumTable() )
    {
-      Con::warnf(ConsoleLogEntry::General, "field '%s' is not an enumeration for class '%s'", argv[3], argv[2]);
+      Con::warnf(ConsoleLogEntry::General, "field '%s' is not an enumeration for class '%s'", (const char*)argv[3], (const char*)argv[2]);
       return;
    }
 
