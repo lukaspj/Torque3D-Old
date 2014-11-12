@@ -93,21 +93,23 @@ bool MeshEmitter::addParticle(Point3F const& pos,
 {
    MeshEmitterData* DataBlock = getDataBlock();
 
+   loadFaces();
+
    // This should never happen
    //  - But if it happens it will slow down the server.
    if (mParentSystem->isServerObject())
       return false;
 
-   if (!DataBlock->mEmitMesh)
+   if (!DataBlock->getEmitMesh())
       return false;
 
    PROFILE_SCOPE(meshEmitAddPart);
 
    // Check if the emitMesh matches a name
-   SimObject* SB = Sim::findObject(DataBlock->mEmitMesh);
+   SimObject* SB = Sim::findObject(DataBlock->getEmitMesh());
    // If not then check if it matches an ID
    if (!SB)
-      SB = Sim::findObject(atoi(DataBlock->mEmitMesh));
+      SB = Sim::findObject(atoi(DataBlock->getEmitMesh()));
 
    if (!SB)
       return false;
@@ -132,19 +134,19 @@ bool MeshEmitter::addParticle(Point3F const& pos,
 
       bool coHandled = false;
       // Per vertex
-      if (!DataBlock->mEmitOnFaces)
+      if (!DataBlock->getEmitOnFaces())
       {
          coHandled = getPointOnVertex(SB, psMesh, pNew);
       }
       // Per triangle
-      if (DataBlock->mEmitOnFaces)
+      if (DataBlock->getEmitOnFaces())
       {
          coHandled = getPointOnFace(SB, psMesh, pNew);
       }
 
-      if (DataBlock->mEvenEmission && mainTime == U32_MAX)
+      if (DataBlock->getEvenEmission() && mainTime == U32_MAX)
          mainTime = 0;
-      if (!DataBlock->mEvenEmission && !coHandled)
+      if (!DataBlock->getEvenEmission() && !coHandled)
          mainTime = 0;
    }
 
@@ -176,7 +178,7 @@ bool MeshEmitter::getPointOnVertex(SimObject *SB, psMeshInterface *psMesh, Parti
    // Set our count value to mainTime.
    U32 co = mainTime;
    // If evenEmission is on, set the co to a random number for the per vertex emission.
-   if (DataBlock->mEvenEmission && vertexCount != 0)
+   if (DataBlock->getEvenEmission() && vertexCount != 0)
       co = gRandGen.randI() % vertexCount;
    mainTime++;
 
@@ -255,7 +257,7 @@ bool MeshEmitter::getPointOnFace(SimObject *SB, psMeshInterface *psMesh, Particl
    // Set our count value to mainTime.
    U32 co = mainTime;
    // If evenEmission is on, set the co to a random number for the per vertex emission.
-   if (DataBlock->mEvenEmission && vertexCount != 0)
+   if (DataBlock->getEvenEmission() && vertexCount != 0)
       co = gRandGen.randI() % vertexCount;
    mainTime++;
    const TSShapeInstance* model;
@@ -324,7 +326,7 @@ bool MeshEmitter::getPointOnFace(SimObject *SB, psMeshInterface *psMesh, Particl
    {
       // Get a random triangle
       U32 triStart;
-      if (DataBlock->mEvenEmission)
+      if (DataBlock->getEvenEmission())
       {
          // Get a random face from our emitfaces vector.
          //  - then follow basically the same procedure as above.
@@ -407,9 +409,14 @@ void MeshEmitter::loadFaces()
 {
    MeshEmitterData* DataBlock = getDataBlock();
 
-   SimObject* SB = Sim::findObject(DataBlock->mEmitMesh);
+   if (isOutOfSyncWithDatablock())
+      return;
+
+   cacheFields();
+
+   SimObject* SB = Sim::findObject(DataBlock->getEmitMesh());
    if (!SB)
-      SB = Sim::findObject(atoi(DataBlock->mEmitMesh));
+      SB = Sim::findObject(atoi(DataBlock->getEmitMesh()));
    psMeshInterface *psMesh = NULL;
    if (SB){
       psMesh = dynamic_cast<psMeshInterface*>(SB);
@@ -418,6 +425,20 @@ void MeshEmitter::loadFaces()
    if (psMesh){
       loadFaces(SB, psMesh);
    }
+}
+
+void MeshEmitter::cacheFields()
+{
+   mEmitMesh = getDataBlock()->getEmitMesh();
+   mEvenEmission = getDataBlock()->getEvenEmission();
+   mEmitOnFaces = getDataBlock()->getEmitOnFaces();
+}
+
+bool MeshEmitter::isOutOfSyncWithDatablock()
+{
+   return mEmitMesh == getDataBlock()->getEmitMesh()
+      && mEvenEmission == getDataBlock()->getEvenEmission()
+      && mEmitOnFaces == getDataBlock()->getEmitOnFaces();
 }
 
 void MeshEmitter::loadFaces(SimObject *SB, psMeshInterface *psMesh)

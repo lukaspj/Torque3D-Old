@@ -54,12 +54,16 @@ public:
    virtual void packData(BitStream* stream);
    virtual void unpackData(BitStream* stream);
 
-public:
+   StringTableEntry getEmitMesh() { return mEmitMesh; }
+   bool getEvenEmission() { return mEvenEmission; }
+   bool getEmitOnFaces() { return mEmitOnFaces; }
+
+private:
    /// @name Mesh Fields
    /// @{
-   StringTableEntry		mEmitMesh;				///< Id of the object that has a mesh that we want to emit particles on
-   bool					mEvenEmission;			///< Even the emission
-   bool					mEmitOnFaces;			///< If true, emits particles on faces rather than vertices
+   StringTableEntry     mEmitMesh;        ///< Id of the object that has a mesh that we want to emit particles on
+   bool                 mEvenEmission;       ///< Even the emission
+   bool                 mEmitOnFaces;        ///< If true, emits particles on faces rather than vertices
    /// @}
 
    DECLARE_CONOBJECT(MeshEmitterData);
@@ -99,16 +103,21 @@ public:
    virtual void debugRenderDelegate(ObjectRenderInst *ri, SceneRenderState *state, BaseMatInstance* overrideMat) { };
    virtual void bindDelegate(ObjectRenderInst *ori) { ori->renderDelegate.bind(this, &MeshEmitter::debugRenderDelegate); };
 
-
    virtual MeshEmitterData* getDataBlock() { return dynamic_cast<MeshEmitterData*>(mDataBlock); };
 
-private:
-   Vector<psMeshParsing::face>	emitfaces;				///< Faces to emit particles on
-   U32						vertexCount;			///< Amount of vertices in the mesh
+protected:
+   virtual void cacheFields();
+   virtual bool isOutOfSyncWithDatablock();
 
-   SimObjectId currentMesh;   ///< ID of the current mesh
+   Vector<psMeshParsing::face> emitfaces; ///< Faces to emit particles on
+   U32 vertexCount; ///< Amount of vertices in the mesh
+   SimObjectId currentMesh; ///< ID of the current mesh
 
-   S32						mainTime; ///< Logical time
+   S32 mainTime; ///< Logical time
+
+   StringTableEntry mEmitMesh; ///< Id of the object that has a mesh that we want to emit particles on
+   bool mEvenEmission; ///< Even the emission
+   bool mEmitOnFaces; ///< If true, emits particles on faces rather than vertices
 };
 
 #endif //_MESH_EMITTER_H
