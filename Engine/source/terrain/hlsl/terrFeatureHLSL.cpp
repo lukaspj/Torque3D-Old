@@ -460,6 +460,7 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
 
    Var *baseColor = (Var*)LangElement::find("baseColor");
    Var *outColor = (Var*)LangElement::find(getOutputTargetVarName(OutputTarget::DefaultTarget));
+   Var *opacityMap = (Var*)LangElement::find(getOutputTargetVarName(OutputTarget::RenderTarget1));
 
    if (!outColor)
    {

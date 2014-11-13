@@ -170,6 +170,21 @@ void RenderTerrainMgr::render( SceneRenderState *state )
 
       return;
    }
+   GFXTextureTargetRef activeTarget = (GFXTextureTarget*)GFX->getActiveRenderTarget();
+   GFXTexHandle opacityCache;
+
+   // If the base texture is already a valid render target then 
+   // use it to render to else we create one.
+   /*if (mBaseTex.isValid() &&
+      mBaseTex->isRenderTarget() &&
+      mBaseTex->getFormat() == GFXFormatR8G8B8A8 &&
+      mBaseTex->getWidth() == destSize.x &&
+      mBaseTex->getHeight() == destSize.y)
+      blendTex = mBaseTex;
+   else*/
+   opacityCache.set(activeTarget->getSize().x, activeTarget->getSize().y, GFXFormatA8, &GFXDefaultRenderTargetProfile, "");
+
+   activeTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache);
 
    // Do the detail map passes.
    Vector<TerrainRenderInst*>::iterator inst = mInstVector.begin();
