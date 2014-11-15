@@ -358,8 +358,7 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
 
       // The additional passes need to be lerp blended into the
       // target to maintain the results of the previous passes.
-      if ( !firstPass )
-         features.addFeature( MFT_TerrainAdditive );
+      features.addFeature( MFT_TerrainAdditive );
 
       normalMaps.clear();
       pass->materials.clear();
@@ -492,7 +491,7 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
    pass->worldToObjConst = pass->shader->getShaderConstHandle( "$worldToObj" );  
    pass->lightInfoBufferConst = pass->shader->getShaderConstHandle( "$lightInfoBuffer" );   
    pass->baseTexMapConst = pass->shader->getShaderConstHandle( "$baseTexMap" );
-   pass->layerTexConst = pass->shader->getShaderConstHandle( "$layerTex" );
+   pass->layerTexConst = pass->shader->getShaderConstHandle("$layerTex");
    pass->fogDataConst = pass->shader->getShaderConstHandle( "$fogData" );
    pass->fogColorConst = pass->shader->getShaderConstHandle( "$fogColor" );
    pass->lightMapTexConst = pass->shader->getShaderConstHandle( "$lightMapTex" );

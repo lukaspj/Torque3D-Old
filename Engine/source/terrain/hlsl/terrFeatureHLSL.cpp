@@ -371,6 +371,14 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
    
    MultiLine *meta = new MultiLine;
 
+   // create texture var
+   Var *opacityMapIn = new Var;
+   opacityMapIn->setType("sampler2D");
+   opacityMapIn->setName("opacityMap");
+   opacityMapIn->uniform = true;
+   opacityMapIn->sampler = true;
+   opacityMapIn->constNum = Var::getTexUnitNum();     // used as texture unit num here
+
    // We need the negative tangent space view vector
    // as in parallax mapping we step towards the camera.
    Var *negViewTS = (Var*)LangElement::find( "negViewTS" );
@@ -469,6 +477,15 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
       outColor->setType("fragout");
       outColor->setName(getOutputTargetVarName(OutputTarget::DefaultTarget));
       outColor->setStructName("OUT");
+   }
+
+   if (!opacityMap)
+   {
+      // create color var
+      opacityMap = new Var;
+      opacityMap->setType("fragout");
+      opacityMap->setName(getOutputTargetVarName(OutputTarget::RenderTarget1));
+      opacityMap->setStructName("OUT");
    }
 
    Var *detailColor = (Var*)LangElement::find("detailColor");
@@ -1164,15 +1181,17 @@ ShaderFeature::Resources TerrainLightMapFeatHLSL::getResources( const MaterialFe
 void TerrainAdditiveFeatHLSL::processPix( Vector<ShaderComponent*> &componentList, 
                                           const MaterialFeatureData &fd )
 {
-   Var *color = (Var*) LangElement::find( "col" );
+   Var *color = (Var*)LangElement::find(getOutputTargetVarName(OutputTarget::RenderTarget1));
+   Var *color2 = (Var*)LangElement::find(getOutputTargetVarName(OutputTarget::DefaultTarget));
    Var *blendTotal = (Var*)LangElement::find( "blendTotal" );
    if ( !color || !blendTotal )
       return;
    
    MultiLine *meta = new MultiLine;
 
-   meta->addStatement( new GenOp( "   clip( @ - 0.0001 );\r\n", blendTotal ) );
-   meta->addStatement( new GenOp( "   @.a = @;\r\n", color, blendTotal ) );
+   meta->addStatement(new GenOp("   clip( @ - 0.0001 );\r\n", blendTotal));
+   meta->addStatement(new GenOp("   @ = @;\r\n", color, blendTotal));
+   meta->addStatement(new GenOp("   @ = @;\r\n", color2, blendTotal));
 
    output = meta;
 }

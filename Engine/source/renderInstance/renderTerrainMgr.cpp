@@ -171,7 +171,7 @@ void RenderTerrainMgr::render( SceneRenderState *state )
       return;
    }
    GFXTextureTargetRef activeTarget = (GFXTextureTarget*)GFX->getActiveRenderTarget();
-   GFXTexHandle opacityCache;
+   GFXTexHandle opacityCache1, opacityCache2;
 
    // If the base texture is already a valid render target then 
    // use it to render to else we create one.
@@ -182,9 +182,11 @@ void RenderTerrainMgr::render( SceneRenderState *state )
       mBaseTex->getHeight() == destSize.y)
       blendTex = mBaseTex;
    else*/
-   opacityCache.set(activeTarget->getSize().x, activeTarget->getSize().y, GFXFormatA8, &GFXDefaultRenderTargetProfile, "");
+   opacityCache1.set(activeTarget->getSize().x, activeTarget->getSize().y, GFXFormatA8, &GFXDefaultRenderTargetProfile, "");
+   opacityCache2.set(activeTarget->getSize().x, activeTarget->getSize().y, GFXFormatA8, &GFXDefaultRenderTargetProfile, "");
 
-   activeTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache);
+   
+   bool alternateCache = false;
 
    // Do the detail map passes.
    Vector<TerrainRenderInst*>::iterator inst = mInstVector.begin();
@@ -207,6 +209,19 @@ void RenderTerrainMgr::render( SceneRenderState *state )
 
       while ( mat->setupPass( state, sgData ) )
       {
+         if (alternateCache) {
+            activeTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache2);
+            
+            //if (mat->getCurrentPass().opacityMapConst->isValid())
+            //   GFX->setTexture(mat->getCurrentPass().opacityMapConst->getSamplerRegister(), opacityCache1);
+         }
+         else {
+            activeTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache1);
+
+            //if (mat->getCurrentPass().opacityMapConst->isValid())
+            //   GFX->setTexture(mat->getCurrentPass().opacityMapConst->getSamplerRegister(), opacityCache2);
+         }
+         alternateCache = !alternateCache;
          ++smDrawCalls;
          GFX->drawPrimitive( (*inst)->prim );
       }

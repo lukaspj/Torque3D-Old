@@ -197,6 +197,9 @@ public:
    ///
    bool setupPass(   const SceneRenderState *state,
                      const SceneData &sceneData );
+   
+   ///
+   Pass getCurrentPass() { return mPasses[mCurrPass]; }
 
    ///
    static BaseMatInstance* getShadowMat();
