@@ -220,9 +220,8 @@ void RenderTerrainMgr::render( SceneRenderState *state )
       {
          if (alternateCache) {
             activeTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache2);
-            bool bool1 = mat->isCurrentPassValid();
-            bool bool2 = mat->getCurrentPass().opacityMapConst->isValid();
-            if (bool1 && bool2)
+
+            if (mat->isCurrentPassValid() && mat->getCurrentPass().opacityMapConst->isValid())
                GFX->setTexture(mat->getCurrentPass().opacityMapConst->getSamplerRegister(), opacityCache1);
          }
          else {

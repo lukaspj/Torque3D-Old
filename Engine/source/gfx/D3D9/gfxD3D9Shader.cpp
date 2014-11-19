@@ -984,7 +984,7 @@ void GFXD3D9Shader::_getShaderConstants( ID3DXConstantTable *table,
    for (U32 i = 0; i < tableDesc.Constants; i++)
    {
       D3DXHANDLE handle = table->GetConstant(0, i);
-      const U32 descSize=16;
+      const U32 descSize=18;
       D3DXCONSTANT_DESC constantDescArray[descSize];
       U32 size = descSize;
       if (table->GetConstantDesc(handle, constantDescArray, &size) == S_OK)
