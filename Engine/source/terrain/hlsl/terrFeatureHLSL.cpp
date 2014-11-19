@@ -592,6 +592,7 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
 
          meta->addStatement(new GenOp("   @ = tex2D(@, @.xy).a;\r\n",
             new DecOp(opacity), opacityMapIn, inTex));
+         meta->addStatement(new GenOp("   @ = 0.0;", opacity));
       }
 
       if (!blendTotal)
@@ -639,7 +640,7 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
 
       meta->addStatement(new GenOp("      @ = max(@ + @ - @, 0);\r\n", b2, blendTotal, invBlend, ma));
 
-      meta->addStatement(new GenOp("      @ += @.a + 0 * @;\r\n", blendTotal, bumpNorm, detailBlend));
+      meta->addStatement(new GenOp("      @ += @.a * @;\r\n", blendTotal, bumpNorm, detailBlend));
 
       meta->addStatement(new GenOp("   }\r\n"));
    }
@@ -732,6 +733,10 @@ ShaderFeature::Resources TerrainDetailMapFeatHLSL::getResources( const MaterialF
    {
       // If this is the first detail pass then we 
       // samples from the layer tex.
+      res.numTex += 1;
+
+      // If this is the first detail pass then we 
+      // samples from the opacity tex.
       res.numTex += 1;
 
       // If this material also does parallax then it

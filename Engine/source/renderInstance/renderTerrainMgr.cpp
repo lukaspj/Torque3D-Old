@@ -190,7 +190,7 @@ void RenderTerrainMgr::render( SceneRenderState *state )
    tempTarget->attachTexture(GFXTextureTarget::RenderSlot::Color0, opacityCache1);
    tempTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache2);
    GFX->setActiveRenderTarget(tempTarget);
-   GFX->clear(GFXClearTarget, ColorI(128,128,128,128), 1.0f, 0);
+   GFX->clear(GFXClearTarget, ColorI(0,0,0,0), 1.0f, 0);
    tempTarget->resolve();
    GFX->popActiveRenderTarget();
 
@@ -220,8 +220,9 @@ void RenderTerrainMgr::render( SceneRenderState *state )
       {
          if (alternateCache) {
             activeTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache2);
-            
-            if (mat->isCurrentPassValid() && mat->getCurrentPass().opacityMapConst->isValid())
+            bool bool1 = mat->isCurrentPassValid();
+            bool bool2 = mat->getCurrentPass().opacityMapConst->isValid();
+            if (bool1 && bool2)
                GFX->setTexture(mat->getCurrentPass().opacityMapConst->getSamplerRegister(), opacityCache1);
          }
          else {

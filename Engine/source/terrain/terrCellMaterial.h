@@ -200,10 +200,10 @@ public:
                      const SceneData &sceneData );
    
    ///
-   Pass& getCurrentPass() { return mPasses[mCurrPass]; }
+   Pass& getCurrentPass() { return mPasses[mCurrPass - 1]; }
 
    ///
-   bool isCurrentPassValid() { return mCurrPass < mPasses.size(); }
+   bool isCurrentPassValid() { return mCurrPass <= mPasses.size(); }
 
    ///
    static BaseMatInstance* getShadowMat();
