@@ -130,6 +130,7 @@ protected:
 
       GFXShaderConstHandle *baseTexMapConst;
       GFXShaderConstHandle *layerTexConst;
+      GFXShaderConstHandle *opacityMapConst;
 
       GFXShaderConstHandle *lightMapTexConst;
 
@@ -199,7 +200,10 @@ public:
                      const SceneData &sceneData );
    
    ///
-   Pass getCurrentPass() { return mPasses[mCurrPass]; }
+   Pass& getCurrentPass() { return mPasses[mCurrPass]; }
+
+   ///
+   bool isCurrentPassValid() { return mCurrPass < mPasses.size(); }
 
    ///
    static BaseMatInstance* getShadowMat();

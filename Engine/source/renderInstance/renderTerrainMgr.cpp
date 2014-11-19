@@ -185,6 +185,15 @@ void RenderTerrainMgr::render( SceneRenderState *state )
    opacityCache1.set(activeTarget->getSize().x, activeTarget->getSize().y, GFXFormatA8, &GFXDefaultRenderTargetProfile, "");
    opacityCache2.set(activeTarget->getSize().x, activeTarget->getSize().y, GFXFormatA8, &GFXDefaultRenderTargetProfile, "");
 
+   GFX->pushActiveRenderTarget();
+   GFXTextureTargetRef tempTarget = GFX->allocRenderToTextureTarget();
+   tempTarget->attachTexture(GFXTextureTarget::RenderSlot::Color0, opacityCache1);
+   tempTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache2);
+   GFX->setActiveRenderTarget(tempTarget);
+   GFX->clear(GFXClearTarget, ColorI(128,128,128,128), 1.0f, 0);
+   tempTarget->resolve();
+   GFX->popActiveRenderTarget();
+
    
    bool alternateCache = false;
 
@@ -212,18 +221,19 @@ void RenderTerrainMgr::render( SceneRenderState *state )
          if (alternateCache) {
             activeTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache2);
             
-            //if (mat->getCurrentPass().opacityMapConst->isValid())
-            //   GFX->setTexture(mat->getCurrentPass().opacityMapConst->getSamplerRegister(), opacityCache1);
+            if (mat->isCurrentPassValid() && mat->getCurrentPass().opacityMapConst->isValid())
+               GFX->setTexture(mat->getCurrentPass().opacityMapConst->getSamplerRegister(), opacityCache1);
          }
          else {
             activeTarget->attachTexture(GFXTextureTarget::RenderSlot::Color1, opacityCache1);
 
-            //if (mat->getCurrentPass().opacityMapConst->isValid())
-            //   GFX->setTexture(mat->getCurrentPass().opacityMapConst->getSamplerRegister(), opacityCache2);
+            if (mat->isCurrentPassValid() && mat->getCurrentPass().opacityMapConst->isValid())
+               GFX->setTexture(mat->getCurrentPass().opacityMapConst->getSamplerRegister(), opacityCache2);
          }
          alternateCache = !alternateCache;
          ++smDrawCalls;
          GFX->drawPrimitive( (*inst)->prim );
+         activeTarget->resolve();
       }
    }
 }

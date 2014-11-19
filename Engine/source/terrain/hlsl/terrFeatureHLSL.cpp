@@ -371,13 +371,17 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
    
    MultiLine *meta = new MultiLine;
 
-   // create texture var
-   Var *opacityMapIn = new Var;
-   opacityMapIn->setType("sampler2D");
-   opacityMapIn->setName("opacityMap");
-   opacityMapIn->uniform = true;
-   opacityMapIn->sampler = true;
-   opacityMapIn->constNum = Var::getTexUnitNum();     // used as texture unit num here
+   Var *opacityMapIn = (Var*)LangElement::find("opacityMapIn");
+   if (!opacityMapIn)
+   {
+      // create texture var
+      opacityMapIn = new Var;
+      opacityMapIn->setType("sampler2D");
+      opacityMapIn->setName("opacityMapIn");
+      opacityMapIn->uniform = true;
+      opacityMapIn->sampler = true;
+      opacityMapIn->constNum = Var::getTexUnitNum();     // used as texture unit num here
+   }
 
    // We need the negative tangent space view vector
    // as in parallax mapping we step towards the camera.
@@ -539,34 +543,18 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
       texOp = new GenOp("tex2D(@, @.xy)", normalMap, inDet);
    }
 
-   // Get a var and accumulate the blend amount.
-   Var *blendTotal = (Var*)LangElement::find( "blendTotal" );
-   if ( !blendTotal )
-   {
-      blendTotal = new Var;
-      blendTotal->setName( "blendTotal" );
-      blendTotal->setType( "float" );
-      meta->addStatement( new GenOp( "   @ = 0;\r\n", new DecOp( blendTotal ) ) );
-   }
-
    // Add to the blend total.
-   meta->addStatement( new GenOp( "   @ += @;\r\n", blendTotal, detailBlend ) );
+   //meta->addStatement( new GenOp( "   @ += @;\r\n", blendTotal, detailBlend ) );
 
    Var *bumpNorm = (Var*)LangElement::find("bumpNormal");
    Var *invBlend = (Var*)LangElement::find("invBlend");
-   Var *currentAlpha = (Var*)LangElement::find("currentAlpha");
+   Var *opacity = (Var*)LangElement::find("opacity");
    Var *ma = (Var*)LangElement::find("ma");
    Var *b1 = (Var*)LangElement::find("b1");
    Var *b2 = (Var*)LangElement::find("b2");
-   
+
    // Get a var and accumulate the blend amount.
-   if (!currentAlpha)
-   {
-      currentAlpha = new Var;
-      currentAlpha->setName("currentAlpha");
-      currentAlpha->setType("float");
-      meta->addStatement(new GenOp("   @ = 0;\r\n", new DecOp(currentAlpha)));
-   }
+   Var *blendTotal = (Var*)LangElement::find("blendTotal");
 
    if(hasNormal)
    {
@@ -593,6 +581,26 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
          invBlend->setName("invBlend");
          invBlend->setType("float");
          meta->addStatement(new GenOp("   @;\r\n", new DecOp(invBlend)));
+      }
+
+      // Get a var and accumulate the blend amount.
+      if (!opacity)
+      {
+         opacity = new Var;
+         opacity->setName("opacity");
+         opacity->setType("float");
+
+         meta->addStatement(new GenOp("   @ = tex2D(@, @.xy).a;\r\n",
+            new DecOp(opacity), opacityMapIn, inTex));
+      }
+
+      if (!blendTotal)
+      {
+         blendTotal = new Var;
+         blendTotal->setName("blendTotal");
+         blendTotal->setType("float");
+
+         meta->addStatement(new GenOp("   @ = saturate(@);\r\n", new DecOp(blendTotal), opacity));
       }
 
       // Get a var and accumulate the blend amount.
@@ -625,17 +633,27 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
 
       meta->addStatement(new GenOp("      @ = 1-@;\r\n", invBlend, detailBlend));
 
-      meta->addStatement(new GenOp("      @ = max(@.a + @, @ + @) - @;\r\n", ma, bumpNorm, detailBlend, currentAlpha, invBlend, blendDepth));
+      meta->addStatement(new GenOp("      @ = max(@.a + @, @ + @) - @;\r\n", ma, bumpNorm, detailBlend, blendTotal, invBlend, blendDepth));
 
       meta->addStatement(new GenOp("      @ = max(@.a + @ - @, 0);\r\n", b1, bumpNorm, detailBlend, ma));
 
-      meta->addStatement(new GenOp("      @ = max(@ + @ - @, 0);\r\n", b2, currentAlpha, invBlend, ma));
+      meta->addStatement(new GenOp("      @ = max(@ + @ - @, 0);\r\n", b2, blendTotal, invBlend, ma));
+
+      meta->addStatement(new GenOp("      @ += @.a + 0 * @;\r\n", blendTotal, bumpNorm, detailBlend));
 
       meta->addStatement(new GenOp("   }\r\n"));
    }
    else
    {
-      meta->addStatement(new GenOp("   @ = max(@,@);\r\n", currentAlpha, currentAlpha, detailBlend));
+      if (!blendTotal)
+      {
+         blendTotal = new Var;
+         blendTotal->setName("blendTotal");
+         blendTotal->setType("float");
+
+         meta->addStatement(new GenOp("   @ = 0;\r\n", new DecOp(blendTotal)));
+      }
+      meta->addStatement(new GenOp("   @ += @;\r\n", blendTotal, detailBlend));
    }
 
    // If we had a parallax feature... then factor in the parallax
@@ -689,16 +707,16 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
    if(hasNormal)
    {
       meta->addStatement(new GenOp("      if( @ <= 0 ) \r\n", lerpBlend));
-      meta->addStatement(new GenOp("         @.rgb = ((@ + @).rgb * @ + @.rgb * @) / (@ + @);\r\n", outColor, baseColor, detailColor, b1, outColor, b2, b1, b2));
+      meta->addStatement(new GenOp("         @ = (float4(@.rgb + @.rgb, 1) * @ + @ * @) / (@ + @);\r\n", outColor, baseColor, detailColor, b1, outColor, b2, b1, b2));
       meta->addStatement(new GenOp("      else\r\n"));
    }
-   meta->addStatement( new GenOp( "          @ = lerp( @, @ + @, @ );\r\n",
-                                    outColor, outColor, baseColor, detailColor, detailBlend ) );
+   meta->addStatement( new GenOp( "          @ += (@ + @) * @;\r\n",
+                                    outColor, baseColor, detailColor, detailBlend ) );
 
    if(hasNormal)
    {
       meta->addStatement(new GenOp("      if( @ <= 0 ) \r\n", lerpBlend));
-      meta->addStatement(new GenOp("         @ = (@.a * @ + @ * @) / (@ + @);\r\n", currentAlpha, bumpNorm, b1, currentAlpha, b2, b1, b2));
+      meta->addStatement(new GenOp("         @ += (@.a * @);\r\n", blendTotal, bumpNorm, detailBlend));
    }
 
    meta->addStatement( new GenOp( "   }\r\n" ) );
@@ -1181,16 +1199,20 @@ ShaderFeature::Resources TerrainLightMapFeatHLSL::getResources( const MaterialFe
 void TerrainAdditiveFeatHLSL::processPix( Vector<ShaderComponent*> &componentList, 
                                           const MaterialFeatureData &fd )
 {
-   Var *color = (Var*)LangElement::find(getOutputTargetVarName(OutputTarget::RenderTarget1));
-   Var *color2 = (Var*)LangElement::find(getOutputTargetVarName(OutputTarget::DefaultTarget));
-   Var *blendTotal = (Var*)LangElement::find( "blendTotal" );
+   Var *color = (Var*)LangElement::find(getOutputTargetVarName(OutputTarget::DefaultTarget));
+   Var *color2 = (Var*)LangElement::find(getOutputTargetVarName(OutputTarget::RenderTarget1));
+   Var *blendTotal = (Var*)LangElement::find("blendTotal");
+   Var *opacity = (Var*)LangElement::find("opacity");
+   Var *b1 = (Var*)LangElement::find("b1");
+   Var *b2 = (Var*)LangElement::find("b2");
+   Var *bumpNorm = (Var*)LangElement::find("bumpNorm");
    if ( !color || !blendTotal )
       return;
    
    MultiLine *meta = new MultiLine;
 
-   meta->addStatement(new GenOp("   clip( @ - 0.0001 );\r\n", blendTotal));
-   meta->addStatement(new GenOp("   @ = @;\r\n", color, blendTotal));
+   meta->addStatement(new GenOp("   clip( @ - 0.0001 );\r\n", blendTotal, opacity));
+   //meta->addStatement(new GenOp("   @ = float4(@,1)*@/(@+@);\r\n", color, blendTotal));
    meta->addStatement(new GenOp("   @ = @;\r\n", color2, blendTotal));
 
    output = meta;

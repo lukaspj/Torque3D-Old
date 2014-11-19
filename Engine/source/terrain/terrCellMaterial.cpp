@@ -492,6 +492,7 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
    pass->lightInfoBufferConst = pass->shader->getShaderConstHandle( "$lightInfoBuffer" );   
    pass->baseTexMapConst = pass->shader->getShaderConstHandle( "$baseTexMap" );
    pass->layerTexConst = pass->shader->getShaderConstHandle("$layerTex");
+   pass->opacityMapConst = pass->shader->getShaderConstHandle("$opacityMapIn");
    pass->fogDataConst = pass->shader->getShaderConstHandle( "$fogData" );
    pass->fogColorConst = pass->shader->getShaderConstHandle( "$fogColor" );
    pass->lightMapTexConst = pass->shader->getShaderConstHandle( "$lightMapTex" );
@@ -540,6 +541,9 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
 
    if ( pass->layerTexConst->isValid() )
       desc.samplers[pass->layerTexConst->getSamplerRegister()] = GFXSamplerStateDesc::getClampPoint();
+
+   if (pass->opacityMapConst->isValid())
+      desc.samplers[pass->opacityMapConst->getSamplerRegister()] = GFXSamplerStateDesc::getClampPoint();
 
    if ( pass->lightInfoBufferConst->isValid() )
       desc.samplers[pass->lightInfoBufferConst->getSamplerRegister()] = GFXSamplerStateDesc::getClampPoint();
