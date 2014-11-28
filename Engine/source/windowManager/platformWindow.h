@@ -89,6 +89,10 @@ protected:
    /// Offscreen Render
    bool mOffscreenRender;
 
+   /// This is set as part of the canvas being shown, and flags that the windows should render as normal from now on.
+   // Basically a flag that lets the window manager know that we've handled the splash screen, and to operate as normal.
+   bool mDisplayWindow;
+
    /// Protected constructor so that the win
    PlatformWindow()
    {
@@ -104,6 +108,7 @@ protected:
       mSuppressReset = false;
 
       mOffscreenRender = false;
+      mDisplayWindow = false;
    }
 
 public:
@@ -122,6 +127,15 @@ public:
    /// Get the ID that uniquely identifies this window in the context of its
    /// window manager.
    virtual WindowId getWindowId() { return 0; };
+
+   enum WindowSystem
+   {
+      WindowSystem_Unknown = 0,
+      WindowSystem_Windows,
+      WindowSystem_X11,
+   };
+
+   virtual void* getSystemWindow(const WindowSystem system) { return NULL; }
 
    /// Set the flag that determines whether to suppress a GFXDevice reset
    inline void setSuppressReset(bool suppress) { mSuppressReset = suppress; };
@@ -180,6 +194,8 @@ public:
    /// This is called to poll the window as to it's idle state.  
    virtual bool getOffscreenRender() { return mOffscreenRender; };
 
+   /// Set whether this window is should display as normal
+   virtual void setDisplayWindow(bool val ) { mDisplayWindow = val; };
 
    /// Set Focused State (Foreground)
    ///

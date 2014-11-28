@@ -86,6 +86,7 @@ ConsoleDocClass( SceneObject,
    "@ingroup gameObjects\n"
 );
 
+IMPLEMENT_CALLBACK( SceneObject, onTickCounter, void, ( const char* counterName ),( counterName ),"@brif Called after this object is Ticked and a counter interval is reached.");
 
 Signal< void( SceneObject* ) > SceneObject::smSceneObjectAdd;
 Signal< void( SceneObject* ) > SceneObject::smSceneObjectRemove;
@@ -140,6 +141,9 @@ SceneObject::SceneObject()
 
    mObjectFlags.set( RenderEnabledFlag | SelectionEnabledFlag );
    mIsScopeAlways = false;
+//Walkable Shapes
+   mAttachedToObj = NULL;
+//Walkable Shapes
 }
 
 //-----------------------------------------------------------------------------
@@ -405,7 +409,7 @@ void SceneObject::setTransform( const MatrixF& mat )
 
 void SceneObject::setScale( const VectorF &scale )
 {
-	AssertFatal( !mIsNaN( scale ), "SceneObject::setScale() - The scale is NaN!" );
+   AssertFatal( !mIsNaN( scale ), "SceneObject::setScale() - The scale is NaN!" );
 
    // Avoid unnecessary scaling operations.
    if ( mObjScale.equal( scale ) )
@@ -534,6 +538,57 @@ void SceneObject::setHidden( bool hidden )
    }
 }
 
+void SceneObject::counterNotify(const char* countername)
+{
+   onTickCounter_callback(countername);
+}
+
+DefineEngineMethod( SceneObject, TickCounterAdd, void, ( const char * countername, U32 interval ),,
+   "@brief Adds a new counter or updates an existing counter to be tracked via ticks.\n\n"
+   "@return true if successful, false if failed\n" )
+{
+   object->counterAdd(countername,interval);
+}
+
+DefineEngineMethod( SceneObject, TickCounterRemove, bool, ( const char * countername ),,
+   "@brief Removes a counter to be tracked via ticks.\n\n"
+   "@return true if successful, false if failed\n" )
+{
+   return object->counterRemove(countername);
+}
+
+DefineEngineMethod( SceneObject, TickCounterGetInterval, S32, ( const char * countername ),,
+   "@brief returns the interval for a counter.\n\n"
+   "@return true if successful, false if failed\n" )
+{
+   return object->counterGetInterval(countername);
+}
+
+DefineEngineMethod( SceneObject, TickCounterReset, void, ( const char * countername ),,
+   "@brief resets the current count for a counter.\n\n"
+   "@return true if successful, false if failed\n" )
+{
+   object->counterReset(countername);
+}
+
+DefineEngineMethod( SceneObject, TickCounterHas, bool, ( const char * countername ),,
+   "@brief Checks to see if the counter exists.\n\n"
+   "@return true if successful, false if failed\n" )
+{
+   return object->counterHas(countername);
+}
+
+DefineEngineMethod( SceneObject, TickCounterSuspend, void, ( const char * countername, bool suspend ),,
+   "@brief Adds a new counter to be tracked via ticks.\n\n"
+    )
+{
+   object->counterSuspend(countername,suspend);
+}
+
+DefineEngineMethod( SceneObject, TickCountersClear, void,() ,, "@brief Clears all counters from the object.\n\n")
+{
+   object->countersClear();
+}
 //-----------------------------------------------------------------------------
 
 void SceneObject::initPersistFields()
@@ -577,6 +632,10 @@ void SceneObject::initPersistFields()
       addField( "mountRot", TypeMatrixRotation, Offset( mMount.xfm, SceneObject ), "Rotation we are mounted at ( object space of our mount object )." );
 
    endGroup( "Mounting" );
+
+   addGroup("Scripting");
+   addField("EnableCounters", TypeBool, Offset(mEnableCounters, SceneObject), "Used to turn tick counters.");
+   endGroup("Scripting");
 
    Parent::initPersistFields();
 }
@@ -890,7 +949,7 @@ Point3F SceneObject::getRenderPosition() const
 
 void SceneObject::setPosition(const Point3F &pos)
 {
-	AssertFatal( !mIsNaN( pos ), "SceneObject::setPosition() - The position is NaN!" );
+   AssertFatal( !mIsNaN( pos ), "SceneObject::setPosition() - The position is NaN!" );
 
    MatrixF xform = mObjToWorld;
    xform.setColumn(3, pos);
@@ -1171,6 +1230,15 @@ void SceneObject::getRenderMountTransform( F32 delta, S32 index, const MatrixF &
    outMat->mul( mRenderObjToWorld, mountTransform );
 }
 
+//Walkable Shapes
+//-----------------------------------------------------------------------------
+
+void SceneObject::getRelativeOrientation(SceneObject *attachedObj, Point3F &relPos, Point3F &relRot)
+{
+   relPos = relRot = Point3F::Zero;
+}
+
+//Walkable Shapes
 //=============================================================================
 //    Console API.
 //=============================================================================
@@ -1312,6 +1380,13 @@ DefineEngineMethod( SceneObject, getPosition, Point3F, (),,
    "@return the current world position of the object\n" )
 {
    return object->getTransform().getPosition();
+}
+
+DefineEngineMethod( SceneObject, setPosition, void, (Point3F pos),,
+   "Set the object's world position.\n"
+   "@param pos the new world position of the object\n" )
+{
+   return object->setPosition(pos);
 }
 
 //-----------------------------------------------------------------------------

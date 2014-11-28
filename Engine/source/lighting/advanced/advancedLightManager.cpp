@@ -35,6 +35,8 @@
 #include "math/util/sphereMesh.h"
 #include "console/consoleTypes.h"
 #include "scene/sceneRenderState.h"
+#include "gfx/gfxCardProfile.h"
+#include "gfx/gfxTextureProfile.h"
 
 
 ImplementEnumType( ShadowType,
@@ -81,6 +83,9 @@ bool AdvancedLightManager::isCompatible() const
       return false;
 
    // TODO: Test for the necessary texture formats!
+   bool autoMips;
+   if(!GFX->getCardProfiler()->checkFormat(GFXFormatR16F, &GFXDefaultRenderTargetProfile, autoMips))
+      return false;
 
    return true;
 }
@@ -99,7 +104,6 @@ void AdvancedLightManager::activate( SceneManager *sceneManager )
    // we prefer the floating point format if it works.
    Vector<GFXFormat> formats;
    formats.push_back( GFXFormatR16G16B16A16F );
-   formats.push_back( GFXFormatR16G16B16A16 );
    GFXFormat blendTargetFormat = GFX->selectSupportedFormat( &GFXDefaultRenderTargetProfile,
                                                          formats,
                                                          true,

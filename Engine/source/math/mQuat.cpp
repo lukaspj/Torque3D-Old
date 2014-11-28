@@ -326,4 +326,3 @@ QuatF & QuatF::shortestArc( const VectorF &a, const VectorF &b )
 
    return *this;
 }
-

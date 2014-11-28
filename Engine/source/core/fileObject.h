@@ -52,6 +52,9 @@ public:
    void close();
    void writeObject( SimObject* object, const U8* objectPrepend = NULL );
 
+   void writeBinary(U32 bufferSize, const U8 *buffer) ;
+   U32 getSize() ;
+   U8 * getBuffer() ;
    DECLARE_CONOBJECT(FileObject);
 };
 

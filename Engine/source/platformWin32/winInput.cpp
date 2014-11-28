@@ -20,6 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#if !defined( TORQUE_SDL )
 #include "platformWin32/platformWin32.h"
 
 #include "platform/platformInput.h"
@@ -508,13 +509,14 @@ void Input::log( const char* format, ... )
 ConsoleFunction( inputLog, void, 2, 2, "inputLog( string )" )
 {
    argc;
-   Input::log( "%s\n", argv[1] );
+   Input::log( "%s\n", (const char*)argv[1] );
 }
 #endif // LOG_INPUT
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+
 static U8 VcodeRemap[256] =
 {
 0,                   // 0x00
@@ -865,3 +867,4 @@ bool Platform::setClipboard(const char *text)
 	return true;
 }
 
+#endif

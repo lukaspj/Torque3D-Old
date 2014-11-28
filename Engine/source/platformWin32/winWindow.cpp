@@ -189,6 +189,7 @@ bool Platform::checkOtherInstances(const char *mutexName)
    return false;
 }
 
+#ifndef TORQUE_SDL
 //--------------------------------------
 void Platform::AlertOK(const char *windowTitle, const char *message)
 {
@@ -230,6 +231,43 @@ bool Platform::AlertRetry(const char *windowTitle, const char *message)
    return (MessageBox(NULL, message, windowTitle, MB_ICONINFORMATION | MB_SETFOREGROUND | MB_TASKMODAL | MB_RETRYCANCEL) == IDRETRY);
 #endif
 }
+
+Platform::ALERT_ASSERT_RESULT Platform::AlertAssert(const char *windowTitle, const char *message)
+{
+#ifndef TORQUE_TOOLS
+   ShowCursor(true);
+#endif // TORQUE_TOOLS
+
+#ifdef UNICODE
+   UTF16 messageUTF[1024], title[512];
+   convertUTF8toUTF16((UTF8 *)windowTitle, title, sizeof(title));
+   convertUTF8toUTF16((UTF8 *)message, messageUTF, sizeof(messageUTF));
+#else
+   const char* messageUTF = message;
+   const char* title = windowTitle;
+#endif
+
+   // TODO: Change this to a custom dialog that has Exit, Ignore, Ignore All, and Debug buttons
+   ALERT_ASSERT_RESULT alertResult = ALERT_ASSERT_DEBUG;
+   int result = MessageBox(winState.appWindow, messageUTF, title, MB_ABORTRETRYIGNORE | MB_ICONSTOP | MB_DEFBUTTON2 | MB_TASKMODAL | MB_SETFOREGROUND);
+   switch( result )
+   {
+		case IDABORT:
+			alertResult = ALERT_ASSERT_EXIT;
+			break;
+		case IDIGNORE:
+			alertResult = ALERT_ASSERT_IGNORE;
+			break;
+		default:
+		case IDRETRY:
+			alertResult = ALERT_ASSERT_DEBUG;
+			break;
+   }
+
+   return alertResult;
+}
+
+#endif
 
 //--------------------------------------
 HIMC gIMEContext;
@@ -311,18 +349,10 @@ S32 main(S32 argc, const char **argv)
 
 //--------------------------------------
 
-#include "unit/test.h"
 #include "app/mainLoop.h"
 
 S32 PASCAL WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, S32)
 {
-#if 0
-   // Run a unit test.
-   StandardMainLoop::initCore();
-   UnitTesting::TestRun tr;
-   tr.test("Platform", true);
-#else
-
    Vector<char *> argv( __FILE__, __LINE__ );
 
    char moduleName[256];
@@ -366,7 +396,6 @@ S32 PASCAL WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR lpszCmdLine, S32)
       dFree(argv[j]);
 
    return retVal;
-#endif
 }
 
 #else //TORQUE_SHARED
@@ -375,6 +404,7 @@ extern "C"
 {
 	bool torque_engineinit(S32 argc, const char **argv);
 	S32  torque_enginetick();
+	S32  torque_getreturnstatus();
 	bool torque_engineshutdown();
 };
 
@@ -390,7 +420,7 @@ S32 TorqueMain(int argc, const char **argv)
 
 	torque_engineshutdown();
 
-	return 0;
+	return torque_getreturnstatus();
 
 }
 

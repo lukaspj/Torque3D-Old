@@ -25,8 +25,8 @@ project(${TORQUE_APP_NAME})
 if(UNIX)
     # default compiler flags
     # force compile 32 bit
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -Wall -Wundef -msse -pipe -Wfatal-errors ${TORQUE_ADDITIONAL_LINKER_FLAGS}")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -Wall -Wundef -msse -pipe -Wfatal-errors ${TORQUE_ADDITIONAL_LINKER_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -Wall -Wundef -msse -pipe -Wfatal-errors")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -Wall -Wundef -msse -pipe -Wfatal-errors")
 
 	# for asm files
 	SET (CMAKE_ASM_NASM_OBJECT_FORMAT "elf")
@@ -58,8 +58,22 @@ option(TORQUE_HIFI "HIFI? support" OFF)
 mark_as_advanced(TORQUE_HIFI)
 option(TORQUE_EXTENDED_MOVE "Extended move support" OFF)
 mark_as_advanced(TORQUE_EXTENDED_MOVE)
+if(WIN32)
+	option(TORQUE_SDL "Use SDL for window and input" OFF)
+	mark_as_advanced(TORQUE_SDL)
+else()
+	set(TORQUE_SDL ON) # we need sdl to work on Linux/Mac
+endif()
+if(WIN32)
+	option(TORQUE_OPENGL "Allow OpenGL render" OFF)
+	#mark_as_advanced(TORQUE_OPENGL)
+else()
+	set(TORQUE_OPENGL ON) # we need OpenGL to render on Linux/Mac
+endif()
 option(TORQUE_NAVIGATION "Enable Navigation module" OFF)
 #mark_as_advanced(TORQUE_NAVIGATION)
+option(TORQUE_TESTING "Enable unit test module" OFF)
+mark_as_advanced(TORQUE_TESTING)
 if(WIN32)
 	option(TORQUE_OPENGL "Allow OpenGL render" OFF)
 	#mark_as_advanced(TORQUE_OPENGL)
@@ -85,6 +99,7 @@ if(TORQUE_HYDRA)
 else() # hide variable
     set(TORQUE_HYDRA_SDK_PATH "" CACHE INTERNAL "" FORCE) 
 endif()
+
 
 ###############################################################################
 # options
@@ -144,7 +159,25 @@ if(WIN32)
     # warning C4244: 'initializing' : conversion from 'XXX' to 'XXX', possible loss of data
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4244")
 
-    link_directories($ENV{DXSDK_DIR}/Lib/x86)
+    if( TORQUE_CPU_X64 )
+        link_directories($ENV{DXSDK_DIR}/Lib/x64)
+    else()
+        link_directories($ENV{DXSDK_DIR}/Lib/x86)
+    endif()
+endif()
+
+# build types
+if(NOT MSVC) # handle single-configuration generator
+	set(CMAKE_BUILD_TYPE ${TORQUE_BUILD_TYPE})
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(TORQUE_DEBUG TRUE)
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(TORQUE_RELEASE TRUE)
+    elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        set(TORQUE_RELEASE TRUE)
+    else()
+		message(FATAL_ERROR "Please select Debug, Release or RelWithDebInfo for TORQUE_BUILD_TYPE")
+	endif()
 endif()
 
 ###############################################################################
@@ -166,12 +199,10 @@ addPath("${srcDir}/core/util/test")
 addPath("${srcDir}/core/util/journal")
 addPath("${srcDir}/core/util/journal/test")
 addPath("${srcDir}/core/util/zip")
-addPath("${srcDir}/core/util/zip/unitTests")
+addPath("${srcDir}/core/util/zip/test")
 addPath("${srcDir}/core/util/zip/compressors")
 addPath("${srcDir}/i18n")
 addPath("${srcDir}/sim")
-#addPath("${srcDir}/unit/tests")
-addPath("${srcDir}/unit")
 addPath("${srcDir}/util")
 addPath("${srcDir}/windowManager")
 addPath("${srcDir}/windowManager/torque")
@@ -188,6 +219,7 @@ endif()
 addPath("${srcDir}/platform/test")
 addPath("${srcDir}/platform/threads")
 addPath("${srcDir}/platform/async")
+addPath("${srcDir}/platform/async/test")
 addPath("${srcDir}/platform/input")
 addPath("${srcDir}/platform/output")
 addPath("${srcDir}/app")
@@ -327,6 +359,34 @@ else()
     addPath("${srcDir}/T3D/gameBase/std")
 endif()
 
+if(TORQUE_SDL)
+    addPathRec("${srcDir}/windowManager/sdl")
+    addPathRec("${srcDir}/platformSDL")
+    
+    if(TORQUE_OPENGL)
+      addPathRec("${srcDir}/gfx/gl/sdl")
+    endif()
+    
+    if(UNIX)
+       set(CMAKE_SIZEOF_VOID_P 4) #force 32 bit
+       set(ENV{CFLAGS} "-m32 -g -O3")
+       if("${TORQUE_ADDITIONAL_LINKER_FLAGS}" STREQUAL "")
+         set(ENV{LDFLAGS} "-m32")
+       else()
+         set(ENV{LDFLAGS} "-m32 ${TORQUE_ADDITIONAL_LINKER_FLAGS}")
+       endif()
+    endif()
+    
+    #override and hide SDL2 cache variables
+    set(SDL_SHARED ON CACHE INTERNAL "" FORCE)
+    set(SDL_STATIC OFF CACHE INTERNAL "" FORCE)
+    add_subdirectory( ${libDir}/sdl ${CMAKE_CURRENT_BINARY_DIR}/sdl2)
+endif()
+
+if(TORQUE_TESTING)
+   include( "modules/module_testing.cmake" )
+endif()
+
 if(TORQUE_NAVIGATION)
    include( "modules/module_navigation.cmake" )
 endif()
@@ -337,10 +397,6 @@ endif()
 
 if(TORQUE_HYDRA)
     include( "modules/module_hydra.cmake" )
-endif()
-
-if(TORQUE_DISABLE_MEMORY_MANAGER)
-    addDef(TORQUE_DISABLE_MEMORY_MANAGER)
 endif()
 
 if(TORQUE_DEDICATED)
@@ -414,6 +470,7 @@ if(PS3)
 endif()
 
 if(UNIX)
+    # linux_dedicated
     if(TORQUE_DEDICATED)
 		addPath("${srcDir}/windowManager/dedicated")
 		# ${srcDir}/platformX86UNIX/*.client.* files are not needed	
@@ -430,8 +487,8 @@ if(UNIX)
         endforeach()
     else()
         addPath("${srcDir}/platformX86UNIX")
-    endif()    
-    
+    endif()
+    # linux
     addPath("${srcDir}/platformX86UNIX/threads")
     addPath("${srcDir}/platformPOSIX")
 endif()
@@ -441,8 +498,12 @@ if( TORQUE_OPENGL )
     if( TORQUE_OPENGL AND NOT TORQUE_DEDICATED )
         addPath("${srcDir}/gfx/gl")
         addPath("${srcDir}/gfx/gl/tGL")        
+    addPath("${srcDir}/shaderGen/GLSL")
         addPath("${srcDir}/terrain/glsl")
         addPath("${srcDir}/forest/glsl")    
+
+    # glew
+    LIST(APPEND ${PROJECT_NAME}_files "${libDir}/glew/src/glew.c")
     endif()
     
     if(WIN32 AND NOT TORQUE_SDL)
@@ -456,11 +517,10 @@ finishExecutable()
 ###############################################################################
 ###############################################################################
 
+message(STATUS "writing ${projectSrcDir}/torqueConfig.h")
+CONFIGURE_FILE("${cmakeDir}/torqueConfig.h.in" "${projectSrcDir}/torqueConfig.h")
+
 # configure the relevant files only once
-if(NOT EXISTS "${projectSrcDir}/torqueConfig.h")
-    message(STATUS "writing ${projectSrcDir}/torqueConfig.h")
-    CONFIGURE_FILE("${cmakeDir}/torqueConfig.h.in" "${projectSrcDir}/torqueConfig.h")
-endif()
 if(NOT EXISTS "${projectSrcDir}/torque.ico")
     CONFIGURE_FILE("${cmakeDir}/torque.ico" "${projectSrcDir}/torque.ico" COPYONLY)
 endif()
@@ -502,11 +562,24 @@ if(WIN32)
     set(TORQUE_EXTERNAL_LIBS "COMCTL32.LIB;COMDLG32.LIB;USER32.LIB;ADVAPI32.LIB;GDI32.LIB;WINMM.LIB;WSOCK32.LIB;vfw32.lib;Imm32.lib;d3d9.lib;d3dx9.lib;DxErr.lib;ole32.lib;shell32.lib;oleaut32.lib;version.lib" CACHE STRING "external libs to link against")
     mark_as_advanced(TORQUE_EXTERNAL_LIBS)
     addLib("${TORQUE_EXTERNAL_LIBS}")
+   
+   if(TORQUE_OPENGL)
+      addLib(OpenGL32.lib)
+   endif()
 endif()
 
 if(UNIX)
     # copy pasted from T3D build system, some might not be needed
 	set(TORQUE_EXTERNAL_LIBS "dl Xxf86vm Xext X11 Xft stdc++ pthread GL" CACHE STRING "external libs to link against")
+	mark_as_advanced(TORQUE_EXTERNAL_LIBS)
+    
+    string(REPLACE " " ";" TORQUE_EXTERNAL_LIBS_LIST ${TORQUE_EXTERNAL_LIBS})
+    addLib( "${TORQUE_EXTERNAL_LIBS_LIST}" )
+endif()
+
+if(UNIX)
+    # copy pasted from T3D build system, some might not be needed
+	set(TORQUE_EXTERNAL_LIBS "rt dl Xxf86vm Xext X11 Xft stdc++ pthread GL" CACHE STRING "external libs to link against")
 	mark_as_advanced(TORQUE_EXTERNAL_LIBS)
     
     string(REPLACE " " ";" TORQUE_EXTERNAL_LIBS_LIST ${TORQUE_EXTERNAL_LIBS})
@@ -540,6 +613,23 @@ if(UNIX)
 	addDef(LINUX)	
 endif()
 
+if(TORQUE_OPENGL)
+	addDef(TORQUE_OPENGL)
+   if(WIN32)
+      addDef(GLEW_STATIC)
+    endif()
+endif()
+
+if(TORQUE_SDL)
+    addDef(TORQUE_SDL)
+    addInclude(${libDir}/sdl/include)
+    addLib(SDL2)
+endif()
+
+if(TORQUE_STATIC_CODE_ANALYSIS)
+    addDef( "ON_FAIL_ASSERTFATAL=exit(1)" )
+endif()
+
 ###############################################################################
 # Include Paths
 ###############################################################################
@@ -559,6 +649,15 @@ addInclude("${libDir}/opcode")
 addInclude("${libDir}/collada/include")
 addInclude("${libDir}/collada/include/1.4")
 
+if(UNIX)
+	addInclude("/usr/include/freetype2/freetype")
+	addInclude("/usr/include/freetype2")
+endif()
+
+if(TORQUE_OPENGL)
+	addInclude("${libDir}/glew/include")
+endif()
+
 # external things
 if(WIN32)
     set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY INCLUDE_DIRECTORIES $ENV{DXSDK_DIR}/Include)
@@ -575,11 +674,11 @@ endif()
 
 if(TORQUE_TEMPLATE)
     message("Prepare Template(${TORQUE_TEMPLATE}) install...")
-    INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/game"                 DESTINATION "${projectDir}")
+    INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/game"                 DESTINATION "${TORQUE_APP_DIR}")
     if(WIN32)
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/cleanShaders.bat"     DESTINATION "${projectDir}")
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeleteCachedDTSs.bat" DESTINATION "${projectDir}")
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeleteDSOs.bat"       DESTINATION "${projectDir}")
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeletePrefs.bat"      DESTINATION "${projectDir}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/cleanShaders.bat"     DESTINATION "${TORQUE_APP_DIR}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeleteCachedDTSs.bat" DESTINATION "${TORQUE_APP_DIR}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeleteDSOs.bat"       DESTINATION "${TORQUE_APP_DIR}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeletePrefs.bat"      DESTINATION "${TORQUE_APP_DIR}")
     endif()
 endif()

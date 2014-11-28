@@ -41,6 +41,8 @@
 // MenuBar Methods
 //-----------------------------------------------------------------------------
 
+#ifndef TORQUE_SDL
+
 void MenuBar::createPlatformPopupMenuData()
 {
 //    mData = new PlatformMenuBarData;
@@ -169,3 +171,5 @@ void MenuBar::removeFromCanvas()
 
    mCanvas = NULL;
 }
+
+#endif

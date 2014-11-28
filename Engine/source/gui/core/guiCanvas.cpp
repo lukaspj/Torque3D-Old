@@ -121,7 +121,8 @@ GuiCanvas::GuiCanvas(): GuiControl(),
                         mMiddleMouseLast(false),
                         mRightMouseLast(false),
                         mPlatformWindow(NULL),
-                        mLastRenderMs(0)
+                        mLastRenderMs(0),
+                        mDisplayWindow(true)
 {
    setBounds(0, 0, 640, 480);
    mAwake = true;
@@ -176,6 +177,8 @@ void GuiCanvas::initPersistFields()
 
    addGroup("Canvas Rendering");
    addProtectedField( "numFences", TypeS32, Offset( mNumFences, GuiCanvas ), &setProtectedNumFences, &defaultProtectedGetFn, "The number of GFX fences to use." );
+
+   addField("displayWindow", TypeBool, Offset(mDisplayWindow, GuiCanvas), "Controls if the canvas window is rendered or not." );
    endGroup("Canvas Rendering");
 
    Parent::initPersistFields();
@@ -252,6 +255,19 @@ bool GuiCanvas::onAdd()
    // Make sure we're able to render.
    newDevice->setAllowRender( true );
 
+   if(mDisplayWindow)
+   {
+      getPlatformWindow()->show();
+      WindowManager->setDisplayWindow(true);
+      getPlatformWindow()->setDisplayWindow(true);
+   }
+   else
+   {
+      getPlatformWindow()->hide();
+      WindowManager->setDisplayWindow(false);
+      getPlatformWindow()->setDisplayWindow(false);
+   }
+
    // Propagate add to parents.
    // CodeReview - if GuiCanvas fails to add for whatever reason, what happens to
    // all the event registration above?
@@ -266,6 +282,8 @@ bool GuiCanvas::onAdd()
 
    mLastPurchaseHideTime = 0;
 #endif
+
+   mMenuBarCtrl = (GuiControl*)Sim::findObject("PlatformGenericMenubar");
 
    return parentRet;
 }
@@ -284,6 +302,18 @@ void GuiCanvas::onRemove()
    Con::executef(this, "onDestroyMenu");
 
    Parent::onRemove();
+}
+
+void GuiCanvas::setMenuBar(SimObject *obj)
+{
+   if( mMenuBarCtrl )
+      Parent::removeObject( mMenuBarCtrl );
+
+   mMenuBarCtrl = (GuiControl*)obj;
+   if( mMenuBarCtrl )
+   {
+      Parent::addObject(mMenuBarCtrl);
+   }
 }
 
 void GuiCanvas::setWindowTitle(const char *newTitle)
@@ -662,7 +692,7 @@ bool GuiCanvas::processMouseEvent(InputEventInfo &inputEvent)
    // Need to query platform for specific things
    AssertISV(mPlatformWindow, "GuiCanvas::processMouseEvent - no window present!");
    PlatformCursorController *pController = mPlatformWindow->getCursorController();
-   AssertFatal(pController != NULL, "GuiCanvas::processInputEvent - No Platform Controller Found")
+   AssertFatal(pController != NULL, "GuiCanvas::processInputEvent - No Platform Controller Found");
 
       //copy the modifier into the new event
       mLastEvent.modifier = inputEvent.modifier;
@@ -1000,24 +1030,8 @@ void GuiCanvas::rootMouseDown(const GuiEvent &event)
       mMouseCapturedControl->onMouseDown(event);
    else
    {
-      //else pass it to whoever is underneath the cursor
-      iterator i;
-      i = end();
-      while (i != begin())
-      {
-         i--;
-         GuiControl *ctrl = static_cast<GuiControl *>(*i);
-         GuiControl *controlHit = ctrl->findHitControl(event.mousePoint);
-
-         //see if the controlHit is a modeless dialog...
-         if( !controlHit->getControlProfile()->mModal )
-            continue;
-         else
-         {
-            controlHit->onMouseDown(event);
-            break;
-         }
-      }
+      GuiControl *controlHit = findHitControl(event.mousePoint);
+      controlHit->onMouseDown(event);
    }
 
    if (bool(mMouseControl))
@@ -1276,6 +1290,8 @@ void GuiCanvas::setContentControl(GuiControl *gui)
 
       Sim::getGuiGroup()->addObject( ctrl );
    }
+
+   setMenuBar( mMenuBarCtrl );
 
    // lose the first responder from the old GUI
    GuiControl* responder = gui->findFirstTabable();
@@ -1540,10 +1556,18 @@ void GuiCanvas::maintainSizing()
       GuiControl *ctrl = static_cast<GuiControl*>(*i);
       Point2I ext = ctrl->getExtent();
       Point2I pos = ctrl->getPosition();
+      Point2I newExt = screenRect.extent;
+      Point2I newPos = screenRect.point;
 
-      if(pos != screenRect.point || ext != screenRect.extent)
+      if( mMenuBarCtrl && (ctrl == getContentControl()) )
       {
-         ctrl->resize(screenRect.point, screenRect.extent);
+         newPos.y += 32;
+         newExt.y -= 32;
+      }
+
+      if(pos != newPos || ext != newExt)
+      {
+         ctrl->resize(newPos, newExt);
          resetUpdateRegions();
       }
    }
@@ -2006,7 +2030,7 @@ ConsoleMethod( GuiCanvas, pushDialog, void, 3, 5, "(GuiControl ctrl, int layer=0
 
    if (!	Sim::findObject(argv[2], gui))
    {
-      Con::printf("%s(): Invalid control: %s", argv[0], argv[2]);
+      Con::printf("%s(): Invalid control: %s", (const char*)argv[0], (const char*)argv[2]);
       return;
    }
 
@@ -2051,7 +2075,7 @@ ConsoleMethod( GuiCanvas, popDialog, void, 2, 3, "(GuiControl ctrl=NULL)"
    {
       if (!Sim::findObject(argv[2], gui))
       {
-         Con::printf("%s(): Invalid control: %s", argv[0], argv[2]);
+         Con::printf("%s(): Invalid control: %s", (const char*)argv[0], (const char*)argv[2]);
          return;
       }
    }
@@ -2209,7 +2233,10 @@ DefineEngineMethod( GuiCanvas, reset, void, (),,
 }
 
 DefineEngineMethod( GuiCanvas, getCursorPos, Point2I, (),,
-				   "@brief Get the current position of the cursor.\n\n"
+				   "@brief Get the current position of the cursor in screen-space. Note that this position"
+               " might be outside the Torque window. If you want to get the position within the Canvas,"
+               " call screenToClient on the result.\n\n"
+               "@see Canvas::screenToClient()\n\n"
 				   "@param param Description\n\n"
 				   "@tsexample\n"
 				   "%cursorPos = Canvas.getCursorPos();\n"
@@ -2264,7 +2291,7 @@ DefineEngineMethod( GuiCanvas, getMouseControl, S32, (),,
    if (control)
       return control->getId();
    
-   return NULL;
+   return 0;
 }
 
 DefineEngineFunction(excludeOtherInstance, bool, (const char* appIdentifer),,
@@ -2280,7 +2307,7 @@ DefineEngineFunction(excludeOtherInstance, bool, (const char* appIdentifer),,
 					 "@ingroup GuiCore")
 {
 	   // mac/360 can only run one instance in general.
-#if !defined(TORQUE_OS_MAC) && !defined(TORQUE_OS_XENON) && !defined(TORQUE_DEBUG)
+#if !defined(TORQUE_OS_MAC) && !defined(TORQUE_OS_XENON) && !defined(TORQUE_DEBUG) && !defined(TORQUE_OS_LINUX)
    return Platform::excludeOtherInstances(appIdentifer);
 #else
    // We can just return true if we get here.
@@ -2587,6 +2614,15 @@ ConsoleMethod( GuiCanvas, setFocus, void, 2,2, "() - Claim OS input focus for th
       window->setFocus();
 }
 
+DefineEngineMethod( GuiCanvas, setMenuBar, void, ( GuiControl* menu ),,
+   "Translate a coordinate from canvas window-space to screen-space.\n"
+   "@param coordinate The coordinate in window-space.\n"
+   "@return The given coordinate translated to screen-space." )
+{ 
+      
+   return object->setMenuBar( menu );
+}
+
 ConsoleMethod( GuiCanvas, setVideoMode, void, 5, 8,
                "(int width, int height, bool fullscreen, [int bitDepth], [int refreshRate], [int antialiasLevel] )\n"
                "Change the video mode of this canvas. This method has the side effect of setting the $pref::Video::mode to the new values.\n\n"
@@ -2682,4 +2718,24 @@ ConsoleMethod( GuiCanvas, setVideoMode, void, 5, 8,
 
    // Store the new mode into a pref.
    Con::setVariable( "$pref::Video::mode", vm.toString() );
+}
+
+ConsoleMethod( GuiCanvas, showWindow, void, 2, 2, "" )
+{
+   if (!object->getPlatformWindow())
+      return;
+
+   object->getPlatformWindow()->show();
+   WindowManager->setDisplayWindow(true);
+   object->getPlatformWindow()->setDisplayWindow(true);
+}
+
+ConsoleMethod( GuiCanvas, hideWindow, void, 2, 2, "" )
+{
+   if (!object->getPlatformWindow())
+      return;
+
+   object->getPlatformWindow()->hide();
+   WindowManager->setDisplayWindow(false);
+   object->getPlatformWindow()->setDisplayWindow(false);
 }
