@@ -30,248 +30,332 @@
 //----------------------------------------------------------------------------
 
 ProcessObject::ProcessObject()
- : mProcessTag( 0 ),   
-   mOrderGUID( 0 ),
-   mProcessTick( false ),
-   mIsGameBase( false )
-{ 
-   mProcessLink.next = mProcessLink.prev = this;
+	: mProcessTag(0),
+	mOrderGUID(0),
+	mProcessTick(false),
+	mIsGameBase(false),
+	mEnableCounters(false)
+{
+	mProcessLink.next = mProcessLink.prev = this;
 }
 
 void ProcessObject::plUnlink()
 {
-   mProcessLink.next->mProcessLink.prev = mProcessLink.prev;
-   mProcessLink.prev->mProcessLink.next = mProcessLink.next;
-   mProcessLink.next = mProcessLink.prev = this;
+	mProcessLink.next->mProcessLink.prev = mProcessLink.prev;
+	mProcessLink.prev->mProcessLink.next = mProcessLink.next;
+	mProcessLink.next = mProcessLink.prev = this;
 }
 
 void ProcessObject::plLinkAfter(ProcessObject * obj)
 {
-   AssertFatal(mProcessLink.next == this && mProcessLink.prev == this,"ProcessObject::plLinkAfter: must be unlinked before calling this");
+	AssertFatal(mProcessLink.next == this && mProcessLink.prev == this, "ProcessObject::plLinkAfter: must be unlinked before calling this");
 #ifdef TORQUE_DEBUG
-   ProcessObject * test1 = obj;
-   ProcessObject * test2 = obj->mProcessLink.next;
-   ProcessObject * test3 = obj->mProcessLink.prev;
-   ProcessObject * test4 = this;
+	ProcessObject * test1 = obj;
+	ProcessObject * test2 = obj->mProcessLink.next;
+	ProcessObject * test3 = obj->mProcessLink.prev;
+	ProcessObject * test4 = this;
 #endif
 
-   // Link this after obj
-   mProcessLink.next = obj->mProcessLink.next;
-   mProcessLink.prev = obj;
-   obj->mProcessLink.next = this;
-   mProcessLink.next->mProcessLink.prev = this;
+	// Link this after obj
+	mProcessLink.next = obj->mProcessLink.next;
+	mProcessLink.prev = obj;
+	obj->mProcessLink.next = this;
+	mProcessLink.next->mProcessLink.prev = this;
 
 #ifdef TORQUE_DEBUG
-   AssertFatal(test1->mProcessLink.next->mProcessLink.prev==test1 && test1->mProcessLink.prev->mProcessLink.next==test1,"Doh!");
-   AssertFatal(test2->mProcessLink.next->mProcessLink.prev==test2 && test2->mProcessLink.prev->mProcessLink.next==test2,"Doh!");
-   AssertFatal(test3->mProcessLink.next->mProcessLink.prev==test3 && test3->mProcessLink.prev->mProcessLink.next==test3,"Doh!");
-   AssertFatal(test4->mProcessLink.next->mProcessLink.prev==test4 && test4->mProcessLink.prev->mProcessLink.next==test4,"Doh!");
+	AssertFatal(test1->mProcessLink.next->mProcessLink.prev == test1 && test1->mProcessLink.prev->mProcessLink.next == test1, "Doh!");
+	AssertFatal(test2->mProcessLink.next->mProcessLink.prev == test2 && test2->mProcessLink.prev->mProcessLink.next == test2, "Doh!");
+	AssertFatal(test3->mProcessLink.next->mProcessLink.prev == test3 && test3->mProcessLink.prev->mProcessLink.next == test3, "Doh!");
+	AssertFatal(test4->mProcessLink.next->mProcessLink.prev == test4 && test4->mProcessLink.prev->mProcessLink.next == test4, "Doh!");
 #endif
 }
 
 void ProcessObject::plLinkBefore(ProcessObject * obj)
 {
-   AssertFatal(mProcessLink.next == this && mProcessLink.prev == this,"ProcessObject::plLinkBefore: must be unlinked before calling this");
+	AssertFatal(mProcessLink.next == this && mProcessLink.prev == this, "ProcessObject::plLinkBefore: must be unlinked before calling this");
 #ifdef TORQUE_DEBUG
-   ProcessObject * test1 = obj;
-   ProcessObject * test2 = obj->mProcessLink.next;
-   ProcessObject * test3 = obj->mProcessLink.prev;
-   ProcessObject * test4 = this;
+	ProcessObject * test1 = obj;
+	ProcessObject * test2 = obj->mProcessLink.next;
+	ProcessObject * test3 = obj->mProcessLink.prev;
+	ProcessObject * test4 = this;
 #endif
 
-   // Link this before obj
-   mProcessLink.next = obj;
-   mProcessLink.prev = obj->mProcessLink.prev;
-   obj->mProcessLink.prev = this;
-   mProcessLink.prev->mProcessLink.next = this;
+	// Link this before obj
+	mProcessLink.next = obj;
+	mProcessLink.prev = obj->mProcessLink.prev;
+	obj->mProcessLink.prev = this;
+	mProcessLink.prev->mProcessLink.next = this;
 
 #ifdef TORQUE_DEBUG
-   AssertFatal(test1->mProcessLink.next->mProcessLink.prev==test1 && test1->mProcessLink.prev->mProcessLink.next==test1,"Doh!");
-   AssertFatal(test2->mProcessLink.next->mProcessLink.prev==test2 && test2->mProcessLink.prev->mProcessLink.next==test2,"Doh!");
-   AssertFatal(test3->mProcessLink.next->mProcessLink.prev==test3 && test3->mProcessLink.prev->mProcessLink.next==test3,"Doh!");
-   AssertFatal(test4->mProcessLink.next->mProcessLink.prev==test4 && test4->mProcessLink.prev->mProcessLink.next==test4,"Doh!");
+	AssertFatal(test1->mProcessLink.next->mProcessLink.prev == test1 && test1->mProcessLink.prev->mProcessLink.next == test1, "Doh!");
+	AssertFatal(test2->mProcessLink.next->mProcessLink.prev == test2 && test2->mProcessLink.prev->mProcessLink.next == test2, "Doh!");
+	AssertFatal(test3->mProcessLink.next->mProcessLink.prev == test3 && test3->mProcessLink.prev->mProcessLink.next == test3, "Doh!");
+	AssertFatal(test4->mProcessLink.next->mProcessLink.prev == test4 && test4->mProcessLink.prev->mProcessLink.next == test4, "Doh!");
 #endif
 }
 
 void ProcessObject::plJoin(ProcessObject * head)
 {
-   ProcessObject * tail1 = head->mProcessLink.prev;
-   ProcessObject * tail2 = mProcessLink.prev;
-   tail1->mProcessLink.next = this;
-   mProcessLink.prev = tail1;
-   tail2->mProcessLink.next = head;
-   head->mProcessLink.prev = tail2;
+	ProcessObject * tail1 = head->mProcessLink.prev;
+	ProcessObject * tail2 = mProcessLink.prev;
+	tail1->mProcessLink.next = this;
+	mProcessLink.prev = tail1;
+	tail2->mProcessLink.next = head;
+	head->mProcessLink.prev = tail2;
+}
+
+bool ProcessObject::counterHas(const char* countername)
+{
+	TypeCounters::Iterator got = mCounters.find(String(StringTable->insert(countername)));
+	if (got == mCounters.end())
+		return false;
+	return true;
+}
+
+void ProcessObject::counterSuspend(const char* countername, bool suspend)
+{
+	const char* key = StringTable->insert(countername);
+	if (counterHas(key))
+	{
+		mCounters[String(key)].mSuspend = suspend;
+	}
+
+}
+
+void ProcessObject::counterAdd(const char* countername, U32 interval)
+{
+	const char* key = StringTable->insert(countername);
+	mCounters[String(key)].mInterval = interval;
+	mCounters[String(key)].mCounter = 0;
+}
+
+bool ProcessObject::counterRemove(const char* countername)
+{
+	const char* key = StringTable->insert(countername);
+	if (counterHas(key))
+	{
+		mCounters.erase(String(key));
+		return true;
+	}
+	return false;
+}
+
+U32 ProcessObject::counterGetInterval(const char* countername)
+{
+	const char* key = StringTable->insert(countername);
+	if (counterHas(key))
+	{
+		U32 val = mCounters[String(key)].mInterval;
+		return val;
+	}
+	return 0;
+}
+
+void ProcessObject::counterReset(const char* countername)
+{
+	const char* key = StringTable->insert(countername);
+	if (counterHas(key))
+	{
+		mCounters[String(key)].mCounter = 0;
+	}
+}
+
+void ProcessObject::countersClear()
+{
+	mCounters.clear();
+}
+
+void ProcessObject::countersIncrement()
+{
+
+	for (TypeCounters::Iterator itr = mCounters.begin(); itr != mCounters.end(); ++itr)
+	{
+		CountersDetail& counter = itr->value;
+
+		if (!counter.mSuspend)
+			counter.mCounter++;
+		if (counter.mCounter >= counter.mInterval)
+		{
+			counter.mCounter = 0;
+			counterNotify(itr->key.c_str());
+		}
+	}
 }
 
 //--------------------------------------------------------------------------
 
 ProcessList::ProcessList()
 {
-   mCurrentTag = 0;
-   mDirty = false;
+	mCurrentTag = 0;
+	mDirty = false;
 
-   mTotalTicks = 0;
-   mLastTick = 0;
-   mLastTime = 0;
-   mLastDelta = 0.0f;
+	mTotalTicks = 0;
+	mLastTick = 0;
+	mLastTime = 0;
+	mLastDelta = 0.0f;
 }
 
-void ProcessList::addObject( ProcessObject *obj )
+void ProcessList::addObject(ProcessObject *obj)
 {
-   obj->plLinkAfter(&mHead);
+	obj->plLinkAfter(&mHead);
 }
 
 //----------------------------------------------------------------------------
 
 void ProcessList::orderList()
 {
-   // ProcessObject tags are initialized to 0, so current tag should never be 0.
-   if (++mCurrentTag == 0)
-      mCurrentTag++;
+	// ProcessObject tags are initialized to 0, so current tag should never be 0.
+	if (++mCurrentTag == 0)
+		mCurrentTag++;
 
-   // Install a temporary head node
-   ProcessObject list;
-   list.plLinkBefore(mHead.mProcessLink.next);
-   mHead.plUnlink();
+	// Install a temporary head node
+	ProcessObject list;
+	list.plLinkBefore(mHead.mProcessLink.next);
+	mHead.plUnlink();
 
-   // start out by (bubble) sorting list by GUID
-   for (ProcessObject * cur = list.mProcessLink.next; cur != &list; cur = cur->mProcessLink.next)
-   {
-      if (cur->mOrderGUID == 0)
-         // special case -- can be no lower, so accept as lowest (this is also
-         // a common value since it is what non ordered objects have)
-         continue;
+	// start out by (bubble) sorting list by GUID
+	for (ProcessObject * cur = list.mProcessLink.next; cur != &list; cur = cur->mProcessLink.next)
+	{
+		if (cur->mOrderGUID == 0)
+			// special case -- can be no lower, so accept as lowest (this is also
+			// a common value since it is what non ordered objects have)
+			continue;
 
-      for (ProcessObject * walk = cur->mProcessLink.next; walk != &list; walk = walk->mProcessLink.next)
-      {
-         if (walk->mOrderGUID < cur->mOrderGUID)
-         {
-            // swap walk and cur -- need to be careful because walk might be just after cur
-            // so insert after item before cur and before item after walk
-            ProcessObject * before = cur->mProcessLink.prev;
-            ProcessObject * after = walk->mProcessLink.next;
-            cur->plUnlink();
-            walk->plUnlink();
-            cur->plLinkBefore(after);
-            walk->plLinkAfter(before);
-            ProcessObject * swap = walk;
-            walk = cur;
-            cur = swap;
-         }
-      }
-   }
+		for (ProcessObject * walk = cur->mProcessLink.next; walk != &list; walk = walk->mProcessLink.next)
+		{
+			if (walk->mOrderGUID < cur->mOrderGUID)
+			{
+				// swap walk and cur -- need to be careful because walk might be just after cur
+				// so insert after item before cur and before item after walk
+				ProcessObject * before = cur->mProcessLink.prev;
+				ProcessObject * after = walk->mProcessLink.next;
+				cur->plUnlink();
+				walk->plUnlink();
+				cur->plLinkBefore(after);
+				walk->plLinkAfter(before);
+				ProcessObject * swap = walk;
+				walk = cur;
+				cur = swap;
+			}
+		}
+	}
 
-   // Reverse topological sort into the original head node
-   while (list.mProcessLink.next != &list) 
-   {
-      ProcessObject * ptr = list.mProcessLink.next;
-      ProcessObject * afterObject = ptr->getAfterObject();
-      ptr->mProcessTag = mCurrentTag;
-      ptr->plUnlink();
-      if (afterObject) 
-      {
-         // Build chain "stack" of dependent objects and patch
-         // it to the end of the current list.
-         while (afterObject && afterObject->mProcessTag != mCurrentTag)
-         {
-            afterObject->mProcessTag = mCurrentTag;
-            afterObject->plUnlink();
-            afterObject->plLinkBefore(ptr);
-            ptr = afterObject;
-            afterObject = ptr->getAfterObject();
-         }
-         ptr->plJoin(&mHead);
-      }
-      else
-         ptr->plLinkBefore(&mHead);
-   }
-   mDirty = false;
+	// Reverse topological sort into the original head node
+	while (list.mProcessLink.next != &list)
+	{
+		ProcessObject * ptr = list.mProcessLink.next;
+		ProcessObject * afterObject = ptr->getAfterObject();
+		ptr->mProcessTag = mCurrentTag;
+		ptr->plUnlink();
+		if (afterObject)
+		{
+			// Build chain "stack" of dependent objects and patch
+			// it to the end of the current list.
+			while (afterObject && afterObject->mProcessTag != mCurrentTag)
+			{
+				afterObject->mProcessTag = mCurrentTag;
+				afterObject->plUnlink();
+				afterObject->plLinkBefore(ptr);
+				ptr = afterObject;
+				afterObject = ptr->getAfterObject();
+			}
+			ptr->plJoin(&mHead);
+		}
+		else
+			ptr->plLinkBefore(&mHead);
+	}
+	mDirty = false;
 }
 
-GameBase* ProcessList::getGameBase( ProcessObject *obj )
+GameBase* ProcessList::getGameBase(ProcessObject *obj)
 {
-   if ( !obj->mIsGameBase )
-      return NULL;
+	if (!obj->mIsGameBase)
+		return NULL;
 
-   return static_cast< GameBase* >( obj );
+	return static_cast< GameBase* >(obj);
 }
 
 
 void ProcessList::dumpToConsole()
 {
-   for (ProcessObject * pobj = mHead.mProcessLink.next; pobj != &mHead; pobj = pobj->mProcessLink.next)
-   {
-      SimObject * obj = dynamic_cast<SimObject*>(pobj);
-      if (obj)
-         Con::printf("id %i, order guid %i, type %s", obj->getId(), pobj->mOrderGUID, obj->getClassName());
-      else
-         Con::printf("---unknown object type, order guid %i", pobj->mOrderGUID);
-   }
+	for (ProcessObject * pobj = mHead.mProcessLink.next; pobj != &mHead; pobj = pobj->mProcessLink.next)
+	{
+		SimObject * obj = dynamic_cast<SimObject*>(pobj);
+		if (obj)
+			Con::printf("id %i, order guid %i, type %s", obj->getId(), pobj->mOrderGUID, obj->getClassName());
+		else
+			Con::printf("---unknown object type, order guid %i", pobj->mOrderGUID);
+	}
 }
 
 //----------------------------------------------------------------------------
 
 bool ProcessList::advanceTime(SimTime timeDelta)
 {
-   PROFILE_START(ProcessList_AdvanceTime);
+	PROFILE_START(ProcessList_AdvanceTime);
 
-   // some drivers change the FPU control state, which will break our control object simulation
-   // (leading to packet mismatch errors due to small FP differences).  So set it to the known 
-   // state before advancing.
-   U32 mathState = Platform::getMathControlState();
-   Platform::setMathControlStateKnown();
+	// some drivers change the FPU control state, which will break our control object simulation
+	// (leading to packet mismatch errors due to small FP differences).  So set it to the known 
+	// state before advancing.
+	U32 mathState = Platform::getMathControlState();
+	Platform::setMathControlStateKnown();
 
-   if (mDirty) 
-      orderList();
+	if (mDirty)
+		orderList();
 
-   SimTime targetTime = mLastTime + timeDelta;
-   SimTime targetTick = targetTime - (targetTime % TickMs);
-   SimTime tickDelta = targetTick - mLastTick;
-   bool tickPass = mLastTick != targetTick;
+	SimTime targetTime = mLastTime + timeDelta;
+	SimTime targetTick = targetTime - (targetTime % TickMs);
+	SimTime tickDelta = targetTick - mLastTick;
+	bool tickPass = mLastTick != targetTick;
 
-   if ( tickPass )
-      mPreTick.trigger();
+	if (tickPass)
+		mPreTick.trigger();
 
-   // Advance all the objects.
-   for (; mLastTick != targetTick; mLastTick += TickMs)
-      onAdvanceObjects();
+	// Advance all the objects.
+	for (; mLastTick != targetTick; mLastTick += TickMs)
+		onAdvanceObjects();
 
-   mLastTime = targetTime;
-   mLastDelta = ((TickMs - ((targetTime+1) % TickMs)) % TickMs) / F32(TickMs);
+	mLastTime = targetTime;
+	mLastDelta = ((TickMs - ((targetTime + 1) % TickMs)) % TickMs) / F32(TickMs);
 
-   if ( tickPass )
-      mPostTick.trigger( tickDelta );
+	if (tickPass)
+		mPostTick.trigger(tickDelta);
 
-   // restore math control state in case others are relying on it being a certain value
-   Platform::setMathControlState(mathState);
+	// restore math control state in case others are relying on it being a certain value
+	Platform::setMathControlState(mathState);
 
-   PROFILE_END();
-   return tickPass;
+	PROFILE_END();
+	return tickPass;
 }
 
 //----------------------------------------------------------------------------
 
 void ProcessList::advanceObjects()
 {
-   PROFILE_START(ProcessList_AdvanceObjects);
+	PROFILE_START(ProcessList_AdvanceObjects);
 
-   // A little link list shuffling is done here to avoid problems
-   // with objects being deleted from within the process method.
-   ProcessObject list;
-   list.plLinkBefore(mHead.mProcessLink.next);
-   mHead.plUnlink();
-   for (ProcessObject * pobj = list.mProcessLink.next; pobj != &list; pobj = list.mProcessLink.next)
-   {
-      pobj->plUnlink();
-      pobj->plLinkBefore(&mHead);
-      
-      onTickObject(pobj);
-   }
+	// A little link list shuffling is done here to avoid problems
+	// with objects being deleted from within the process method.
+	ProcessObject list;
+	list.plLinkBefore(mHead.mProcessLink.next);
+	mHead.plUnlink();
+	for (ProcessObject * pobj = list.mProcessLink.next; pobj != &list; pobj = list.mProcessLink.next)
+	{
+		pobj->plUnlink();
+		pobj->plLinkBefore(&mHead);
+		SimObjectPtr<SceneObject> safePtr = static_cast<SceneObject*>(pobj);
 
-   mTotalTicks++;
+		if (!safePtr.isNull() && safePtr.isValid())
+			onTickObject(pobj);
 
-   PROFILE_END();
+		if (!safePtr.isNull() && safePtr.isValid())
+			if (safePtr->mEnableCounters)
+				safePtr->countersIncrement();
+	}
+
+	mTotalTicks++;
+
+	PROFILE_END();
 }
-
 
 

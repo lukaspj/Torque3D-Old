@@ -222,6 +222,8 @@ function EPainter::setup( %this, %matIndex )
    ETerrainEditor.setAction( ETerrainEditor.currentAction );
    EditorGuiStatusBar.setInfo(ETerrainEditor.currentActionDesc);
    ETerrainEditor.renderVertexSelection = true;
+   
+   EWTerrainPainterToolbar-->LerpBlendCheckBox.setValue($Pref::Terrain::LerpBlend);
 }
 
 function onNeedRelight()
@@ -255,6 +257,11 @@ function TerrainEditor::onBrushChanged( %this )
 function TerrainEditor::toggleBrushType( %this, %brush )
 {
    %this.setBrushType( %brush.internalName );
+}
+
+function TerrainEditor::toggleBlendType( %this, %check )
+{
+   $Pref::Terrain::LerpBlend = %check.getValue();
 }
 
 function TerrainEditor::offsetBrush(%this, %x, %y)
@@ -346,6 +353,15 @@ function TerrainEditor::onSmoothHeightmap( %this )
    %action = new TerrainSmoothAction();
    %action.smooth( %this.getActiveTerrain(), 1.0, 1 );
    %action.addToManager( Editor.getUndoManager() );
+}
+
+function TerrainEditor::onSolderEdges( %this )
+{
+ // # Work with all terrains on the loaded level.
+ %action = new TerrainSolderEdgesAction();
+ %action.solder();
+ %action.addToManager( Editor.getUndoManager() );
+ ETerrainEditor.isDirty = true;
 }
 
 function TerrainEditor::onMaterialUndo( %this )

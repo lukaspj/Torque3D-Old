@@ -32,49 +32,65 @@ extern "C"
    int (*torque_winmain)( HINSTANCE hInstance, HINSTANCE h, LPSTR lpszCmdLine, int nShow) = NULL;
 };
 
-bool getDllName(std::wstring& dllName, const std::wstring suffix)
+bool getDllName(std::wstring& dllName)
 {
    wchar_t filenameBuf[MAX_PATH];
    DWORD length = GetModuleFileNameW( NULL, filenameBuf, MAX_PATH );
    if(length == 0) return false;
    dllName = std::wstring(filenameBuf);
    size_t dotPos = dllName.find_last_of(L".");
-   if(dotPos == std::wstring::npos)
-   {
-      dllName.clear();
-      return false;
-   }
+   if(dotPos == std::wstring::npos) return false;
    dllName.erase(dotPos);
-   dllName += suffix + L".dll";
+   dllName += L".dll";
    return true;
+}
+
+BOOL CALLBACK enumWindowsProc (HWND hwnd, LPARAM lParam)
+{
+   // The className used here should be equal to:
+   // 1. Engine/source/windowManager/win32/win32Window.cpp: const UTF16* _MainWindowClassName = L"TorqueJuggernaughtWindow";
+   // 2. Engine/source/windowManager/win32/winDispatch.cpp: dStrcmp(classBuf, L"TorqueJuggernaughtWindow")
+   // So if you change it there, don't forget to update it here too.
+   // [2012/09/25 bank]
+   const char* className       = "TorqueJuggernaughtWindow";
+   int         classNameLength = strlen(className)+1;
+   char*       classNameOut    = new char[classNameLength];
+
+   GetClassNameA(hwnd, classNameOut, classNameLength);
+
+   if(!strcmp(className, classNameOut))
+      SendMessageA(hwnd, WM_COPYDATA, NULL, lParam);
+
+   delete [] classNameOut;
+   return TRUE;
 }
 
 int PASCAL WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCommandShow)
 {
-   // Try to find the game DLL, which may have one of several file names.
-   HMODULE hGame = NULL;
    std::wstring dllName = std::wstring();
-   // The file name is the same as this executable's name, plus a suffix.
-   const std::wstring dllSuffices[] = {L" DLL", L""};
-   const unsigned int numSuffices = sizeof(dllSuffices) / sizeof(std::wstring);
-
-   for (unsigned int i = 0; i < numSuffices; i++)
-   {
-      // Attempt to glue the suffix onto the current filename.
-      if(!getDllName(dllName, dllSuffices[i]))
-         continue;
-      // Load the DLL at that address.
-      hGame = LoadLibraryW(dllName.c_str());
-      if (hGame)
-         break;
-   }
-
-   if(!dllName.length())
+   if(!getDllName(dllName))
    {
       MessageBoxW(NULL, L"Unable to find game dll", L"Error",  MB_OK|MB_ICONWARNING);
       return -1;
    }
+   const char* externalCommand       = "externalCommand";
+   const int   externalCommandLength = strlen(externalCommand);
+   if(!memcmp(lpszCmdLine, externalCommand, externalCommandLength))
+   {
+      LPSTR path = lpszCmdLine + externalCommandLength + 1;
 
+      COPYDATASTRUCT cds;
+      cds.dwData = 100500; // externalCommand
+      cds.lpData = path;
+      cds.cbData = strlen(path) + 1;
+
+      EnumWindows(enumWindowsProc, (LPARAM)&cds);
+      return 0;
+   }
+   char filename[4096];
+   char gameLib[4096];
+
+   HMODULE hGame = LoadLibraryW(dllName.c_str());
    if (!hGame)
    {
       wchar_t error[4096];
@@ -321,7 +337,7 @@ S32 TorqueMain(S32 argc, const char **argv)
       Platform::restartInstance();
 
    // Return.
-   return StandardMainLoop::getReturnStatus();
+   return 0;
 }
 
 #endif //TORQUE_SHARED

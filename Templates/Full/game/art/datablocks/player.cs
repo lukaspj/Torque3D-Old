@@ -482,7 +482,8 @@ datablock DebrisData( PlayerDebris )
 datablock PlayerData(DefaultPlayerData)
 {
    renderFirstPerson = false;
-
+   firstPersonShadows = true;
+   
    computeCRC = false;
 
    // Third person shape
