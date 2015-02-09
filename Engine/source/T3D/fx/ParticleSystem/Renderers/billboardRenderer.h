@@ -219,7 +219,7 @@ public:
    ColorF getParticleColor(Particle const* part);
    virtual void setColors(ColorF* colorList);
 
-   virtual BillboardRendererData* getDataBlock() { return dynamic_cast<BillboardRendererData*>(mDataBlock); };
+   virtual BillboardRendererData* getDataBlock() { return static_cast<BillboardRendererData*>(mDataBlock); };
 
 protected:
    // Variables
