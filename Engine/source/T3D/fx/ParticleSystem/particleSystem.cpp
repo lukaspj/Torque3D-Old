@@ -609,7 +609,7 @@ void ParticleSystem::emitParticles(const Point3F& rCenter,
    const Point3F& velocity,
    S32 count)
 {
-   if (mDead) return;
+   if (mDead || !mDataBlock) return;
 
    // lifetime over - no more particles
    if (mDataBlock->mLifetimeMS > 0 && mElapsedTimeMS > mDataBlock->mLifetimeMS)
