@@ -538,7 +538,10 @@ bool Debris::onAdd()
    // set particle sizes based on debris size
    F32 sizeList[ParticleSystem::PDC_NUM_KEYS];
    
-   ISizedParticleRenderer* sizedRenderer = dynamic_cast<ISizedParticleRenderer*>(mEmitterList[0]->getRenderer());
+   ISizedParticleRenderer* sizedRenderer = NULL;
+
+   if (mEmitterList[0])
+      sizedRenderer = dynamic_cast<ISizedParticleRenderer*>(mEmitterList[0]->getRenderer());
 
    if(sizedRenderer)
    {
@@ -551,8 +554,9 @@ bool Debris::onAdd()
          sizedRenderer->setSizes( sizeList );
       }
    }
-
-   sizedRenderer = dynamic_cast<ISizedParticleRenderer*>(mEmitterList[1]->getRenderer());
+   
+   if (mEmitterList[1])
+      sizedRenderer = dynamic_cast<ISizedParticleRenderer*>(mEmitterList[1]->getRenderer());
    
    if(sizedRenderer)
    {
