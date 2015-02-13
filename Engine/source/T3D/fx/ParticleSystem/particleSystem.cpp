@@ -892,8 +892,9 @@ bool ParticleSystem::onNewDataBlock(GameBaseData* dptr, bool reload)
       partListInitSize += 8; // add 8 as "fudge factor" to make sure it doesn't realloc if it goes over by 1
       mParticlePool = new ParticlePool(partListInitSize);
       mRenderer = mDataBlock->mRendererData->CreateRenderer(this);
+      return true;
    }
-
+   return false;
 }
 
 //-----------------------------------------------------------------------------
