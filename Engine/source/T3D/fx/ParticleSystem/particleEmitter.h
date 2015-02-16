@@ -78,7 +78,7 @@ private:
    F32 mEjectionOffsetVariance; //!< Distance Padding along ejection Z axis from which to eject particles.
    /// @}
 
-   DECLARE_ABSTRACT_CLASS(ParticleEmitterData, GameBaseData);
+   DECLARE_ABSTRACT_CONOBJECT(ParticleEmitterData);
 };
 
 //-----------------------------------------------

@@ -24,9 +24,7 @@
 #include "console/consoleTypes.h"
 #include "core/stream/bitStream.h"
 
-IMPLEMENT_NONINSTANTIABLE_CLASS(ParticleEmitterData,
-   "")
-   END_IMPLEMENT_CLASS;
+IMPLEMENT_ABSTRACT_CONOBJECT(ParticleEmitterData);
 
 static const float sgDefaultEjectionOffset = 0.f;
 

@@ -22,6 +22,4 @@
 
 #include "particleRenderer.h"
 
-IMPLEMENT_NONINSTANTIABLE_CLASS(ParticleRendererData,
-   "")
-   END_IMPLEMENT_CLASS;
+IMPLEMENT_ABSTRACT_CONOBJECT(ParticleRendererData);

@@ -22,6 +22,4 @@
 
 #include "particleBehaviour.h"
 
-IMPLEMENT_NONINSTANTIABLE_CLASS(IParticleBehaviour,
-   "")
-   END_IMPLEMENT_CLASS;
+IMPLEMENT_ABSTRACT_CONOBJECT(IParticleBehaviour);

@@ -90,7 +90,7 @@ public:
       return (*(IParticleBehaviour**)e1)->getPriority() - (*(IParticleBehaviour**)e2)->getPriority();
    };
 
-   DECLARE_ABSTRACT_CLASS(IParticleBehaviour, SimDataBlock);
+   DECLARE_ABSTRACT_CONOBJECT(IParticleBehaviour);
 };
 
 /// @}

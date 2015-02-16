@@ -47,6 +47,7 @@
 //-----------------------------------------------
 class IParticleSystem : public GameBase
 {
+   typedef GameBase Parent;
 public:
    virtual ~IParticleSystem() {};
 
@@ -90,7 +91,7 @@ public:
    virtual ParticleEmitter* getEmitter() = 0;
    virtual ParticleRenderer* getRenderer() = 0;
 
-   DECLARE_ABSTRACT_CLASS(IParticleSystem, GameBase);
+   DECLARE_ABSTRACT_CONOBJECT(IParticleSystem);
 };
 
 //-----------------------------------------------
@@ -109,7 +110,7 @@ public:
    /// is associated with this datablock.
    virtual IParticleSystem* createParticleSystem() = 0;
 
-   DECLARE_ABSTRACT_CLASS(IParticleSystemData, GameBaseData);
+   DECLARE_ABSTRACT_CONOBJECT(IParticleSystemData);
 };
 
 class ParticleSystem;

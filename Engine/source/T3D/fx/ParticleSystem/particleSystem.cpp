@@ -29,13 +29,8 @@
 #include "console/typeValidators.h"
 #include "T3D/gameBase/gameConnection.h"
 
-IMPLEMENT_NONINSTANTIABLE_CLASS(IParticleSystemData,
-   "")
-   END_IMPLEMENT_CLASS;
-
-IMPLEMENT_NONINSTANTIABLE_CLASS(IParticleSystem,
-   "")
-   END_IMPLEMENT_CLASS;
+IMPLEMENT_ABSTRACT_CONOBJECT(IParticleSystemData);
+IMPLEMENT_ABSTRACT_CONOBJECT(IParticleSystem);
 
 IMPLEMENT_CO_DATABLOCK_V1(ParticleSystemData);
 IMPLEMENT_CONOBJECT(ParticleSystem);

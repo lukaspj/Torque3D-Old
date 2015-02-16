@@ -56,7 +56,7 @@ public:
    /// @public
    virtual ParticleRenderer* CreateRenderer(ParticleSystem* system) = 0;
 
-   DECLARE_ABSTRACT_CLASS(ParticleRendererData, GameBaseData);
+   DECLARE_ABSTRACT_CONOBJECT(ParticleRendererData);
 };
 
 //-----------------------------------------------
