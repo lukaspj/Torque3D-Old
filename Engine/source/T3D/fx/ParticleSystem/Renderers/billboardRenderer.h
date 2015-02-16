@@ -47,7 +47,7 @@
 //-----------------------------------------------
 class BillboardRendererData : public ParticleRendererData
 {
-   typedef GameBaseData Parent;
+   typedef ParticleRendererData Parent;
 
 public:
    BillboardRendererData();
