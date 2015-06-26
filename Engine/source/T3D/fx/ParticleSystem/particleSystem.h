@@ -248,7 +248,7 @@ public:
 
    enum PDConst
    {
-      PDC_NUM_KEYS = 4,
+      PDC_NUM_KEYS = 8,
    };
 
    /// @}
