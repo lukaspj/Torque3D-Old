@@ -556,6 +556,7 @@ EndImplementEnumType;
                (getDataBlock()->getSize(i)   * firstPart);
          }
       }
+      return getDataBlock()->getSize(ParticleSystem::PDC_NUM_KEYS - 1);
    }
 
    //-----------------------------------------------------------------------------
@@ -605,6 +606,7 @@ EndImplementEnumType;
             return outCol;
          }
       }
+      return getDataBlock()->getColor(ParticleSystem::PDC_NUM_KEYS - 1);
    }
 
    //-----------------------------------------------------------------------------
