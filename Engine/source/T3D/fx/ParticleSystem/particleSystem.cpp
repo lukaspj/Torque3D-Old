@@ -398,10 +398,12 @@ void ParticleSystem::emitParticles(const Point3F& point,
    const Point3F& velocity,
    const U32      numMilliseconds)
 {
-   if (mDead) return;
+   if (  mDead 
+      || !mDataBlock
+      || !mEmitter) return;
 
    // lifetime over - no more particles
-   if (mDataBlock->mLifetimeMS > 0 && mElapsedTimeMS > mDataBlock->mLifetimeMS)
+   if (mLifetimeMS > 0 && mElapsedTimeMS > mLifetimeMS)
    {
       return;
    }
@@ -427,13 +429,15 @@ void ParticleSystem::emitParticles(const Point3F& start,
    const Point3F& velocity,
    const U32      numMilliseconds)
 {
-   if (mDead) return;
+   if (mDead
+      || !mDataBlock
+      || !mEmitter) return;
 
    //if( mDataBlock->particleDataBlocks.empty() )
    //   return;
 
    // lifetime over - no more particles
-   if (mDataBlock->mLifetimeMS > 0 && mElapsedTimeMS > mDataBlock->mLifetimeMS)
+   if (mLifetimeMS > 0 && mElapsedTimeMS > mLifetimeMS)
    {
       return;
    }
@@ -569,7 +573,9 @@ void ParticleSystem::emitParticles(const Point3F& rCenter,
    const Point3F& velocity,
    S32 count)
 {
-   if (mDead || !mDataBlock) return;
+   if (mDead
+      || !mDataBlock
+      || !mEmitter) return;
 
    // lifetime over - no more particles
    if (mLifetimeMS > 0 && mElapsedTimeMS > mLifetimeMS)
