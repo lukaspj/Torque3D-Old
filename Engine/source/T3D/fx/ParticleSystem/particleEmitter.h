@@ -72,11 +72,7 @@ public:
 
    /// @returns The lower boundary for the random value to add 
    /// to the angular velocity.
-   F32 getSpinRandomMin() { return mSpinRandomMin; };
-
-   /// @returns The upper boundary for the random value to add 
-   /// to the angular velocity.
-   F32 getSpinRandomMax() { return mSpinRandomMax; };
+   F32 getSpinSpeedVariance() { return mSpinSpeedVariance; };
 
    /// @returns The inherited velocity factor of the emitted particles.
    F32 getInheritedVelFactor() { return mInheritedVelFactor; };
@@ -95,13 +91,8 @@ private:
    F32 mEjectionOffsetVariance; //!< Distance Padding along ejection Z axis from which to eject particles.
    F32 mSpinSpeed; ///< The angular velocity of particles.
 
-   /// The lower boundary for the random value to add 
-   /// to the angular velocity.
-   F32 mSpinRandomMin;
-
-   /// The upper boundary for the random value to add 
-   /// to the angular velocity.
-   F32 mSpinRandomMax;
+   /// Variance for the angular velocity of the particles.
+   F32 mSpinSpeedVariance;
 
    F32 mInheritedVelFactor; ///< The inherited velocity factor of the emitted particles.
    F32 mConstantAcceleration; ///< The constant acceleration factor of the emitted particles.

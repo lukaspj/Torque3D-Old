@@ -27,9 +27,8 @@
 IMPLEMENT_ABSTRACT_CONOBJECT(ParticleEmitterData);
 
 static const float sgDefaultEjectionOffset = 0.f;
-static const float sgDefaultSpinSpeed = 1.f;
-static const float sgDefaultSpinRandomMin = 0.f;
-static const float sgDefaultSpinRandomMax = 0.f;
+static const float sgDefaultSpinSpeed = 0.f;
+static const float sgDefaultSpinSpeedVariance = 0.f;
 static const float sgDefaultConstantAcceleration = 0.f;
 
 ParticleEmitterData::ParticleEmitterData()
@@ -40,8 +39,7 @@ ParticleEmitterData::ParticleEmitterData()
    mEjectionOffsetVariance = 0.0f;
 
    mSpinSpeed = sgDefaultSpinSpeed;
-   mSpinRandomMin = sgDefaultSpinRandomMin;
-   mSpinRandomMax = sgDefaultSpinRandomMax;
+   mSpinSpeedVariance = sgDefaultSpinSpeedVariance;
 
    mInheritedVelFactor = 0.0f;
    mConstantAcceleration = sgDefaultConstantAcceleration;
@@ -66,11 +64,8 @@ void ParticleEmitterData::initPersistFields()
    addField("SpinSpeed", TypeF32, Offset(mSpinSpeed, ParticleEmitterData),
       "Speed at which to spin the particle");
 
-   addField("SpinSpeedMin", TypeF32, Offset(mSpinRandomMin, ParticleEmitterData),
-      "Minimum allowed spin speed of this particle, between -1000 and spinRandomMax.");
-
-   addField("SpinSpeedMax", TypeF32, Offset(mSpinRandomMax, ParticleEmitterData),
-      "Maximum allowed spin speed of this particle, between spinRandomMin and 1000.");
+   addField("SpinSpeedVariance", TypeF32, Offset(mSpinSpeedVariance, ParticleEmitterData),
+      "Variance for the angular velocity of particles, from 0 - 1000.");
 
    addField("InheritedVelFactor", TypeF32, Offset(mInheritedVelFactor, ParticleEmitterData),
       "Amount of emitter velocity to add to particle initial velocity.");
@@ -95,12 +90,9 @@ void ParticleEmitterData::packData(BitStream* stream)
       stream->writeInt((S32)(mEjectionOffsetVariance * 100), 16);
 
    if (stream->writeFlag(mSpinSpeed != sgDefaultSpinSpeed))
-      stream->write(mSpinSpeed);
-   if (stream->writeFlag(mSpinRandomMin != sgDefaultSpinRandomMin || mSpinRandomMax != sgDefaultSpinRandomMax))
-   {
-      stream->writeInt((S32)(mSpinRandomMin * 1000), 11);
-      stream->writeInt((S32)(mSpinRandomMax * 1000), 11);
-   }
+      stream->writeInt((S32)(mSpinSpeed * 100), 17);
+   if (stream->writeFlag(mSpinSpeedVariance != sgDefaultSpinSpeedVariance))
+      stream->writeInt((S32)(mSpinSpeedVariance * 100), 17);
 
    stream->writeFloat(mInheritedVelFactor, 9);
    if (stream->writeFlag(mConstantAcceleration != sgDefaultConstantAcceleration))
@@ -127,10 +119,7 @@ void ParticleEmitterData::unpackData(BitStream* stream)
       mEjectionOffsetVariance = 0.0f;
 
    if (stream->readFlag())
-      stream->read(&mSpinSpeed);
+      mSpinSpeed = stream->readInt(17) / 100.0f;
    if (stream->readFlag())
-   {
-      mSpinRandomMin = stream->readInt(11) / 1000.0f;
-      mSpinRandomMax = stream->readInt(11) / 1000.0f;
-   }
+      mSpinSpeedVariance = stream->readInt(17) / 100.0f;
 }
