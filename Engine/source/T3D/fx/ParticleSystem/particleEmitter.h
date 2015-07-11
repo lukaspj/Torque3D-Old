@@ -77,6 +77,12 @@ public:
    /// @returns The upper boundary for the random value to add 
    /// to the angular velocity.
    F32 getSpinRandomMax() { return mSpinRandomMax; };
+
+   /// @returns The inherited velocity factor of the emitted particles.
+   F32 getInheritedVelFactor() { return mInheritedVelFactor; };
+
+   /// @returns The constant acceleration factor of the emitted particles.
+   F32 getConstantAcceleration() { return mConstantAcceleration; };
    /// @}
 
 private:
@@ -96,6 +102,9 @@ private:
    /// The upper boundary for the random value to add 
    /// to the angular velocity.
    F32 mSpinRandomMax;
+
+   F32 mInheritedVelFactor; ///< The inherited velocity factor of the emitted particles.
+   F32 mConstantAcceleration; ///< The constant acceleration factor of the emitted particles.
    /// @}
 
    DECLARE_ABSTRACT_CONOBJECT(ParticleEmitterData);

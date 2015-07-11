@@ -132,8 +132,8 @@ bool SphereEmitter::addParticle(Point3F const& pos,
    pNew->currentAge = 0;
 
    // Calculate the constant accleration...
-   pNew->vel += vel * mParentSystem->getDataBlock()->getInheritedVelFactor();
-   pNew->acc = pNew->vel * mParentSystem->getDataBlock()->getConstantAcceleration();
+   pNew->vel += vel * DataBlock->getInheritedVelFactor();
+   pNew->acc = pNew->vel * DataBlock->getConstantAcceleration();
 
    // Calculate this instance's lifetime...
    pNew->totalLifetime = mParentSystem->getDataBlock()->getPartLifetimeMS();

@@ -149,12 +149,6 @@ public:
    /// @returns The lifetime variance of the emitted particles.
    S32 getPartLifetimeVarianceMS() { return mPartLifetimeVarianceMS; };
 
-   /// @returns The inherited velocity factor of the emitted particles.
-   F32 getInheritedVelFactor() { return mInheritedVelFactor; };
-
-   /// @returns The constant acceleration factor of the emitted particles.
-   F32 getConstantAcceleration() { return mConstantAcceleration; };
-
    ///@}
 
    /// @name Components
@@ -189,9 +183,6 @@ public:
 
    S32 mPartLifetimeMS; ///< The lifetime of particles in milliseconds.
    S32 mPartLifetimeVarianceMS; ///< The lifetime variance of particles in milliseconds.
-
-   F32 mInheritedVelFactor; ///< The inherited velocity factor of the emitted particles.
-   F32 mConstantAcceleration; ///< The constant acceleration factor of the emitted particles.
    bool mOverrideAdvance; ///< 
 
    // Physics constants

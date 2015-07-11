@@ -30,6 +30,7 @@ static const float sgDefaultEjectionOffset = 0.f;
 static const float sgDefaultSpinSpeed = 1.f;
 static const float sgDefaultSpinRandomMin = 0.f;
 static const float sgDefaultSpinRandomMax = 0.f;
+static const float sgDefaultConstantAcceleration = 0.f;
 
 ParticleEmitterData::ParticleEmitterData()
 {
@@ -41,6 +42,9 @@ ParticleEmitterData::ParticleEmitterData()
    mSpinSpeed = sgDefaultSpinSpeed;
    mSpinRandomMin = sgDefaultSpinRandomMin;
    mSpinRandomMax = sgDefaultSpinRandomMax;
+
+   mInheritedVelFactor = 0.0f;
+   mConstantAcceleration = sgDefaultConstantAcceleration;
 }
 
 void ParticleEmitterData::initPersistFields()
@@ -68,6 +72,12 @@ void ParticleEmitterData::initPersistFields()
    addField("SpinSpeedMax", TypeF32, Offset(mSpinRandomMax, ParticleEmitterData),
       "Maximum allowed spin speed of this particle, between spinRandomMin and 1000.");
 
+   addField("InheritedVelFactor", TypeF32, Offset(mInheritedVelFactor, ParticleEmitterData),
+      "Amount of emitter velocity to add to particle initial velocity.");
+
+   addField("ConstantAcceleration", TypeF32, Offset(mConstantAcceleration, ParticleEmitterData),
+      "Constant acceleration to apply to this particle.");
+
    endGroup("ParticleEmitterData");
 
    Parent::initPersistFields();
@@ -91,6 +101,14 @@ void ParticleEmitterData::packData(BitStream* stream)
       stream->writeInt((S32)(mSpinRandomMin * 1000), 11);
       stream->writeInt((S32)(mSpinRandomMax * 1000), 11);
    }
+
+   stream->writeFloat(mInheritedVelFactor, 9);
+   if (stream->writeFlag(mConstantAcceleration != sgDefaultConstantAcceleration))
+      stream->write(mConstantAcceleration);
+
+   mInheritedVelFactor = stream->readFloat(9);
+   if (stream->readFlag())
+      stream->read(&mConstantAcceleration);
 }
 
 void ParticleEmitterData::unpackData(BitStream* stream)

@@ -40,7 +40,6 @@ IMPLEMENT_CONOBJECT(ParticleSystem);
 //*****************************************************************************
 
 static const float sgDefaultWindCoefficient = 0.0f;
-static const float sgDefaultConstantAcceleration = 0.f;
 
 //-----------------------------------------------------------------------------
 // ParticleSystemData
@@ -57,8 +56,6 @@ ParticleSystemData::ParticleSystemData()
    mPartLifetimeMS = 1000;
    mPartLifetimeVarianceMS = 0;
 
-   mInheritedVelFactor = 0.0f;
-   mConstantAcceleration = sgDefaultConstantAcceleration;
    mOverrideAdvance = false;
 
    mDragCoefficient = 0.0f;
@@ -104,12 +101,6 @@ void ParticleSystemData::initPersistFields()
    endGroup("Particles");
 
    addGroup("Physics");
-
-   addField("InheritedVelFactor", TypeF32, Offset(mInheritedVelFactor, ParticleSystemData),
-      "Amount of emitter velocity to add to particle initial velocity.");
-
-   addField("ConstantAcceleration", TypeF32, Offset(mConstantAcceleration, ParticleSystemData),
-      "Constant acceleration to apply to this particle.");
 
    addField("OverrideAdvance", TypeBool, Offset(mOverrideAdvance, ParticleSystemData),
       "If false, particles emitted in the same frame have their positions "
@@ -176,9 +167,6 @@ void ParticleSystemData::packData(BitStream* stream)
    stream->writeInt(mPartLifetimeMS, 20);
    stream->writeInt(mPartLifetimeVarianceMS, 20);
 
-   stream->writeFloat(mInheritedVelFactor, 9);
-   if (stream->writeFlag(mConstantAcceleration != sgDefaultConstantAcceleration))
-      stream->write(mConstantAcceleration);
    stream->writeFlag(mOverrideAdvance);
 
    stream->writeFloat(mDragCoefficient / 5, 10);
@@ -234,9 +222,6 @@ void ParticleSystemData::unpackData(BitStream* stream)
    mPartLifetimeMS = stream->readInt(20);
    mPartLifetimeVarianceMS = stream->readInt(20);
 
-   mInheritedVelFactor = stream->readFloat(9);
-   if (stream->readFlag())
-      stream->read(&mConstantAcceleration);
    mOverrideAdvance = stream->readFlag();
 
    mDragCoefficient = stream->readFloat(10) * 5;
