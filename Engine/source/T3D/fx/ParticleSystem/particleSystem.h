@@ -169,6 +169,9 @@ public:
    /// A lifetime of [TODO] means infinite.
    F32 mLifetimeMS;
 
+   /// The variance for the lifetime of the ParticleSystem.
+   F32 mLifetimeVarianceMS;
+
    /// The amount of particles to emit per second, can maximally be 1000.
    S32 mParticlesPerSecond;
 
@@ -337,6 +340,7 @@ private:
    bool mDeleteOnTick; ///< True if the particle system should self-destruct on next engine-tick.
    bool mDeleteWhenEmpty; ///< True if the ParticleSystem should self-destruct when all particles are dead.
 
+   F32 mLifetimeMS; ///<
    F32 mElapsedTimeMS; ///< 
    F32 mNextParticleTime; ///<
    F32 mInternalClock; ///<

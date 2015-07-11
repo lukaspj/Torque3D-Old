@@ -50,6 +50,7 @@ ParticleSystemData::ParticleSystemData()
    mRendererData = NULL;
 
    mLifetimeMS = 0;
+   mLifetimeVarianceMS = 0;
    mParticlesPerSecond = 100;
    mParticlesPerSecondVariance = 0;
 
@@ -81,6 +82,9 @@ void ParticleSystemData::initPersistFields()
 
    addField("Lifetime", TypeS32, Offset(mLifetimeMS, ParticleSystemData),
       "Lifetime of the particle system in milliseconds");
+
+   addField("LifetimeVariance", TypeS32, Offset(mLifetimeMS, ParticleSystemData),
+      "Variance for the lifetime of the particle system in milliseconds");
 
    addField("ParticlesPerSecond", TypeS32, Offset(mParticlesPerSecond, ParticleSystemData),
       "The amount of particles emitted each second (max 1000)");
@@ -158,6 +162,7 @@ void ParticleSystemData::packData(BitStream* stream)
    // We only write 19 bits here to save a little bit of traffic.
    // 19 bits gives you a maximal lifetime around 524 seconds.
    stream->writeInt(mLifetimeMS, 20);
+   stream->writeInt(mLifetimeVarianceMS, 20);
 
    // Mathematical limit of 1000 means we only have to write
    // 11 bits, but we write 12 to be sure.
@@ -213,6 +218,7 @@ void ParticleSystemData::unpackData(BitStream* stream)
    // We only write 20 bits here to save a little bit of traffic.
    // 20 bits gives you a maximal lifetime around 524 seconds.
    mLifetimeMS = stream->readInt(20);
+   mLifetimeVarianceMS = stream->readInt(20);
 
    // Mathematical limit of 1000 means we only have to write
    // 11 bits, but we write 12 to be sure.
@@ -301,6 +307,11 @@ bool ParticleSystemData::onAdd()
       Con::warnf(ConsoleLogEntry::General, "ParticleSystemData(%s) lifetimeMS < 0.0f", getName());
       mLifetimeMS = 0;
    }
+   if (mLifetimeVarianceMS < 0)
+   {
+      Con::warnf(ConsoleLogEntry::General, "ParticleSystemData(%s) lifetimeVarianceMS < 0.0f", getName());
+      mLifetimeMS = 0;
+   }
    if (mPartLifetimeMS < 0)
    {
       Con::warnf(ConsoleLogEntry::General, "ParticleSystemData(%s) PartLifetimeMS < 0.0f", getName());
@@ -355,6 +366,7 @@ ParticleSystem::ParticleSystem()
    mDeleteOnTick = false;
    mDeleteWhenEmpty = false;
 
+   mLifetimeMS = 0.0f;
    mElapsedTimeMS = 0.0f;
    mNextParticleTime = 0.0f;
    mInternalClock = 0.0f;
@@ -560,7 +572,7 @@ void ParticleSystem::emitParticles(const Point3F& rCenter,
    if (mDead || !mDataBlock) return;
 
    // lifetime over - no more particles
-   if (mDataBlock->mLifetimeMS > 0 && mElapsedTimeMS > mDataBlock->mLifetimeMS)
+   if (mLifetimeMS > 0 && mElapsedTimeMS > mLifetimeMS)
    {
       return;
    }
@@ -830,6 +842,13 @@ bool ParticleSystem::onNewDataBlock(GameBaseData* dptr, bool reload)
    mDataBlock = dynamic_cast<ParticleSystemData*>(dptr);
    if (!mDataBlock || !Parent::onNewDataBlock(dptr, reload))
       return false;
+
+   mLifetimeMS = mDataBlock->mLifetimeMS;
+   if (mDataBlock->mLifetimeVarianceMS)
+   {
+      mLifetimeMS += gRandGen.randI(-mDataBlock->mLifetimeVarianceMS, mDataBlock->mLifetimeVarianceMS);
+   }
+
    if (mDataBlock->mEmitterData
       && mDataBlock->mRendererData)
    {
