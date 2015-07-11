@@ -185,12 +185,12 @@ bool MeshEmitter::getPointOnVertex(psMeshInterface *psMesh, Particle *pNew)
       if (!mesh)
          continue;
 
-      TSSkinMesh* sMesh = dynamic_cast<TSSkinMesh*>(mesh);
-      //TSMesh::TSMeshVertexArray vertexList = shape->meshes[meshIndex]->mVertexData;
+      TSSkinMesh *sMesh = NULL;
+      if (mesh->getMeshType == TSMesh::SkinMeshType)
+         sMesh = static_cast<TSSkinMesh*>(mesh);
+
       S32 numVerts;
       numVerts = mesh->mVertexData.size();
-      //if (sMesh)
-      //   numVerts = sMesh[meshIndex].mVertexData.size();
 
       if (!numVerts)
          continue;
@@ -265,7 +265,9 @@ bool MeshEmitter::getPointOnFace(psMeshInterface *psMesh, Particle *pNew)
    {
       const TSShape::Object &obj = shape->objects[meshIndex];
       TSMesh* mesh = (od < obj.numMeshes) ? shape->meshes[obj.startMeshIndex + od] : NULL;
-      TSSkinMesh* sMesh = dynamic_cast<TSSkinMesh*>(mesh);
+      TSSkinMesh *sMesh = NULL;
+      if (Mesh->getMeshType == TSMesh::SkinMeshType)
+         sMesh = static_cast<TSSkinMesh*>(Mesh);
       if (sMesh)
       {
          if (sMesh->mVertexData.size()){
@@ -288,7 +290,9 @@ bool MeshEmitter::getPointOnFace(psMeshInterface *psMesh, Particle *pNew)
       Mesh = (od < obj.numMeshes) ? shape->meshes[obj.startMeshIndex + od] : NULL;
       if (skinmesh)
       {
-         TSSkinMesh* sMesh = dynamic_cast<TSSkinMesh*>(Mesh);
+         TSSkinMesh *sMesh = NULL;
+         if (Mesh->getMeshType == TSMesh::SkinMeshType)
+            sMesh = static_cast<TSSkinMesh*>(Mesh);
          if (sMesh)
          {
             if (sMesh->mVertexData.size()){
@@ -326,7 +330,7 @@ bool MeshEmitter::getPointOnFace(psMeshInterface *psMesh, Particle *pNew)
       else{
          S32 numPrims = Mesh->primitives.size();
          S32 primIndex = rand() % numPrims;
-         S16 numElements = Mesh->primitives[primIndex].numElements;
+         S32 numElements = Mesh->primitives[primIndex].numElements;
          triStart = Mesh->primitives[primIndex].start + (rand() % (numElements / 3));
       }
       const TSShape::Object &obj = shape->objects[meshIndex];
@@ -442,7 +446,9 @@ void MeshEmitter::loadFaces(psMeshInterface *psMesh)
       bool skinmesh = false;
       for (S32 meshIndex = 0; meshIndex < model->getShape()->meshes.size(); meshIndex++)
       {
-         TSSkinMesh* sMesh = dynamic_cast<TSSkinMesh*>(model->getShape()->meshes[meshIndex]);
+         TSSkinMesh *sMesh = NULL;
+         if (model->getShape()->meshes[meshIndex]->getMeshType == TSMesh::SkinMeshType)
+            sMesh = static_cast<TSSkinMesh*>(model->getShape()->meshes[meshIndex]);
          if (sMesh)
          {
             if (sMesh->mVertexData.size()){
@@ -462,10 +468,11 @@ void MeshEmitter::loadFaces(psMeshInterface *psMesh)
 
          const TSShape::Object &obj = shape->objects[meshIndex];
          TSMesh* Mesh = (od < obj.numMeshes) ? shape->meshes[obj.startMeshIndex + od] : NULL;
-
-         sMesh = dynamic_cast<TSSkinMesh*>(Mesh);
          if (!Mesh)
             continue;
+
+         if (Mesh->getMeshType == TSMesh::SkinMeshType)
+            sMesh = static_cast<TSSkinMesh*>(Mesh);
 
          S32 numVerts = Mesh->mVertexData.size();
          if (!numVerts)
@@ -483,7 +490,7 @@ void MeshEmitter::loadFaces(psMeshInterface *psMesh)
          {
             U32 start = Mesh->primitives[primIndex].start;
 
-            U32 numElements = Mesh->primitives[primIndex].numElements;
+            S32 numElements = Mesh->primitives[primIndex].numElements;
 
             if ((Mesh->primitives[primIndex].matIndex & TSDrawPrimitive::TypeMask) == TSDrawPrimitive::Triangles)
             {
