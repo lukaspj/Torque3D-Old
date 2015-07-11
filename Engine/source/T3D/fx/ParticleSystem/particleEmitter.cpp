@@ -27,6 +27,9 @@
 IMPLEMENT_ABSTRACT_CONOBJECT(ParticleEmitterData);
 
 static const float sgDefaultEjectionOffset = 0.f;
+static const float sgDefaultSpinSpeed = 1.f;
+static const float sgDefaultSpinRandomMin = 0.f;
+static const float sgDefaultSpinRandomMax = 0.f;
 
 ParticleEmitterData::ParticleEmitterData()
 {
@@ -34,6 +37,10 @@ ParticleEmitterData::ParticleEmitterData()
    mVelocityVariance = 1.0f;
    mEjectionOffset = sgDefaultEjectionOffset;
    mEjectionOffsetVariance = 0.0f;
+
+   mSpinSpeed = sgDefaultSpinSpeed;
+   mSpinRandomMin = sgDefaultSpinRandomMin;
+   mSpinRandomMax = sgDefaultSpinRandomMax;
 }
 
 void ParticleEmitterData::initPersistFields()
@@ -52,6 +59,15 @@ void ParticleEmitterData::initPersistFields()
    addField("EjectionOffsetVariance", TypeF32, Offset(mEjectionOffsetVariance, ParticleEmitterData),
       "Distance Padding along ejection Z axis from which to eject particles.");
 
+   addField("SpinSpeed", TypeF32, Offset(mSpinSpeed, ParticleEmitterData),
+      "Speed at which to spin the particle");
+
+   addField("SpinSpeedMin", TypeF32, Offset(mSpinRandomMin, ParticleEmitterData),
+      "Minimum allowed spin speed of this particle, between -1000 and spinRandomMax.");
+
+   addField("SpinSpeedMax", TypeF32, Offset(mSpinRandomMax, ParticleEmitterData),
+      "Maximum allowed spin speed of this particle, between spinRandomMin and 1000.");
+
    endGroup("ParticleEmitterData");
 
    Parent::initPersistFields();
@@ -67,6 +83,14 @@ void ParticleEmitterData::packData(BitStream* stream)
       stream->writeInt((S32)(mEjectionOffset * 100), 16);
    if (stream->writeFlag(mEjectionOffsetVariance != 0.0f))
       stream->writeInt((S32)(mEjectionOffsetVariance * 100), 16);
+
+   if (stream->writeFlag(mSpinSpeed != sgDefaultSpinSpeed))
+      stream->write(mSpinSpeed);
+   if (stream->writeFlag(mSpinRandomMin != sgDefaultSpinRandomMin || mSpinRandomMax != sgDefaultSpinRandomMax))
+   {
+      stream->writeInt((S32)(mSpinRandomMin * 1000), 11);
+      stream->writeInt((S32)(mSpinRandomMax * 1000), 11);
+   }
 }
 
 void ParticleEmitterData::unpackData(BitStream* stream)
@@ -83,4 +107,12 @@ void ParticleEmitterData::unpackData(BitStream* stream)
       mEjectionOffsetVariance = stream->readInt(16) / 100.0f;
    else
       mEjectionOffsetVariance = 0.0f;
+
+   if (stream->readFlag())
+      stream->read(&mSpinSpeed);
+   if (stream->readFlag())
+   {
+      mSpinRandomMin = stream->readInt(11) / 1000.0f;
+      mSpinRandomMax = stream->readInt(11) / 1000.0f;
+   }
 }

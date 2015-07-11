@@ -149,17 +149,6 @@ public:
    /// @returns The lifetime variance of the emitted particles.
    S32 getPartLifetimeVarianceMS() { return mPartLifetimeVarianceMS; };
 
-   /// @returns The angular velocity of the emitted particles.
-   F32 getSpinSpeed() { return mSpinSpeed; };
-
-   /// @returns The lower boundary for the random value to add 
-   /// to the angular velocity.
-   F32 getSpinRandomMin() { return mSpinRandomMin; };
-
-   /// @returns The upper boundary for the random value to add 
-   /// to the angular velocity.
-   F32 getSpinRandomMax() { return mSpinRandomMax; };
-
    /// @returns The inherited velocity factor of the emitted particles.
    F32 getInheritedVelFactor() { return mInheritedVelFactor; };
 
@@ -200,15 +189,6 @@ public:
 
    S32 mPartLifetimeMS; ///< The lifetime of particles in milliseconds.
    S32 mPartLifetimeVarianceMS; ///< The lifetime variance of particles in milliseconds.
-   F32 mSpinSpeed; ///< The angular velocity of particles.
-
-   /// The lower boundary for the random value to add 
-   /// to the angular velocity.
-   F32 mSpinRandomMin;
-
-   /// The upper boundary for the random value to add 
-   /// to the angular velocity.
-   F32 mSpinRandomMax;
 
    F32 mInheritedVelFactor; ///< The inherited velocity factor of the emitted particles.
    F32 mConstantAcceleration; ///< The constant acceleration factor of the emitted particles.

@@ -66,6 +66,17 @@ public:
    F32 getVelocityVariance() { return mVelocityVariance; };
    F32 getEjectionOffset() { return mEjectionOffset; };
    F32 getEjectionOffsetVariance() { return mEjectionOffsetVariance; };
+
+   /// @returns The angular velocity of the emitted particles.
+   F32 getSpinSpeed() { return mSpinSpeed; };
+
+   /// @returns The lower boundary for the random value to add 
+   /// to the angular velocity.
+   F32 getSpinRandomMin() { return mSpinRandomMin; };
+
+   /// @returns The upper boundary for the random value to add 
+   /// to the angular velocity.
+   F32 getSpinRandomMax() { return mSpinRandomMax; };
    /// @}
 
 private:
@@ -76,6 +87,15 @@ private:
    F32 mEjectionOffset; //!< Distance along ejection Z axis from which to eject particles.
    // TODO: Implement OffsetVariance
    F32 mEjectionOffsetVariance; //!< Distance Padding along ejection Z axis from which to eject particles.
+   F32 mSpinSpeed; ///< The angular velocity of particles.
+
+   /// The lower boundary for the random value to add 
+   /// to the angular velocity.
+   F32 mSpinRandomMin;
+
+   /// The upper boundary for the random value to add 
+   /// to the angular velocity.
+   F32 mSpinRandomMax;
    /// @}
 
    DECLARE_ABSTRACT_CONOBJECT(ParticleEmitterData);

@@ -41,9 +41,6 @@ IMPLEMENT_CONOBJECT(ParticleSystem);
 
 static const float sgDefaultWindCoefficient = 0.0f;
 static const float sgDefaultConstantAcceleration = 0.f;
-static const float sgDefaultSpinSpeed = 1.f;
-static const float sgDefaultSpinRandomMin = 0.f;
-static const float sgDefaultSpinRandomMax = 0.f;
 
 //-----------------------------------------------------------------------------
 // ParticleSystemData
@@ -59,10 +56,6 @@ ParticleSystemData::ParticleSystemData()
 
    mPartLifetimeMS = 1000;
    mPartLifetimeVarianceMS = 0;
-
-   mSpinSpeed = sgDefaultSpinSpeed;
-   mSpinRandomMin = sgDefaultSpinRandomMin;
-   mSpinRandomMax = sgDefaultSpinRandomMax;
 
    mInheritedVelFactor = 0.0f;
    mConstantAcceleration = sgDefaultConstantAcceleration;
@@ -107,15 +100,6 @@ void ParticleSystemData::initPersistFields()
 
    addField("PartLifeTimeVariance", TypeS32, Offset(mPartLifetimeVarianceMS, ParticleSystemData),
       "The time to vary the lifetime of emitted particles with");
-
-   addField("SpinSpeed", TypeF32, Offset(mSpinSpeed, ParticleSystemData),
-      "Speed at which to spin the particle");
-
-   addField("SpinSpeedMin", TypeF32, Offset(mSpinRandomMin, ParticleSystemData),
-      "Minimum allowed spin speed of this particle, between -1000 and spinRandomMax.");
-
-   addField("SpinSpeedMax", TypeF32, Offset(mSpinRandomMax, ParticleSystemData),
-      "Maximum allowed spin speed of this particle, between spinRandomMin and 1000.");
 
    endGroup("Particles");
 
@@ -192,14 +176,6 @@ void ParticleSystemData::packData(BitStream* stream)
    stream->writeInt(mPartLifetimeMS, 20);
    stream->writeInt(mPartLifetimeVarianceMS, 20);
 
-   if (stream->writeFlag(mSpinSpeed != sgDefaultSpinSpeed))
-      stream->write(mSpinSpeed);
-   if (stream->writeFlag(mSpinRandomMin != sgDefaultSpinRandomMin || mSpinRandomMax != sgDefaultSpinRandomMax))
-   {
-      stream->writeInt((S32)(mSpinRandomMin * 1000), 11);
-      stream->writeInt((S32)(mSpinRandomMax * 1000), 11);
-   }
-
    stream->writeFloat(mInheritedVelFactor, 9);
    if (stream->writeFlag(mConstantAcceleration != sgDefaultConstantAcceleration))
       stream->write(mConstantAcceleration);
@@ -257,14 +233,6 @@ void ParticleSystemData::unpackData(BitStream* stream)
 
    mPartLifetimeMS = stream->readInt(20);
    mPartLifetimeVarianceMS = stream->readInt(20);
-
-   if (stream->readFlag())
-      stream->read(&mSpinSpeed);
-   if (stream->readFlag())
-   {
-      mSpinRandomMin = stream->readInt(11) / 1000.0f;
-      mSpinRandomMax = stream->readInt(11) / 1000.0f;
-   }
 
    mInheritedVelFactor = stream->readFloat(9);
    if (stream->readFlag())

@@ -140,7 +140,7 @@ bool SphereEmitter::addParticle(Point3F const& pos,
    if (mParentSystem->getDataBlock()->getPartLifetimeVarianceMS() != 0)
       pNew->totalLifetime += S32(gRandGen.randI() % (2 * mParentSystem->getDataBlock()->getPartLifetimeVarianceMS() + 1)) - S32(mParentSystem->getDataBlock()->getPartLifetimeVarianceMS());
    // assign spin amount
-   pNew->spinSpeed = mParentSystem->getDataBlock()->getSpinSpeed() * gRandGen.randF(mParentSystem->getDataBlock()->getSpinRandomMin(), mParentSystem->getDataBlock()->getSpinRandomMax());
+   pNew->spinSpeed = DataBlock->getSpinSpeed() * gRandGen.randF(DataBlock->getSpinRandomMin(), DataBlock->getSpinRandomMax());
 
    return true;
 }
