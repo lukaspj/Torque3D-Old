@@ -97,10 +97,6 @@ void ParticleEmitterData::packData(BitStream* stream)
    stream->writeFloat(mInheritedVelFactor, 9);
    if (stream->writeFlag(mConstantAcceleration != sgDefaultConstantAcceleration))
       stream->write(mConstantAcceleration);
-
-   mInheritedVelFactor = stream->readFloat(9);
-   if (stream->readFlag())
-      stream->read(&mConstantAcceleration);
 }
 
 void ParticleEmitterData::unpackData(BitStream* stream)
@@ -122,4 +118,8 @@ void ParticleEmitterData::unpackData(BitStream* stream)
       mSpinSpeed = stream->readInt(17) / 100.0f;
    if (stream->readFlag())
       mSpinSpeedVariance = stream->readInt(17) / 100.0f;
+
+   mInheritedVelFactor = stream->readFloat(9);
+   if (stream->readFlag())
+      stream->read(&mConstantAcceleration);
 }
