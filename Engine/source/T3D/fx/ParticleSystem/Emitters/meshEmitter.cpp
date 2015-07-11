@@ -186,7 +186,7 @@ bool MeshEmitter::getPointOnVertex(psMeshInterface *psMesh, Particle *pNew)
          continue;
 
       TSSkinMesh *sMesh = NULL;
-      if (mesh->getMeshType == TSMesh::SkinMeshType)
+      if (mesh->getMeshType() == TSMesh::SkinMeshType)
          sMesh = static_cast<TSSkinMesh*>(mesh);
 
       S32 numVerts;
@@ -265,9 +265,11 @@ bool MeshEmitter::getPointOnFace(psMeshInterface *psMesh, Particle *pNew)
    {
       const TSShape::Object &obj = shape->objects[meshIndex];
       TSMesh* mesh = (od < obj.numMeshes) ? shape->meshes[obj.startMeshIndex + od] : NULL;
+      if (!mesh)
+         continue;
       TSSkinMesh *sMesh = NULL;
-      if (Mesh->getMeshType == TSMesh::SkinMeshType)
-         sMesh = static_cast<TSSkinMesh*>(Mesh);
+      if (mesh->getMeshType() == TSMesh::SkinMeshType)
+         sMesh = static_cast<TSSkinMesh*>(mesh);
       if (sMesh)
       {
          if (sMesh->mVertexData.size()){
@@ -288,10 +290,12 @@ bool MeshEmitter::getPointOnFace(psMeshInterface *psMesh, Particle *pNew)
       meshIndex = (gRandGen.randI() % (end - start)) + start;
       const TSShape::Object &obj = shape->objects[meshIndex];
       Mesh = (od < obj.numMeshes) ? shape->meshes[obj.startMeshIndex + od] : NULL;
+      if (!Mesh)
+         continue;
       if (skinmesh)
       {
          TSSkinMesh *sMesh = NULL;
-         if (Mesh->getMeshType == TSMesh::SkinMeshType)
+         if (Mesh->getMeshType() == TSMesh::SkinMeshType)
             sMesh = static_cast<TSSkinMesh*>(Mesh);
          if (sMesh)
          {
@@ -305,7 +309,7 @@ bool MeshEmitter::getPointOnFace(psMeshInterface *psMesh, Particle *pNew)
          else
             accepted = false;
       }
-      if (!skinmesh && Mesh)
+      if (!skinmesh)
       {
          if (Mesh->mVertexData.size() > 0)
             accepted = true;
@@ -400,7 +404,8 @@ void MeshEmitter::loadFaces()
 {
    MeshEmitterData* DataBlock = getDataBlock();
 
-   if (isInSyncWithDatablock())
+   if (isInSyncWithDatablock()
+      && mEmitMeshPtr.isValid())
       return;
 
    cacheFields();
@@ -408,6 +413,10 @@ void MeshEmitter::loadFaces()
    // Make sure that we are dealing with some proper objects
    if (currentMesh){
       loadFaces(currentMesh);
+   }
+   else {
+      emitfaces.clear();
+      vertexCount = 0;
    }
 }
 
@@ -417,10 +426,11 @@ void MeshEmitter::cacheFields()
    mEvenEmission = getDataBlock()->getEvenEmission();
    mEmitOnFaces = getDataBlock()->getEmitOnFaces();
 
+   currentMesh = NULL;
+   mEmitMeshPtr = NULL;
    SimObject* SB = Sim::findObject(mEmitMesh);
    if (!SB)
       SB = Sim::findObject(dAtoi(mEmitMesh));
-   currentMesh = NULL;
    if (SB){
       mEmitMeshPtr = SimObjectPtr<SimObject>(SB);
       currentMesh = dynamic_cast<psMeshInterface*>(SB);
@@ -447,7 +457,7 @@ void MeshEmitter::loadFaces(psMeshInterface *psMesh)
       for (S32 meshIndex = 0; meshIndex < model->getShape()->meshes.size(); meshIndex++)
       {
          TSSkinMesh *sMesh = NULL;
-         if (model->getShape()->meshes[meshIndex]->getMeshType == TSMesh::SkinMeshType)
+         if (model->getShape()->meshes[meshIndex]->getMeshType() == TSMesh::SkinMeshType)
             sMesh = static_cast<TSSkinMesh*>(model->getShape()->meshes[meshIndex]);
          if (sMesh)
          {
@@ -471,7 +481,7 @@ void MeshEmitter::loadFaces(psMeshInterface *psMesh)
          if (!Mesh)
             continue;
 
-         if (Mesh->getMeshType == TSMesh::SkinMeshType)
+         if (Mesh->getMeshType() == TSMesh::SkinMeshType)
             sMesh = static_cast<TSSkinMesh*>(Mesh);
 
          S32 numVerts = Mesh->mVertexData.size();
