@@ -87,14 +87,14 @@ public:
 
    /// Get a point distributed amongst the vertices of the mesh.
    /// @param[out] pNew particle to attach the point to.
-   virtual bool getPointOnVertex(SimObject *SB, psMeshInterface* psMesh, Particle *pNew);
+   virtual bool getPointOnVertex(psMeshInterface* psMesh, Particle *pNew);
 
    /// Get a point distributed amongst the surfaces of the mesh.
    /// @param[out] pNew particle to attach the point to.
-   virtual bool getPointOnFace(SimObject *SB, psMeshInterface* psMesh, Particle *pNew);
+   virtual bool getPointOnFace(psMeshInterface* psMesh, Particle *pNew);
 
    /// Prefetch the surfaces of the mesh into the emitFaces buffer.
-   virtual void loadFaces(SimObject *SB, psMeshInterface* psMesh);
+   virtual void loadFaces(psMeshInterface* psMesh);
 
    /// Prefetch the surfaces of the mesh into the emitFaces buffer.
    virtual void loadFaces();
@@ -107,15 +107,17 @@ public:
 
 protected:
    virtual void cacheFields();
-   virtual bool isOutOfSyncWithDatablock();
+   virtual bool isInSyncWithDatablock();
 
    Vector<psMeshParsing::face> emitfaces; ///< Faces to emit particles on
    U32 vertexCount; ///< Amount of vertices in the mesh
-   SimObjectId currentMesh; ///< ID of the current mesh
+   psMeshInterface *currentMesh; ///< ID of the current mesh
 
    S32 mainTime; ///< Logical time
 
    StringTableEntry mEmitMesh; ///< Id of the object that has a mesh that we want to emit particles on
+   SimObjectPtr<SimObject> mEmitMeshPtr; ///< Internal...
+
    bool mEvenEmission; ///< Even the emission
    bool mEmitOnFaces; ///< If true, emits particles on faces rather than vertices
 };

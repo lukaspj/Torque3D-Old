@@ -64,7 +64,11 @@ void MeshEmitterData::packData(BitStream* stream)
 {
    Parent::packData(stream);
 
-   stream->writeString(mEmitMesh);
+   if (!dIsdigit(mEmitMesh[0])
+      || isClientOnly())
+      stream->writeString(mEmitMesh);
+   else
+      Con::errorf("MeshEmitterData: Cannot use an ID on a server-side datablock, create a client-only datablock instead.");
    stream->writeFlag(mEvenEmission);
    stream->writeFlag(mEmitOnFaces);
 }
@@ -103,45 +107,28 @@ bool MeshEmitter::addParticle(Point3F const& pos,
    if (!DataBlock->getEmitMesh())
       return false;
 
-   PROFILE_SCOPE(meshEmitAddPart);
-
-   // Check if the emitMesh matches a name
-   SimObject* SB = Sim::findObject(DataBlock->getEmitMesh());
-   // If not then check if it matches an ID
-   if (!SB)
-      SB = Sim::findObject(atoi(DataBlock->getEmitMesh()));
-
-   if (!SB)
+   if (!mEmitMeshPtr.isValid())
       return false;
 
-   if (SB->getId() != currentMesh)
-   {
-      currentMesh = SB->getId();
-      loadFaces();
-   }
+   PROFILE_SCOPE(meshEmitAddPart);
 
    Particle* pNew;
    mParentSystem->getParticlePool()->AddParticle(pNew);
    Point3F ejectionAxis = axis;
 
-   // We define these here so we can reduce the amount of dynamic_cast 'calls'
-   psMeshInterface* psMesh = NULL;
-   if (SB){
-      psMesh = dynamic_cast<psMeshInterface*>(SB);
-   }
    // Make sure that we are dealing with some proper objects
-   if (psMesh) {
+   if (currentMesh) {
 
       bool coHandled = false;
-      // Per vertex
       if (!DataBlock->getEmitOnFaces())
       {
-         coHandled = getPointOnVertex(SB, psMesh, pNew);
+         // Per vertex
+         coHandled = getPointOnVertex(currentMesh, pNew);
       }
-      // Per triangle
-      if (DataBlock->getEmitOnFaces())
+      else
       {
-         coHandled = getPointOnFace(SB, psMesh, pNew);
+         // Per triangle
+         coHandled = getPointOnFace(currentMesh, pNew);
       }
 
       if (DataBlock->getEvenEmission() && mainTime == U32_MAX)
@@ -168,7 +155,7 @@ bool MeshEmitter::addParticle(Point3F const& pos,
    return true;
 }
 
-bool MeshEmitter::getPointOnVertex(SimObject *SB, psMeshInterface *psMesh, Particle *pNew)
+bool MeshEmitter::getPointOnVertex(psMeshInterface *psMesh, Particle *pNew)
 {
    PROFILE_SCOPE(meshEmitVertex);
    MeshEmitterData* DataBlock = getDataBlock();
@@ -247,7 +234,7 @@ bool MeshEmitter::getPointOnVertex(SimObject *SB, psMeshInterface *psMesh, Parti
    return false;
 }
 
-bool MeshEmitter::getPointOnFace(SimObject *SB, psMeshInterface *psMesh, Particle *pNew)
+bool MeshEmitter::getPointOnFace(psMeshInterface *psMesh, Particle *pNew)
 {
    PROFILE_SCOPE(meshEmitFace);
    MeshEmitterData* DataBlock = getDataBlock();
@@ -409,21 +396,14 @@ void MeshEmitter::loadFaces()
 {
    MeshEmitterData* DataBlock = getDataBlock();
 
-   if (isOutOfSyncWithDatablock())
+   if (isInSyncWithDatablock())
       return;
 
    cacheFields();
 
-   SimObject* SB = Sim::findObject(DataBlock->getEmitMesh());
-   if (!SB)
-      SB = Sim::findObject(atoi(DataBlock->getEmitMesh()));
-   psMeshInterface *psMesh = NULL;
-   if (SB){
-      psMesh = dynamic_cast<psMeshInterface*>(SB);
-   }
    // Make sure that we are dealing with some proper objects
-   if (psMesh){
-      loadFaces(SB, psMesh);
+   if (currentMesh){
+      loadFaces(currentMesh);
    }
 }
 
@@ -432,21 +412,31 @@ void MeshEmitter::cacheFields()
    mEmitMesh = getDataBlock()->getEmitMesh();
    mEvenEmission = getDataBlock()->getEvenEmission();
    mEmitOnFaces = getDataBlock()->getEmitOnFaces();
+
+   SimObject* SB = Sim::findObject(mEmitMesh);
+   if (!SB)
+      SB = Sim::findObject(dAtoi(mEmitMesh));
+   currentMesh = NULL;
+   if (SB){
+      mEmitMeshPtr = SimObjectPtr<SimObject>(SB);
+      currentMesh = dynamic_cast<psMeshInterface*>(SB);
+   }
+
 }
 
-bool MeshEmitter::isOutOfSyncWithDatablock()
+bool MeshEmitter::isInSyncWithDatablock()
 {
    return mEmitMesh == getDataBlock()->getEmitMesh()
       && mEvenEmission == getDataBlock()->getEvenEmission()
       && mEmitOnFaces == getDataBlock()->getEmitOnFaces();
 }
 
-void MeshEmitter::loadFaces(SimObject *SB, psMeshInterface *psMesh)
+void MeshEmitter::loadFaces(psMeshInterface *psMesh)
 {
    PROFILE_SCOPE(MeshEmitLoadFaces);
    emitfaces.clear();
    vertexCount = 0;
-   if (SB && psMesh){
+   if (psMesh){
       TSShapeInstance* model = psMesh->getShapeInstance();
       Vector<psMeshParsing::face> triangles;
       bool skinmesh = false;
