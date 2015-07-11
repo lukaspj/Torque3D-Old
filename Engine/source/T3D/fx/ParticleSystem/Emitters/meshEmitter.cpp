@@ -155,15 +155,15 @@ bool MeshEmitter::addParticle(Point3F const& pos,
    pNew->currentAge = 0;
 
    // Calculate the constant accleration...
-   pNew->vel += vel * mParentSystem->getDataBlock()->getInheritedVelFactor();
-   pNew->acc = pNew->vel * mParentSystem->getDataBlock()->getConstantAcceleration();
+   pNew->vel += vel * DataBlock->getInheritedVelFactor();
+   pNew->acc = pNew->vel * DataBlock->getConstantAcceleration();
 
    // Calculate this instance's lifetime...
    pNew->totalLifetime = mParentSystem->getDataBlock()->getPartLifetimeMS();
    if (mParentSystem->getDataBlock()->getPartLifetimeVarianceMS() != 0)
       pNew->totalLifetime += S32(gRandGen.randI() % (2 * mParentSystem->getDataBlock()->getPartLifetimeVarianceMS() + 1)) - S32(mParentSystem->getDataBlock()->getPartLifetimeVarianceMS());
    // assign spin amount
-   pNew->spinSpeed = mParentSystem->getDataBlock()->getSpinSpeed() * gRandGen.randF(mParentSystem->getDataBlock()->getSpinRandomMin(), mParentSystem->getDataBlock()->getSpinRandomMax());
+   pNew->spinSpeed = DataBlock->getSpinSpeed() + DataBlock->getSpinSpeedVariance() * gRandGen.randF();
 
    return true;
 }
