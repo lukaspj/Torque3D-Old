@@ -60,6 +60,7 @@
 
 // For the TickMs define... fix this for T2D...
 #include "T3D/gameBase/processList.h"
+#include <cinterface/c-interface.h>
 
 #ifdef TORQUE_ENABLE_VFS
 #include "platform/platformVFS.h"
@@ -427,6 +428,11 @@ bool StandardMainLoop::handleCommandLine( S32 argc, const char **argv )
       Torque::FS::Mount( "game", Platform::FS::createNativeFS( playerPath ) );
    }
 #endif
+
+   bool externalMain = false;
+   CInterface::CallMain(&externalMain);
+   if (externalMain)
+      return true;
 
    // Executes an entry script file. This is "main.cs"
    // by default, but any file name (with no whitespace

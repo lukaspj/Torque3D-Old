@@ -53,6 +53,8 @@
    #include "console/engineStructs.h"
 #endif
 
+#include "platform/platformDlibrary.h"
+
 // Needed for the executef macros. Blame GCC.
 #ifndef _SIMEVENTS_H_
 #include "console/simEvents.h"
@@ -2594,7 +2596,7 @@ struct _EngineConsoleThunk< startArgc, void( A, B, C, D, E, F, G, H, I, J, K, L 
 /// }
 /// @endcode
 #define DefineEngineFunction( name, returnType, args, defaultArgs, usage )                                                       \
-   static inline returnType _fn ## name ## impl args;                                                                            \
+   TORQUE_API returnType _fn ## name ## impl args;                                                                            \
    TORQUE_API EngineTypeTraits< returnType >::ReturnValueType fn ## name                                                         \
       ( _EngineFunctionTrampoline< returnType args >::Args a )                                                                   \
    {                                                                                                                             \
@@ -2629,7 +2631,7 @@ struct _EngineConsoleThunk< startArgc, void( A, B, C, D, E, F, G, H, I, J, K, L 
          _EngineConsoleThunk< 1, returnType args >::NUM_ARGS,                                                                    \
          false, &_ ## name ## header                                                                                             \
       );                                                                                                                         \
-   static inline returnType _fn ## name ## impl args
+   TORQUE_API returnType _fn ## name ## impl args
    
    
 // The next thing is a bit tricky.  DefineEngineMethod allows to make the 'object' (=this) argument to the function
