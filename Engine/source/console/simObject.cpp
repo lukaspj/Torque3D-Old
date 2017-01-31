@@ -2122,7 +2122,7 @@ bool SimObject::setProtectedName(void *obj, const char *index, const char *data)
 {   
    SimObject *object = static_cast<SimObject*>(obj);
    
-   if ( object->isProperlyAdded() )
+   if ( object->isProperlyAdded() || true )
       object->assignName( data );   
 
    // always return false because we assign the name here

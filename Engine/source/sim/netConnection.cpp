@@ -1450,6 +1450,7 @@ DefineEngineMethod( NetConnection, connectLocal, const char*, (),,
       
    server->registerObject();
    server->setIsLocalClientConnection();
+   server->assignName("LocalClientConnection");
 
    server->setSequence(0);
    client->setSequence(0);
@@ -1492,7 +1493,6 @@ DefineEngineMethod( NetConnection, connectLocal, const char*, (),,
    client->setConnectSequence(0);
    server->setConnectSequence(0);
    NetConnection::setLocalClientConnection(server);
-   server->assignName("LocalClientConnection");
    
    return "";
 }
