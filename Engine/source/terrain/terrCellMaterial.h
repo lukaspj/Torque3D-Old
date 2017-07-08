@@ -80,7 +80,11 @@ protected:
       GFXShaderConstHandle *detailInfoVConst;
       GFXShaderConstHandle *detailInfoPConst;
 
-	  GFXShaderConstHandle *macroInfoVConst;
+      // New blending
+      GFXShaderConstHandle *lerpBlend;
+      GFXShaderConstHandle *blendDepth;
+
+      GFXShaderConstHandle *macroInfoVConst;
       GFXShaderConstHandle *macroInfoPConst;
    };
 
@@ -132,6 +136,7 @@ protected:
 
       GFXShaderConstHandle *squareSize;
       GFXShaderConstHandle *oneOverTerrainSize;
+      GFXShaderConstHandle *screenSize;
 
       GFXShaderConstHandle *fogDataConst;
       GFXShaderConstHandle *fogColorConst;
