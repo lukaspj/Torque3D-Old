@@ -41,7 +41,7 @@ protected:
 
 public:
    TerrainFeatHLSL();
-   Var* _getInDetailCoord(Vector<ShaderComponent*> &componentList );
+   Var* _getInDetailCoord(Vector<ShaderComponent*> &componentList, S32 index = -1 );
 
    Var* _getInMacroCoord(Vector<ShaderComponent*> &componentList );
 
@@ -49,7 +49,7 @@ public:
 
    static Var* _getUniformVar( const char *name, const char *type, ConstantSortPosition csp );
 
-   Var* _getDetailIdStrengthParallax();
+   Var* _getDetailIdStrengthParallax(S32 index = -1);
    Var* _getMacroIdStrengthParallax();
 
 };
@@ -159,6 +159,19 @@ public:
                             const MaterialFeatureData &fd );
 
    virtual String getName() { return "Terrain Additive"; }
+};
+
+class TerrainBlendFeatHLSL : public TerrainFeatHLSL
+{
+public:
+
+   virtual void processPix( Vector<ShaderComponent*> &componentList, 
+                            const MaterialFeatureData &fd );
+
+   virtual void processVert( Vector<ShaderComponent*> &componentList, 
+                            const MaterialFeatureData &fd );
+
+   virtual String getName() { return "Terrain Blend"; }
 };
 
 class TerrainBlankInfoMapFeatHLSL : public TerrainFeatHLSL

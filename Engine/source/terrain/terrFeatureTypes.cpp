@@ -32,6 +32,7 @@ ImplementFeatureType( MFT_TerrainDetailMap, MFG_Texture, 102.0f, false );
 ImplementFeatureType( MFT_TerrainNormalMap, MFG_Texture, 103.0f, false );
 ImplementFeatureType( MFT_TerrainMacroMap, MFG_Texture, 104.0f, false );
 ImplementFeatureType( MFT_TerrainLightMap, MFG_Texture, 105.0f, false );
+ImplementFeatureType( MFT_TerrainBlendMap, MFG_Texture, 100.2f, false );
 ImplementFeatureType( MFT_TerrainSideProject, MFG_Texture, 106.0f, false );
 ImplementFeatureType( MFT_TerrainAdditive, MFG_PostProcess, 999.0f, false );
 //Deferred Shading

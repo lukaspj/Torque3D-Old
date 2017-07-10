@@ -377,6 +377,7 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
          features.addFeature( MFT_HDROut );
       }
       features.addFeature(MFT_DeferredTerrainBlankInfoMap);
+      features.addFeature(MFT_TerrainBlendMap);
 
       // Enable lightmaps and fogging if we're in BL.
       if ( reflectMat || useBLM )
@@ -571,9 +572,6 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
 
    if ( pass->layerTexConst->isValid() )
       desc.samplers[pass->layerTexConst->getSamplerRegister()] = GFXSamplerStateDesc::getClampPoint();
-
-   if (pass->opacityMapConst->isValid())
-      desc.samplers[pass->opacityMapConst->getSamplerRegister()] = GFXSamplerStateDesc::getClampPoint();
 
    if ( pass->lightInfoBufferConst->isValid() )
       desc.samplers[pass->lightInfoBufferConst->getSamplerRegister()] = GFXSamplerStateDesc::getClampPoint();
@@ -817,17 +815,19 @@ bool TerrainCellMaterial::setupPass(   const SceneRenderState *state,
                            mCurrPass,
                            pass.consts );
 
-   U32 samplerIndex = 5;
+   U32 normalTexIndex = 4;
+   U32 detailTexIndex = 4 + pass.materials.size();
+   U32 macroTexIndex = 8;
    for ( U32 i=0; i < pass.materials.size(); i++ )
    {
       MaterialInfo *matInfo = pass.materials[i];
 
       if (matInfo->mat->getNormalMap().isNotEmpty() || matInfo->normalTexConst->isValid())
-         GFX->setTexture(samplerIndex++, matInfo->normalTex);
+         GFX->setTexture(normalTexIndex++, matInfo->normalTex);
       if (matInfo->mat->getDetailMap().isNotEmpty() || matInfo->detailTexConst->isValid() )
-         GFX->setTexture(samplerIndex++, matInfo->detailTex );
+         GFX->setTexture(detailTexIndex++, matInfo->detailTex );
       if (matInfo->mat->getMacroMap().isNotEmpty() || matInfo->macroTexConst->isValid() )
-         GFX->setTexture(samplerIndex++, matInfo->macroTex );
+         GFX->setTexture(macroTexIndex++, matInfo->macroTex );
    }
 
    pass.consts->setSafe( pass.layerSizeConst, (F32)mTerrain->mLayerTex.getWidth() );

@@ -33,6 +33,7 @@ DeclareFeatureType( MFT_TerrainDetailMap );
 DeclareFeatureType( MFT_TerrainNormalMap );
 DeclareFeatureType( MFT_TerrainParallaxMap );
 DeclareFeatureType( MFT_TerrainLightMap );
+DeclareFeatureType( MFT_TerrainBlendMap );
 DeclareFeatureType( MFT_TerrainSideProject );
 DeclareFeatureType( MFT_TerrainAdditive );
 //Deferred Shading
