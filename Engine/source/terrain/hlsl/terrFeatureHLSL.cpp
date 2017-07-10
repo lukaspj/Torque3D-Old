@@ -282,9 +282,7 @@ void TerrainBaseMapFeatHLSL::processPix(  Vector<ShaderComponent*> &componentLis
    diffuseTex->texture = true;
    diffuseTex->constNum = diffuseMap->constNum;
    meta->addStatement(new GenOp("   @ = @.Sample( @, @.xy );\r\n", new DecOp(baseColor), diffuseTex, diffuseMap, texCoord));
-
-   meta->addStatement(new GenOp("   @ = toLinear(@);\r\n", baseColor, baseColor));
-
+   <<
    ShaderFeature::OutputTarget target = ShaderFeature::DefaultTarget;
 
    if (fd.features.hasFeature(MFT_isDeferred))
@@ -599,7 +597,7 @@ void TerrainDetailMapFeatHLSL::processPix(   Vector<ShaderComponent*> &component
       //Var *normalMap = _getNormalMapTex();
 
       // Call the library function to do the rest.
-      if (fd.features.hasFeature(MFT_IsDXTnm, detailIndex))
+      if (fd.features.hasFeature(MFT_IsBC3nm, detailIndex))
       {
          meta->addStatement(new GenOp("   @.xy += parallaxOffsetDxtnm( @, @, @.xy, @, @.z * @ );\r\n",
             inDet, normalMapTex, normalMap, inDet, negViewTS, detailInfo, detailBlend));
