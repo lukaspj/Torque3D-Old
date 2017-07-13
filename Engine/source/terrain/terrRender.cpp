@@ -182,8 +182,74 @@ bool TerrainBlock::_initBaseShader()
 
 void TerrainBlock::_updateBaseTexture(bool writeToCache)
 {
+   if (mBaseTexFile.isNotEmpty())
+   {
+      mBaseTex = GFXTexHandle(mBaseTexFile, &GFXRenderTargetSRGBProfile, "");
+      
+      // Do we cache this sucker?
+      if (mBaseTexFormat == NONE || !writeToCache)
+      {
+         // We didn't cache the result, so set the base texture
+         // to the render target we updated.  This should be good
+         // for realtime painting cases.
+      }
+      else if (mBaseTexFormat == DDS)
+      {
+         String cachePath = _getBaseTexCacheFileName();
+
+         FileStream fs;
+         if (fs.open(_getBaseTexCacheFileName(), Torque::FS::File::Write))
+         {
+            // Read back the render target, dxt compress it, and write it to disk.
+            GBitmap blendBmp(mBaseTex->getWidth(), mBaseTex->getHeight(), false, GFXFormatR8G8B8);
+            mBaseTex.copyToBmp(&blendBmp);
+
+            /*
+            // Test code for dumping uncompressed bitmap to disk.
+            {
+            FileStream fs;
+            if ( fs.open( "./basetex.png", Torque::FS::File::Write ) )
+            {
+            blendBmp.writeBitmap( "png", fs );
+            fs.close();
+            }
+            }
+            */
+
+            blendBmp.extrudeMipLevels();
+
+            DDSFile *blendDDS = DDSFile::createDDSFileFromGBitmap(&blendBmp);
+            ImageUtil::ddsCompress(blendDDS, GFXFormatBC1);
+
+            // Write result to file stream
+            blendDDS->write(fs);
+
+            delete blendDDS;
+         }
+         fs.close();
+      }
+      else
+      {
+         FileStream stream;
+         if (!stream.open(_getBaseTexCacheFileName(), Torque::FS::File::Write))
+         {
+            return;
+         }
+
+         GBitmap bitmap(mBaseTex->getWidth(), mBaseTex->getHeight(), false, GFXFormatR8G8B8);
+         mBaseTex->copyToBmp(&bitmap);
+         bitmap.writeBitmap(formatToExtension(mBaseTexFormat), stream);
+      }
+      return;
+   }
+
    if ( !mBaseShader && !_initBaseShader() )
       return;
+
+   // If the layer texture has been cleared or is 
+   // dirty then update it.
+   if (mLayerTex.isNull() || mLayerTexDirty)
+      _updateLayerTexture();
 
    // This can sometimes occur outside a begin/end scene.
    const bool sceneBegun = GFX->canCurrentlyRender();
@@ -228,17 +294,17 @@ void TerrainBlock::_updateBaseTexture(bool writeToCache)
    }
 
    GFXTexHandle blendTex;
-
+   
    // If the base texture is already a valid render target then 
    // use it to render to else we create one.
    if (  mBaseTex.isValid() && 
          mBaseTex->isRenderTarget() &&
-         mBaseTex->getFormat() == GFXFormatR8G8B8A8_SRGB &&
+         mBaseTex->getFormat() == GFXFormatR8G8B8_SRGB &&
          mBaseTex->getWidth() == destSize.x &&
          mBaseTex->getHeight() == destSize.y )
       blendTex = mBaseTex;
    else
-      blendTex.set( destSize.x, destSize.y, GFXFormatR8G8B8A8_SRGB, &GFXRenderTargetSRGBProfile, "" );
+      blendTex.set( destSize.x, destSize.y, GFXFormatR8G8B8_SRGB, &GFXRenderTargetSRGBProfile, "" );
 
    GFX->pushActiveRenderTarget();   
 
@@ -291,13 +357,14 @@ void TerrainBlock::_updateBaseTexture(bool writeToCache)
    if ( !sceneBegun )
       GFX->endScene();
 
+   mBaseTex = blendTex;
+
    /// Do we cache this sucker?
    if (mBaseTexFormat == NONE || !writeToCache)
    {
       // We didn't cache the result, so set the base texture
       // to the render target we updated.  This should be good
       // for realtime painting cases.
-      mBaseTex = blendTex;
    }
    else if (mBaseTexFormat == DDS)
    {
@@ -307,7 +374,7 @@ void TerrainBlock::_updateBaseTexture(bool writeToCache)
       if ( fs.open( _getBaseTexCacheFileName(), Torque::FS::File::Write ) )
       {
          // Read back the render target, dxt compress it, and write it to disk.
-         GBitmap blendBmp( destSize.x, destSize.y, false, GFXFormatR8G8B8A8 );
+         GBitmap blendBmp( destSize.x, destSize.y, false, GFXFormatR8G8B8 );
          blendTex.copyToBmp( &blendBmp );
 
          /*
@@ -343,7 +410,7 @@ void TerrainBlock::_updateBaseTexture(bool writeToCache)
          return;
       }
 
-      GBitmap bitmap(blendTex->getWidth(), blendTex->getHeight(), false, GFXFormatR8G8B8A8);
+      GBitmap bitmap(blendTex->getWidth(), blendTex->getHeight(), false, GFXFormatR8G8B8);
       blendTex->copyToBmp(&bitmap);
       bitmap.writeBitmap(formatToExtension(mBaseTexFormat), stream);
    }

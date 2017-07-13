@@ -64,14 +64,15 @@ protected:
 
    enum
    {
-      TransformMask        = Parent::NextFreeMask,
-      FileMask             = Parent::NextFreeMask << 1,
-      SizeMask             = Parent::NextFreeMask << 2,
-      MaterialMask         = Parent::NextFreeMask << 3,
-      HeightMapChangeMask  = Parent::NextFreeMask << 4,
-      MiscMask             = Parent::NextFreeMask << 5,
+      TransformMask         = Parent::NextFreeMask,
+      FileMask              = Parent::NextFreeMask << 1,
+      SizeMask              = Parent::NextFreeMask << 2,
+      MaterialMask          = Parent::NextFreeMask << 3,
+      HeightMapChangeMask   = Parent::NextFreeMask << 4,
+      MiscMask              = Parent::NextFreeMask << 5,
+      BaseTexFileChangeMask = Parent::NextFreeMask << 6,
 
-      NextFreeMask = Parent::NextFreeMask << 6,
+      NextFreeMask = Parent::NextFreeMask << 7,
    };
 
 public:
@@ -115,6 +116,8 @@ protected:
 
    ///
    FileName mTerrFileName;
+
+   FileName mBaseTexFile;
    
    /// The maximum detail distance found in the material list.
    F32 mMaxDetailDistance;
@@ -236,6 +239,7 @@ protected:
 
    // Protected fields
    static bool _setTerrainFile( void *obj, const char *index, const char *data );
+   static bool _setBaseTexFile( void *obj, const char *index, const char *data );
    static bool _setSquareSize( void *obj, const char *index, const char *data );
    static bool _setBaseTexSize(void *obj, const char *index, const char *data);
    static bool _setBaseTexFormat(void *obj, const char *index, const char *data);

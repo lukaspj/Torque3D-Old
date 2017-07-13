@@ -285,6 +285,7 @@ bool TerrainBlock::_setBaseTexFormat(void *obj, const char *index, const char *d
       if (strcasecmp(eTable[i].mName, data) == 0)
       {
          terrain->mBaseTexFormat = (BaseTexFormat)eTable[i].mInt;
+         terrain->setMaskBits(BaseTexFileChangeMask);
          terrain->_updateMaterials();
 
          if (terrain->isServerObject()) return false;
@@ -352,6 +353,15 @@ bool TerrainBlock::save(const char *filename)
 bool TerrainBlock::_setTerrainFile( void *obj, const char *index, const char *data )
 {
    static_cast<TerrainBlock*>( obj )->setFile( FileName( data ) );
+   return false;
+}
+
+bool TerrainBlock::_setBaseTexFile( void *obj, const char *index, const char *data )
+{
+   TerrainBlock* block = static_cast<TerrainBlock*>(obj);
+   block->mBaseTexFile = FileName(data);
+   block->setMaskBits(BaseTexFileChangeMask);
+   block->_updateBaseTexture(true);
    return false;
 }
 
@@ -1121,6 +1131,10 @@ void TerrainBlock::initPersistFields()
          &TerrainBlock::_setTerrainFile, &defaultProtectedGetFn,
          "The source terrain data file." );
 
+      addProtectedField( "baseTexFile", TypeStringFilename, Offset( mBaseTexFile, TerrainBlock ), 
+         &TerrainBlock::_setBaseTexFile, &defaultProtectedGetFn,
+         "The base texture image, if not set this will be auto-generated." );
+
    endGroup( "Media" );
 
    addGroup( "Misc" );
@@ -1197,7 +1211,11 @@ U32 TerrainBlock::packUpdate(NetConnection* con, U32 mask, BitStream *stream)
    if ( stream->writeFlag( mask & MiscMask ) )
       stream->write( mScreenError );
 
-   stream->writeInt(mBaseTexFormat, 32);
+   if(stream->writeFlag(mask & BaseTexFileChangeMask))
+   {
+      stream->write(mBaseTexFile);
+      stream->writeInt(mBaseTexFormat, 32);
+   }
 
    return retMask;
 }
@@ -1266,7 +1284,15 @@ void TerrainBlock::unpackUpdate(NetConnection* con, BitStream *stream)
    if ( stream->readFlag() ) // MiscMask
       stream->read( &mScreenError );
 
-   mBaseTexFormat = (BaseTexFormat)stream->readInt(32);
+   if(stream->readFlag())
+   {
+      FileName baseTexFile;
+      stream->read(&baseTexFile);
+      mBaseTexFile = baseTexFile;
+      if (isProperlyAdded())
+         _updateBaseTexture(true);
+      mBaseTexFormat = (BaseTexFormat)stream->readInt(32);
+   }
 }
 
 void TerrainBlock::getMinMaxHeight( F32 *minHeight, F32 *maxHeight ) const 
