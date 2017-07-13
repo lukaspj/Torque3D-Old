@@ -2854,6 +2854,11 @@ DefineConsoleMethod( TerrainEditor, setSlopeLimitMaxAngle, F32, (F32 angle), , "
 	return angle;
 }
 
+DefineEngineMethod( TerrainEditor, repaintTerrainMaterials, void, (), , "")
+{
+   object->repaintTerrainMaterials();
+}
+
 //------------------------------------------------------------------------------  
 void TerrainEditor::autoMaterialLayer( F32 mMinHeight, F32 mMaxHeight, F32 mMinSlope, F32 mMaxSlope, F32 mCoverage )  
 {  

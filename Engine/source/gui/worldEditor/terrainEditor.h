@@ -487,6 +487,8 @@ class TerrainEditor : public EditTSCtrl
 
       void renderPoints( const Vector<GFXVertexPCT> &pointList );
 
+      void repaintTerrainMaterials() { if (getClientTerrain()) getClientTerrain()->mDetailsDirty = true; }
+
 
       DECLARE_CONOBJECT(TerrainEditor);     
 };
