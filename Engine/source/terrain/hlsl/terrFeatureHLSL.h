@@ -41,9 +41,9 @@ protected:
 
 public:
    TerrainFeatHLSL();
-   Var* _getInDetailCoord(Vector<ShaderComponent*> &componentList, S32 index = -1 );
+   Var* _computeAndGetInDetailCoord(MultiLine* meta, Vector<ShaderComponent*> &componentList, S32 index = -1 );
 
-   Var* _getInMacroCoord(Vector<ShaderComponent*> &componentList );
+   Var* _computeAndGetInMacroCoord(MultiLine* meta, Vector<ShaderComponent*> &componentList );
 
    Var* _getNormalMapTex();
 
@@ -70,6 +70,17 @@ public:
    virtual String getName() { return "Terrain Base Texture"; }
 
    virtual U32 getOutputTargets( const MaterialFeatureData &fd ) const;
+};
+
+
+class TerrainBaseColorFillFeatHLSL : public TerrainFeatHLSL
+{
+public:
+
+   virtual void processPix( Vector<ShaderComponent*> &componentList, 
+                            const MaterialFeatureData &fd );
+
+   virtual String getName() { return "Terrain Base Color Fill"; }
 };
 
 
@@ -172,6 +183,16 @@ public:
                             const MaterialFeatureData &fd );
 
    virtual String getName() { return "Terrain Blend"; }
+};
+
+class TerrainBlendNormalizationFeatHLSL : public TerrainFeatHLSL
+{
+public:
+
+   virtual void processPix(Vector<ShaderComponent*> &componentList,
+      const MaterialFeatureData &fd);
+
+   virtual String getName() { return "Terrain Blend Normalization"; }
 };
 
 class TerrainBlankInfoMapFeatHLSL : public TerrainFeatHLSL

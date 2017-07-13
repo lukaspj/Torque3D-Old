@@ -376,8 +376,15 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
          // if HDR is not enabled in the engine.
          features.addFeature( MFT_HDROut );
       }
+      features.addFeature(MFT_TerrainBaseColorFill);
       features.addFeature(MFT_DeferredTerrainBlankInfoMap);
       features.addFeature(MFT_TerrainBlendMap);
+      bool b1 = Con::getBoolVariable("$Pref::Terrain::LerpBlend");
+      bool b2 = Con::getBoolVariable("Pref::Terrain::LerpBlend");
+      if (Con::getBoolVariable("$Pref::Terrain::LerpBlend"))
+      {
+         features.addFeature(MFT_TerrainLerpBlendActivated);
+      }
 
       // Enable lightmaps and fogging if we're in BL.
       if ( reflectMat || useBLM )
@@ -413,6 +420,17 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
             continue;         
 
          S32 featureIndex = pass->materials.size();
+         MaterialInfo* matInfo = (*materials)[i];
+         if (matInfo->mat->getDetailMap().isNotEmpty() || matInfo->detailTexConst->isValid())
+         {
+            matInfo->detailTex.set((*materials)[i]->mat->getDetailMap(),
+               &GFXStaticTextureProfile, "TerrainCellMaterial::_createPass() - DetailMap");
+
+            if (matInfo->detailTex->mHasTransparency)
+            {
+               features.addFeature(MFT_TerrainDetailAlphaChannel, featureIndex);
+            }
+         }
 
 		 // check for macro detail texture
          if (  !(mat->getMacroSize() <= 0 || mat->getMacroDistance() <= 0 || mat->getMacroMap().isEmpty() ) )
@@ -450,6 +468,12 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
                   mat->getParallaxScale() > 0.0f &&
                   !mat->useSideProjection() )
                features.addFeature( MFT_TerrainParallaxMap, featureIndex );
+
+
+            if (normalMaps.last()->mHasTransparency)
+            {
+               features.addFeature(MFT_TerrainNormalAlphaChannel, featureIndex);
+            }
          }
 
          // Is this layer got side projection?
@@ -562,6 +586,10 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
       if ( deferredMat )
          desc.setColorWrites( true, true, true, false );
    }
+   else
+   {
+      desc.setBlend(true, GFXBlendOne, GFXBlendZero);
+   }
 
    // We write to the zbuffer if this is a deferred
    // material or if the deferred is disabled.
@@ -618,8 +646,9 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
          else
             desc.samplers[sampler].minFilter = GFXTextureFilterLinear;
 
-         matInfo->detailTex.set( matInfo->mat->getDetailMap(), 
-            &GFXStaticTextureProfile, "TerrainCellMaterial::_createPass() - DetailMap" );
+         // This is set earlier, in order to check whether it has transparency
+         //matInfo->detailTex.set( matInfo->mat->getDetailMap(), 
+         //   &GFXStaticTextureProfile, "TerrainCellMaterial::_createPass() - DetailMap" );
       }
 
       matInfo->macroInfoVConst = pass->shader->getShaderConstHandle( avar( "$macroScaleAndFade%d", i ) );
@@ -818,19 +847,23 @@ bool TerrainCellMaterial::setupPass(   const SceneRenderState *state,
                            mCurrPass,
                            pass.consts );
 
-   U32 normalTexIndex = 4;
-   U32 detailTexIndex = 4 + pass.materials.size();
-   U32 macroTexIndex = 8;
-   for ( U32 i=0; i < pass.materials.size(); i++ )
+   U32 texIndex = 4;
+   for (U32 i = 0; i < pass.materials.size(); i++)
    {
       MaterialInfo *matInfo = pass.materials[i];
 
       if (matInfo->mat->getNormalMap().isNotEmpty() || matInfo->normalTexConst->isValid())
-         GFX->setTexture(normalTexIndex++, matInfo->normalTex);
+         GFX->setTexture(texIndex++, matInfo->normalTex);
+   }
+
+   for (U32 i = 0; i < pass.materials.size(); i++)
+   {
+      MaterialInfo *matInfo = pass.materials[i];
+
       if (matInfo->mat->getDetailMap().isNotEmpty() || matInfo->detailTexConst->isValid() )
-         GFX->setTexture(detailTexIndex++, matInfo->detailTex );
-      if (matInfo->mat->getMacroMap().isNotEmpty() || matInfo->macroTexConst->isValid() )
-         GFX->setTexture(macroTexIndex++, matInfo->macroTex );
+         GFX->setTexture(texIndex++, matInfo->detailTex );
+      if (matInfo->mat->getMacroMap().isNotEmpty() || matInfo->macroTexConst->isValid())
+         GFX->setTexture(texIndex++, matInfo->macroTex);
    }
 
    pass.consts->setSafe( pass.layerSizeConst, (F32)mTerrain->mLayerTex.getWidth() );
