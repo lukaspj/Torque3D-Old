@@ -180,8 +180,10 @@ bool GFXD3D11TextureObject::copyToBmp(GBitmap* bmp)
    // check format limitations
    // at the moment we only support RGBA for the source (other 4 byte formats should
    // be easy to add though)
-   AssertFatal(mFormat == GFXFormatR8G8B8A8 || mFormat == GFXFormatR8G8B8A8_LINEAR_FORCE || mFormat == GFXFormatR8G8B8A8_SRGB, "copyToBmp: invalid format");
-   if (mFormat != GFXFormatR8G8B8A8 && mFormat != GFXFormatR8G8B8A8_LINEAR_FORCE && mFormat != GFXFormatR8G8B8A8_SRGB)
+   AssertFatal(mFormat == GFXFormatR8G8B8A8 || mFormat == GFXFormatR8G8B8A8_LINEAR_FORCE || mFormat == GFXFormatR8G8B8A8_SRGB
+      || mFormat != GFXFormatR8G8B8 || mFormat != GFXFormatR8G8B8_SRGB, "copyToBmp: invalid format");
+   if (mFormat != GFXFormatR8G8B8A8 && mFormat != GFXFormatR8G8B8A8_LINEAR_FORCE && mFormat != GFXFormatR8G8B8A8_SRGB
+      && mFormat != GFXFormatR8G8B8 && mFormat != GFXFormatR8G8B8_SRGB)
       return false;
 
    PROFILE_START(GFXD3D11TextureObject_copyToBmp);
@@ -200,7 +202,7 @@ bool GFXD3D11TextureObject::copyToBmp(GBitmap* bmp)
    const GFXFormat fmt = bmp->getFormat();
    if (fmt == GFXFormatR8G8B8A8 || fmt == GFXFormatR8G8B8A8_LINEAR_FORCE || fmt == GFXFormatR8G8B8A8_SRGB)
       destBytesPerPixel = 4;
-   else if(bmp->getFormat() == GFXFormatR8G8B8)
+   else if(bmp->getFormat() == GFXFormatR8G8B8 || fmt == GFXFormatR8G8B8_SRGB)
       destBytesPerPixel = 3;
    else
       // unsupported
