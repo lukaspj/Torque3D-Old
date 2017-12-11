@@ -321,6 +321,85 @@ struct EngineUnmarshallData< ConsoleValueRef >
 /// @}
 
 
+
+template <typename ...Ts>
+struct fixed_tuple;
+
+template <typename T, typename ...Ts>
+struct fixed_tuple<T, Ts...>
+{
+   T first;
+   fixed_tuple<Ts...> rest;
+
+   fixed_tuple() = default;
+   template <class U, class...Us, class = typename ::std::enable_if<!::std::is_base_of<fixed_tuple, typename ::std::decay<U>::type>::value>::type>
+   fixed_tuple(U&& u, Us&&...tail) :
+      first(::std::forward<U>(u)),
+      rest(::std::forward<Us>(tail)...) {}
+};
+
+template <typename T>
+struct fixed_tuple<T>
+{
+   T first;
+
+   fixed_tuple() = default;
+   template <class U, class = typename ::std::enable_if<!::std::is_base_of<fixed_tuple, typename ::std::decay<U>::type>::value>::type>
+   fixed_tuple(U&& u) :
+      first(::std::forward<U>(u)) {}
+};
+
+template <>
+struct fixed_tuple<> {};
+
+
+template < ::std::size_t i, class T>
+struct fixed_tuple_element;
+
+template < ::std::size_t i, class T, class... Ts>
+struct fixed_tuple_element<i, fixed_tuple<T, Ts...> >
+   : fixed_tuple_element<i - 1, fixed_tuple<Ts...> >
+{};
+
+template <class T, class... Ts>
+struct fixed_tuple_element<0, fixed_tuple<T, Ts...> >
+{
+   using type = T;
+};
+
+template < ::std::size_t i>
+struct fixed_tuple_accessor
+{
+   template <class... Ts>
+   static inline typename fixed_tuple_element<i, fixed_tuple<Ts...> >::type & get(fixed_tuple<Ts...> & t)
+   {
+      return fixed_tuple_accessor<i - 1>::get(t.rest);
+   }
+
+   template <class... Ts>
+   static inline const typename fixed_tuple_element<i, fixed_tuple<Ts...> >::type & get(const fixed_tuple<Ts...> & t)
+   {
+      return fixed_tuple_accessor<i - 1>::get(t.rest);
+   }
+};
+
+template <>
+struct fixed_tuple_accessor<0>
+{
+   template <class... Ts>
+   static inline typename fixed_tuple_element<0, fixed_tuple<Ts...> >::type & get(fixed_tuple<Ts...> & t)
+   {
+      return t.first;
+   }
+
+   template <class... Ts>
+   static inline const typename fixed_tuple_element<0, fixed_tuple<Ts...> >::type & get(const fixed_tuple<Ts...> & t)
+   {
+      return t.first;
+   }
+};
+
+
 /// @name C to C++ Trampolines
 ///
 /// The trampolines serve two purposes:
@@ -347,6 +426,8 @@ struct _EngineTrampoline< R( ArgTs ... ) >
 {
    typedef std::tuple<ArgTs ...> Args;
    std::tuple<ArgTs ...> argT;
+   typedef fixed_tuple<ArgTs ...> FixedArgs;
+   fixed_tuple<ArgTs ...> fixedArgT;
 };
 
 template< typename T >
@@ -365,6 +446,7 @@ struct _EngineFunctionTrampoline< R(ArgTs...) > : public _EngineFunctionTrampoli
 private:
    using Super = _EngineFunctionTrampolineBase< R(ArgTs...) >;
    using ArgsType = typename Super::Args;
+   using FixedArgsType = typename Super::FixedArgs;
    
    template<size_t ...> struct Seq {};
    template<size_t N, size_t ...S> struct Gens : Gens<N-1, N-1, S...> {};
@@ -374,10 +456,20 @@ private:
    static R dispatchHelper(typename Super::FunctionType fn, const ArgsType& args, Seq<I...>)  {
       return R( fn(std::get<I>(args) ...) );
    }
+   
+   template<size_t ...I>
+   static R dispatchHelper(typename Super::FunctionType fn, const FixedArgsType& args, Seq<I...>)  {
+      return R( fn(fixed_tuple_accessor<I>::get(args) ...) );
+   }
 
    using SeqType = typename Gens<sizeof...(ArgTs)>::type;
 public:
    static R jmp(typename Super::FunctionType fn, const ArgsType& args )
+   {
+      return dispatchHelper(fn, args, SeqType());
+   }
+
+   static R jmp(typename Super::FunctionType fn, const FixedArgsType& args )
    {
       return dispatchHelper(fn, args, SeqType());
    }
@@ -398,6 +490,7 @@ struct _EngineMethodTrampoline< Frame, R(ArgTs ...) > : public _EngineMethodTram
 private:
    using Super = _EngineMethodTrampolineBase< R(ArgTs ...) >;
    using ArgsType = typename _EngineFunctionTrampolineBase< R(ArgTs ...) >::Args;
+   using FixedArgsType = typename Super::FixedArgs;
    
    template<size_t ...> struct Seq {};
    template<size_t N, size_t ...S> struct Gens : Gens<N-1, N-1, S...> {};
@@ -407,12 +500,23 @@ private:
    static R dispatchHelper(Frame f, const ArgsType& args, Seq<I...>)  {
       return R( f._exec(std::get<I>(args) ...) );
    }
+
+   template<size_t ...I>
+   static R dispatchHelper(Frame f, const FixedArgsType& args, Seq<I...>) {
+      return R( f._exec(fixed_tuple_accessor<I>::get(args) ...) );
+   }
    
    using SeqType = typename Gens<sizeof...(ArgTs)>::type;
 public:
    static R jmp( typename Frame::ObjectType* object, const ArgsType& args )
    {
-      
+      Frame f;
+      f.object = object;
+      return dispatchHelper(f, args, SeqType());
+   }
+
+   static R jmp( typename Frame::ObjectType* object, const FixedArgsType& args )
+   {
       Frame f;
       f.object = object;
       return dispatchHelper(f, args, SeqType());
@@ -737,7 +841,7 @@ public:
 
 #define _DefineMethodTrampoline( className, name, returnType, args ) \
    TORQUE_API EngineTypeTraits< returnType >::ReturnValueType \
-      fn ## className ## _ ## name ( className* object, _EngineMethodTrampoline< _ ## className ## name ## frame, returnType args >::Args a )   \
+      fn ## className ## _ ## name ( className* object, _EngineMethodTrampoline< _ ## className ## name ## frame, returnType args >::FixedArgs a )   \
    {                                                                                                                                            \
       _CHECK_ENGINE_INITIALIZED( className::name, returnType );                                                                                 \
       return EngineTypeTraits< returnType >::ReturnValue(                                                                                       \
