@@ -841,11 +841,7 @@ public:
 
 #define _DefineMethodTrampoline( className, name, returnType, args ) \
    TORQUE_API EngineTypeTraits< returnType >::ReturnValueType \
-<<<<<<< HEAD
-      fn_ ## className ## _ ## name ( className* object, _EngineMethodTrampoline< _ ## className ## name ## frame, returnType args >::Args a )   \
-=======
-      fn ## className ## _ ## name ( className* object, _EngineMethodTrampoline< _ ## className ## name ## frame, returnType args >::FixedArgs a )   \
->>>>>>> cinterface-update
+      fn_ ## className ## _ ## name ( className* object, _EngineMethodTrampoline< _ ## className ## name ## frame, returnType args >::FixedArgs a )   \
    {                                                                                                                                            \
       _CHECK_ENGINE_INITIALIZED( className::name, returnType );                                                                                 \
       return EngineTypeTraits< returnType >::ReturnValue(                                                                                       \

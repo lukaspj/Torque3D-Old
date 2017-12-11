@@ -1563,7 +1563,7 @@ void Entity::setComponentDirty(Component *comp, bool forceUpdate)
 }
 
 DefineEngineMethod(Entity, mountObject, bool,
-   (SceneObject* objB, TransformF txfm), (MatrixF::Identity),
+   (SceneObject* objB, TransformF txfm), (TransformF::Identity),
    "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
 
    "@param objB  Object to mount onto us\n"

@@ -39,7 +39,7 @@ DefineEngineMethod(MeshComponent, getShapeBounds, Box3F, (), ,
 }
 
 DefineEngineMethod(MeshComponent, mountObject, bool,
-   (SceneObject* objB, String node, TransformF txfm), (MatrixF::Identity),
+   (SceneObject* objB, String node, TransformF txfm), (TransformF::Identity),
    "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
 
    "@param objB  Object to mount onto us\n"
