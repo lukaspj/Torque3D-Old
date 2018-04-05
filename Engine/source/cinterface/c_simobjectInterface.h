@@ -26,13 +26,13 @@
 #include "console/simObject.h"
 
 extern "C" {
-   bool fnSimObject_registerObject(SimObject* pObject);
-   void fnSimObject_GetField(SimObject* obj, const char* fieldName, const char* arrayIndex);
-   void fnSimObject_SetField(SimObject* obj, const char* fieldName, const char* arrayIndex, const char* value);
-   void fnSimObject_CopyFrom(SimObject* obj, SimObject* parent);
-   void fnSimObject_SetMods(SimObject* obj, bool modStaticFields, bool modDynamicFields);
-   bool fnSimObject_IsLocked(SimObject *so);
-   void fnSimObject_InspectPreApply(SimObject *so);
-   void fnSimObject_InspectPostApply(SimObject *so);
+   TORQUE_API bool fnSimObject_registerObject(SimObject* pObject);
+   TORQUE_API void fnSimObject_GetField(SimObject* obj, const char* fieldName, const char* arrayIndex);
+   TORQUE_API void fnSimObject_SetField(SimObject* obj, const char* fieldName, const char* arrayIndex, const char* value);
+   TORQUE_API void fnSimObject_CopyFrom(SimObject* obj, SimObject* parent);
+   TORQUE_API void fnSimObject_SetMods(SimObject* obj, bool modStaticFields, bool modDynamicFields);
+   TORQUE_API bool fnSimObject_IsLocked(SimObject *so);
+   TORQUE_API void fnSimObject_InspectPreApply(SimObject *so);
+   TORQUE_API void fnSimObject_InspectPostApply(SimObject *so);
 }
 #endif // C_SIMOBJECTINTERFACE_H

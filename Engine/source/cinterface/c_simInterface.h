@@ -26,10 +26,10 @@
 #include "console/consoleInternal.h"
 
 extern "C" {
-   SimObject* Sim_FindObjectById(U32 pId);
-   SimObject* Sim_FindObjectByName(const char* pName);
-   SimObject* Sim_FindDataBlockByName(const char* pName);
-   SimObjectPtr<SimObject>* Sim_WrapObject(SimObject* pObject);
-   void Sim_DeleteObjectPtr(SimObjectPtr<SimObject>* pObjectPtr);
+   TORQUE_API SimObject* Sim_FindObjectById(U32 pId);
+   TORQUE_API SimObject* Sim_FindObjectByName(const char* pName);
+   TORQUE_API SimObject* Sim_FindDataBlockByName(const char* pName);
+   TORQUE_API SimObjectPtr<SimObject>* Sim_WrapObject(SimObject* pObject);
+   TORQUE_API void Sim_DeleteObjectPtr(SimObjectPtr<SimObject>* pObjectPtr);
 }
 #endif // C_SIMINTERFACE_H

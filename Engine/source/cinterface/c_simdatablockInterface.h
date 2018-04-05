@@ -26,7 +26,7 @@
 #include "platform/platformDlibrary.h"
 
 extern "C" {
-   void fnSimDataBlock_AssignId(SimDataBlock* db);
-   void fnSimDataBlock_Preload(SimDataBlock* db);
+   TORQUE_API void fnSimDataBlock_AssignId(SimDataBlock* db);
+   TORQUE_API void fnSimDataBlock_Preload(SimDataBlock* db);
 }
 #endif // C_SIMDATABLOCKINTERFACE_H

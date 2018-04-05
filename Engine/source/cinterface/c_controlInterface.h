@@ -23,26 +23,27 @@
 #ifndef C_CONTROLINTERFACE_H
 #define C_CONTROLINTERFACE_H
 #include "platform/platformDlibrary.h"
+#include "console/engineFunctions.h"
 
 extern "C" {
-   void torque_reset();
-   bool torque_engineinit(S32 argc, const char **argv);
-   S32 torque_enginetick();
-   S32 torque_getreturnstatus();
-   void torque_enginesignalshutdown();
-   S32 torque_engineshutdown();
-   bool torque_isdebugbuild();
-   void torque_setwebdeployment();
-   void torque_resizewindow(S32 width, S32 height);
+   TORQUE_API void torque_reset();
+   TORQUE_API bool torque_engineinit(S32 argc, const char **argv);
+   TORQUE_API S32 torque_enginetick();
+   TORQUE_API S32 torque_getreturnstatus();
+   TORQUE_API void torque_enginesignalshutdown();
+   TORQUE_API S32 torque_engineshutdown();
+   TORQUE_API bool torque_isdebugbuild();
+   TORQUE_API void torque_setwebdeployment();
+   TORQUE_API void torque_resizewindow(S32 width, S32 height);
 
 #if defined(TORQUE_OS_WIN) && !defined(TORQUE_SDL)
-   void* torque_gethwnd();
-   void torque_directmessage(U32 message, U32 wparam, U32 lparam);
+   TORQUE_API void* torque_gethwnd();
+   TORQUE_API void torque_directmessage(U32 message, U32 wparam, U32 lparam);
 #endif
 #ifdef TORQUE_OS_WIN
-   void torque_inputevent(S32 type, S32 value1, S32 value2);
+   TORQUE_API void torque_inputevent(S32 type, S32 value1, S32 value2);
 #endif
 
-   const char* torque_getexecutablepath();
+   TORQUE_API const char* torque_getexecutablepath();
 }
 #endif // C_CONTROLINTERFACE_H

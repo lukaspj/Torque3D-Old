@@ -26,16 +26,16 @@
 #include "console/consoleInternal.h"
 
 extern "C" {
-   void Con_AddConsumer(ConsumerCallback cb);
-   void Con_RemoveConsumer(ConsumerCallback cb);
+   TORQUE_API void Con_AddConsumer(ConsumerCallback cb);
+   TORQUE_API void Con_RemoveConsumer(ConsumerCallback cb);
 
-   const char* Con_getConsoleString(const char* name);
-   void Con_setConsoleString(const char* name, const char* value);
-   S32 Con_getConsoleInt(const char* name);
-   void Con_setConsoleInt(const char* name, S32 value);
-   F32 Con_getConsoleFloat(const char* name);
-   void Con_setConsoleFloat(const char* name, F32 value);
-   bool Con_getConsoleBool(const char* name);
-   void Con_setConsoleBool(const char* name, bool value);
+   TORQUE_API const char* Con_getConsoleString(const char* name);
+   TORQUE_API void Con_setConsoleString(const char* name, const char* value);
+   TORQUE_API S32 Con_getConsoleInt(const char* name);
+   TORQUE_API void Con_setConsoleInt(const char* name, S32 value);
+   TORQUE_API F32 Con_getConsoleFloat(const char* name);
+   TORQUE_API void Con_setConsoleFloat(const char* name, F32 value);
+   TORQUE_API bool Con_getConsoleBool(const char* name);
+   TORQUE_API void Con_setConsoleBool(const char* name, bool value);
 }
 #endif // C_CONSOLEINTERFACE_H
